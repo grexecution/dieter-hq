@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { Providers } from "./providers";
 
 export const metadata: Metadata = {
   title: "Dieter HQ",
@@ -19,9 +20,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="de">
-      <body className="min-h-dvh bg-white text-slate-900">
-        {children}
+    <html lang="de" suppressHydrationWarning>
+      <body className="min-h-dvh bg-background text-foreground">
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

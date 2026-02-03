@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -68,7 +68,6 @@ export function ChatView({
   artefactsById,
   newThreadAction,
   logoutAction,
-  sendMessageAction,
 }: {
   threads: ThreadRow[];
   activeThreadId: string;
@@ -76,51 +75,57 @@ export function ChatView({
   artefactsById: Record<string, ArtefactRow>;
   newThreadAction: (formData: FormData) => void;
   logoutAction: (formData: FormData) => void;
-  sendMessageAction: (formData: FormData) => void;
 }) {
   const [liveMessages, setLiveMessages] = useState<MessageRow[]>(threadMessages);
+  const endRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     setLiveMessages(threadMessages);
   }, [threadMessages]);
+
+  useEffect(() => {
+    // Always scroll to newest message (simple + predictable for HQ chat).
+    endRef.current?.scrollIntoView({ block: "end" });
+  }, [liveMessages.length]);
 
   const lastCreatedAt = useMemo(() => {
     const last = liveMessages[liveMessages.length - 1];
     return last?.createdAt ?? 0;
   }, [liveMessages]);
 
-  // MVP: poll for new messages in main thread so replies show up live.
+  // Realtime: subscribe via SSE and append messages.
   useEffect(() => {
     if (activeThreadId !== "main") return;
 
-    let cancelled = false;
-    const tick = async () => {
+    const es = new EventSource(
+      `/api/stream?thread=${encodeURIComponent(activeThreadId)}&since=${encodeURIComponent(String(lastCreatedAt))}`,
+    );
+
+    const onMessage = (ev: MessageEvent) => {
       try {
-        const r = await fetch(
-          `/api/chat/messages?thread=${encodeURIComponent(activeThreadId)}&since=${encodeURIComponent(String(lastCreatedAt))}`,
-          { cache: "no-store" },
-        );
-        if (!r.ok) return;
-        const data = (await r.json()) as {
-          ok: boolean;
-          items: MessageRow[];
-        };
-        if (!data?.ok || !Array.isArray(data.items) || !data.items.length) return;
-        if (cancelled) return;
-        setLiveMessages((prev) => [...prev, ...data.items]);
+        const item = JSON.parse(ev.data) as MessageRow;
+        if (!item?.id) return;
+        setLiveMessages((prev) => {
+          if (prev.some((m) => m.id === item.id)) return prev;
+          return [...prev, item];
+        });
       } catch {
         // ignore
       }
     };
 
-    const t = setInterval(tick, 1500);
+    es.addEventListener("message", onMessage);
+
     return () => {
-      cancelled = true;
-      clearInterval(t);
+      es.removeEventListener("message", onMessage);
+      es.close();
     };
   }, [activeThreadId, lastCreatedAt]);
 
   const mainCount = threads.find((t) => t.threadId === "main")?.count ?? liveMessages.length;
+
+  const [draft, setDraft] = useState("");
+  const [isSending, setIsSending] = useState(false);
 
   return (
     <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
@@ -286,6 +291,7 @@ export function ChatView({
                 Schreib einfach los – ich antworte hier.
               </div>
             )}
+            <div ref={endRef} />
           </div>
         </ScrollArea>
 
@@ -294,15 +300,47 @@ export function ChatView({
         <div className="px-4 py-4">
           <div className="mx-auto w-full max-w-3xl">
             {/* Composer */}
-            <form action={sendMessageAction} className="flex items-end gap-3">
+            <form
+              className="flex items-end gap-3"
+              onSubmit={async (e) => {
+                e.preventDefault();
+                const content = draft.trim();
+                if (!content || isSending) return;
+
+                setIsSending(true);
+                setDraft("");
+
+                try {
+                  const r = await fetch("/api/chat/send", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ threadId: activeThreadId, content }),
+                  });
+                  if (!r.ok) throw new Error("send_failed");
+                  const data = (await r.json()) as { ok: boolean; item: MessageRow };
+                  if (data?.ok && data.item?.id) {
+                    setLiveMessages((prev) => {
+                      if (prev.some((m) => m.id === data.item.id)) return prev;
+                      return [...prev, data.item];
+                    });
+                  }
+                } catch {
+                  // restore draft on failure
+                  setDraft(content);
+                } finally {
+                  setIsSending(false);
+                }
+              }}
+            >
               <Textarea
-                name="content"
+                value={draft}
+                onChange={(e) => setDraft(e.target.value)}
                 placeholder="Write a message…"
                 rows={1}
                 className="min-h-[44px] flex-1 resize-none"
               />
-              <Button type="submit" className="h-[44px]">
-                Send
+              <Button type="submit" className="h-[44px]" disabled={isSending}>
+                {isSending ? "Sending…" : "Send"}
               </Button>
             </form>
 

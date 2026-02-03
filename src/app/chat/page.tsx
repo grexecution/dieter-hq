@@ -1,11 +1,12 @@
 export const dynamic = "force-dynamic";
 
-import { redirect } from "next/navigation";
 import { db } from "@/server/db";
 import { artefacts, messages } from "@/server/db/schema";
 import { asc, desc, eq, sql } from "drizzle-orm";
 import { logEvent } from "@/server/events/log";
 import { clearSessionCookie } from "@/server/auth/node";
+import { redirect } from "next/navigation";
+
 import { AppShell } from "../_ui/AppShell";
 import { ChatView } from "./ChatView";
 
@@ -52,51 +53,6 @@ export default async function ChatPage() {
     redirect("/login");
   }
 
-  async function sendMessageAction(formData: FormData) {
-    "use server";
-    const raw = String(formData.get("content") ?? "");
-    const content = raw.trim();
-    if (!content) return;
-
-    const now = new Date();
-    await db.insert(messages).values({
-      id: crypto.randomUUID(),
-      threadId: activeThreadId,
-      role: "user",
-      content,
-      createdAt: now,
-    });
-
-    // If you chat in MAIN, enqueue for Dieter HQ responder.
-    if (activeThreadId === "main") {
-      const { outbox } = await import("@/server/db/schema");
-      await db.insert(outbox).values({
-        id: crypto.randomUUID(),
-        threadId: "main",
-        channel: "hq",
-        target: "main",
-        text: content,
-        status: "pending",
-        createdAt: now,
-        sentAt: null,
-      });
-
-      await logEvent({
-        threadId: "main",
-        type: "outbox.enqueue",
-        payload: { channel: "hq" },
-      });
-    }
-
-    await logEvent({
-      threadId: activeThreadId,
-      type: "message.create",
-      payload: { role: "user" },
-    });
-
-    redirect(`/chat?thread=${encodeURIComponent(activeThreadId)}`);
-  }
-
   // Load artefacts for inline rendering
   const threadArtefacts = await db
     .select({
@@ -109,9 +65,7 @@ export default async function ChatPage() {
     .from(artefacts)
     .where(eq(artefacts.threadId, activeThreadId));
 
-  const artefactsById = Object.fromEntries(
-    threadArtefacts.map((a) => [a.id, a]),
-  );
+  const artefactsById = Object.fromEntries(threadArtefacts.map((a) => [a.id, a]));
 
   return (
     <AppShell active="chat">
@@ -142,7 +96,6 @@ export default async function ChatPage() {
         artefactsById={artefactsById}
         newThreadAction={newThreadAction}
         logoutAction={logoutAction}
-        sendMessageAction={sendMessageAction}
       />
     </AppShell>
   );

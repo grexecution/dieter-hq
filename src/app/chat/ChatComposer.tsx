@@ -1,11 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 
 export function ChatComposer({ threadId }: { threadId: string }) {
-  const router = useRouter();
   const [isUploading, setIsUploading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -19,12 +17,12 @@ export function ChatComposer({ threadId }: { threadId: string }) {
 
         const res = await fetch("/api/upload", { method: "POST", body: fd });
         if (!res.ok) throw new Error(`Upload failed (${res.status})`);
-        router.refresh();
+        // No router refresh: messages come in via SSE.
       } finally {
         setIsUploading(false);
       }
     },
-    [router, threadId],
+    [threadId],
   );
 
   const onDrop = useCallback(

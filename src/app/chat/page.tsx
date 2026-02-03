@@ -143,13 +143,23 @@ export default async function ChatPage({
           count: t.count,
         }))}
         activeThreadId={activeThreadId}
-        threadMessages={threadMessages.map((m) => ({
-          id: m.id,
-          threadId: m.threadId,
-          role: m.role,
-          content: m.content,
-          createdAt: new Date(m.createdAt).getTime(),
-        }))}
+        threadMessages={threadMessages.map((m) => {
+          const ts = new Date(m.createdAt).getTime();
+          const label = new Intl.DateTimeFormat("de-AT", {
+            hour: "2-digit",
+            minute: "2-digit",
+            timeZone: "Europe/Vienna",
+          }).format(new Date(ts));
+
+          return {
+            id: m.id,
+            threadId: m.threadId,
+            role: m.role,
+            content: m.content,
+            createdAt: ts,
+            createdAtLabel: label,
+          };
+        })}
         artefactsById={artefactsById}
         newThreadAction={newThreadAction}
         logoutAction={logoutAction}

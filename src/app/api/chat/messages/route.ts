@@ -14,6 +14,12 @@ export async function GET(req: NextRequest) {
     .where(eq(messages.threadId, threadId))
     .orderBy(asc(messages.createdAt));
 
+  const fmt = new Intl.DateTimeFormat("de-AT", {
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: "Europe/Vienna",
+  });
+
   const mapped = rows
     .map((m) => ({
       id: m.id,
@@ -21,6 +27,7 @@ export async function GET(req: NextRequest) {
       role: m.role,
       content: m.content,
       createdAt: new Date(m.createdAt).getTime(),
+      createdAtLabel: fmt.format(new Date(m.createdAt)),
     }))
     .filter((m) => (sinceMs ? m.createdAt > sinceMs : true));
 

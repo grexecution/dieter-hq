@@ -29,15 +29,8 @@ export type MessageRow = {
   role: "user" | "assistant" | "system";
   content: string;
   createdAt: number;
+  createdAtLabel: string;
 };
-
-function formatTime(ts: number): string {
-  try {
-    return new Date(ts).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-  } catch {
-    return "";
-  }
-}
 
 function displayContent(raw: string): { author?: string; text: string } {
   // If content starts with [Author] prefix, split it out.
@@ -249,7 +242,7 @@ export function ChatView({
                           <div className="text-xs opacity-70">
                             {isUser ? "You" : meta.author ?? "Dieter"}
                           </div>
-                          <div className="text-xs opacity-60">{formatTime(m.createdAt)}</div>
+                          <div className="text-xs opacity-60">{m.createdAtLabel}</div>
                         </div>
 
                         {artefact && url ? (

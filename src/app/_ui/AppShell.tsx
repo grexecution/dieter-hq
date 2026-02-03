@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 
+import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -20,7 +21,7 @@ export function AppShell({
             Dieter HQ
           </Link>
 
-          <nav className="flex items-center gap-2">
+          <nav className="flex items-center gap-1 sm:gap-2">
             <Button
               asChild
               variant={active === "chat" ? "default" : "ghost"}
@@ -45,6 +46,9 @@ export function AppShell({
             >
               <Link href="/calendar">Calendar</Link>
             </Button>
+            <div className="ml-1 pl-1 sm:ml-2 sm:pl-2 border-l">
+              <ThemeToggle />
+            </div>
           </nav>
         </div>
       </header>

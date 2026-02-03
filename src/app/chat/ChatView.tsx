@@ -125,7 +125,7 @@ export function ChatView({
   return (
     <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
       {/* Sidebar */}
-      <aside className="h-[calc(100dvh-120px)] rounded-2xl border bg-card/50 p-4 shadow-sm backdrop-blur">
+      <aside className="h-[calc(100dvh-120px)] rounded-2xl border bg-card/40 p-4 shadow-sm backdrop-blur">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <div className="text-sm font-semibold leading-tight">Chat</div>
@@ -163,7 +163,7 @@ export function ChatView({
       </aside>
 
       {/* Main */}
-      <section className="flex h-[calc(100dvh-120px)] flex-col overflow-hidden rounded-2xl border bg-card/50 shadow-sm backdrop-blur">
+      <section className="flex h-[calc(100dvh-120px)] flex-col overflow-hidden rounded-2xl border bg-card/40 shadow-sm backdrop-blur">
         <header className="flex items-center justify-between gap-4 px-4 py-3">
           <div className="min-w-0">
             <div className="text-xs text-muted-foreground">Thread</div>
@@ -206,8 +206,8 @@ export function ChatView({
                       className={cn(
                         "w-full max-w-[720px] rounded-2xl px-4 py-3 text-sm shadow-sm ring-1",
                         isUser
-                          ? "bg-primary text-primary-foreground ring-primary/15"
-                          : "bg-background/70 text-foreground ring-border",
+                          ? "bg-primary text-primary-foreground ring-primary/20"
+                          : "bg-background/70 text-foreground ring-border/60",
                       )}
                     >
                       <div className="flex items-center justify-between gap-3">

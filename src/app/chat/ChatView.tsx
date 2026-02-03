@@ -1,8 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
 import {
   Button,
   Card,
@@ -77,14 +76,47 @@ export function ChatView({
   logoutAction: (formData: FormData) => void;
   sendMessageAction: (formData: FormData) => void;
 }) {
-  const router = useRouter();
+  const [liveMessages, setLiveMessages] = useState<MessageRow[]>(threadMessages);
 
-  // MVP: auto-refresh main thread so replies show up without manual reload.
+  useEffect(() => {
+    setLiveMessages(threadMessages);
+  }, [threadMessages]);
+
+  const lastCreatedAt = useMemo(() => {
+    const last = liveMessages[liveMessages.length - 1];
+    return last?.createdAt ?? 0;
+  }, [liveMessages]);
+
+  // MVP: poll for new messages in main thread so replies show up live.
   useEffect(() => {
     if (activeThreadId !== "main") return;
-    const t = setInterval(() => router.refresh(), 2000);
-    return () => clearInterval(t);
-  }, [activeThreadId, router]);
+
+    let cancelled = false;
+    const tick = async () => {
+      try {
+        const r = await fetch(
+          `/api/chat/messages?thread=${encodeURIComponent(activeThreadId)}&since=${encodeURIComponent(String(lastCreatedAt))}`,
+          { cache: "no-store" },
+        );
+        if (!r.ok) return;
+        const data = (await r.json()) as {
+          ok: boolean;
+          items: MessageRow[];
+        };
+        if (!data?.ok || !Array.isArray(data.items) || !data.items.length) return;
+        if (cancelled) return;
+        setLiveMessages((prev) => [...prev, ...data.items]);
+      } catch {
+        // ignore
+      }
+    };
+
+    const t = setInterval(tick, 1500);
+    return () => {
+      cancelled = true;
+      clearInterval(t);
+    };
+  }, [activeThreadId, lastCreatedAt]);
 
   return (
     <div className="grid gap-6 lg:grid-cols-[340px_1fr]">
@@ -170,14 +202,14 @@ export function ChatView({
           </div>
 
           {/* OpenClaw-style inbox banner: show last message loud */}
-          {threadMessages.length ? (
+          {liveMessages.length ? (
             <div className="w-full truncate text-lg font-semibold text-danger">
-              {threadMessages[threadMessages.length - 1]?.content}
+              {liveMessages[liveMessages.length - 1]?.content}
             </div>
           ) : null}
 
           <div className="text-xs text-default-400">
-            {threadMessages.length} messages
+            {liveMessages.length} messages
           </div>
         </CardHeader>
 
@@ -187,8 +219,8 @@ export function ChatView({
           {/* Messages */}
           <ScrollShadow className="flex-1 overflow-y-auto pr-2">
             <div className="grid gap-3">
-              {threadMessages.length ? (
-                threadMessages.map((m) => {
+              {liveMessages.length ? (
+                liveMessages.map((m) => {
                   const artefactId = extractArtefactIdFromContent(m.content);
                   const artefact = artefactId ? artefactsById[artefactId] : null;
                   const url = artefactId ? `/api/artefacts/${encodeURIComponent(artefactId)}` : null;

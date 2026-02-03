@@ -1,13 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import {
-  Navbar,
-  NavbarBrand,
-  NavbarContent,
-  NavbarItem,
-  Button,
-} from "@heroui/react";
+
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 export function AppShell({
   children,
@@ -17,54 +13,41 @@ export function AppShell({
   active?: "chat" | "kanban" | "calendar" | "events";
 }) {
   return (
-    <div className="min-h-dvh bg-gradient-to-br from-default-50 via-background to-default-100">
-      <Navbar
-        maxWidth="full"
-        isBordered
-        className="sticky top-0 z-50 bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60"
-      >
-        <NavbarBrand>
+    <div className="min-h-dvh bg-gradient-to-br from-background via-background to-muted/30">
+      <header className="sticky top-0 z-50 border-b bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="mx-auto flex h-14 w-full max-w-7xl items-center justify-between px-4">
           <Link href="/" className="font-semibold tracking-tight">
             Dieter HQ
           </Link>
-        </NavbarBrand>
 
-        <NavbarContent justify="end" className="gap-2">
-          <NavbarItem>
+          <nav className="flex items-center gap-2">
             <Button
-              as={Link}
-              href="/chat"
+              asChild
+              variant={active === "chat" ? "default" : "ghost"}
               size="sm"
-              variant={active === "chat" ? "solid" : "flat"}
-              color={active === "chat" ? "primary" : "default"}
+              className={cn(active === "chat" && "shadow-sm")}
             >
-              Chat
+              <Link href="/chat">Chat</Link>
             </Button>
-          </NavbarItem>
-          <NavbarItem>
             <Button
-              as={Link}
-              href="/kanban"
+              asChild
+              variant={active === "kanban" ? "default" : "ghost"}
               size="sm"
-              variant={active === "kanban" ? "solid" : "flat"}
-              color={active === "kanban" ? "primary" : "default"}
+              className={cn(active === "kanban" && "shadow-sm")}
             >
-              Kanban
+              <Link href="/kanban">Kanban</Link>
             </Button>
-          </NavbarItem>
-          <NavbarItem>
             <Button
-              as={Link}
-              href="/calendar"
+              asChild
+              variant={active === "calendar" ? "default" : "ghost"}
               size="sm"
-              variant={active === "calendar" ? "solid" : "flat"}
-              color={active === "calendar" ? "primary" : "default"}
+              className={cn(active === "calendar" && "shadow-sm")}
             >
-              Calendar
+              <Link href="/calendar">Calendar</Link>
             </Button>
-          </NavbarItem>
-        </NavbarContent>
-      </Navbar>
+          </nav>
+        </div>
+      </header>
 
       <main className="mx-auto w-full max-w-7xl px-4 py-8">{children}</main>
     </div>

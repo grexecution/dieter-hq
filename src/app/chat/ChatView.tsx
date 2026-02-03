@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
+import { Mic, Square } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
@@ -51,6 +52,10 @@ function extractArtefactIdFromContent(content: string): string | null {
 
 function isImageMime(m: string): boolean {
   return m.startsWith("image/");
+}
+
+function isAudioMime(m: string): boolean {
+  return m.startsWith("audio/") || m === "video/webm";
 }
 
 function initials(name: string): string {
@@ -126,6 +131,70 @@ export function ChatView({
 
   const [draft, setDraft] = useState("");
   const [isSending, setIsSending] = useState(false);
+
+  const [isRecording, setIsRecording] = useState(false);
+  const recorderRef = useRef<MediaRecorder | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+  const chunksRef = useRef<BlobPart[]>([]);
+  const [isUploadingVoice, setIsUploadingVoice] = useState(false);
+
+  const startRecording = async () => {
+    if (isRecording || isUploadingVoice) return;
+
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    streamRef.current = stream;
+
+    const preferredTypes = [
+      "audio/webm;codecs=opus",
+      "audio/webm",
+      "audio/ogg;codecs=opus",
+      "audio/ogg",
+    ];
+    const mimeType = preferredTypes.find((t) => MediaRecorder.isTypeSupported(t));
+
+    const rec = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
+    recorderRef.current = rec;
+    chunksRef.current = [];
+
+    rec.ondataavailable = (e) => {
+      if (e.data && e.data.size > 0) chunksRef.current.push(e.data);
+    };
+
+    rec.onstop = async () => {
+      try {
+        setIsUploadingVoice(true);
+        const blob = new Blob(chunksRef.current, { type: rec.mimeType || "audio/webm" });
+        const file = new File([blob], `voice-${Date.now()}.webm`, {
+          type: blob.type,
+        });
+
+        const fd = new FormData();
+        fd.set("threadId", activeThreadId);
+        fd.set("file", file);
+
+        const res = await fetch("/api/upload", { method: "POST", body: fd });
+        if (!res.ok) throw new Error("upload_failed");
+      } finally {
+        setIsUploadingVoice(false);
+        chunksRef.current = [];
+      }
+    };
+
+    rec.start();
+    setIsRecording(true);
+  };
+
+  const stopRecording = async () => {
+    if (!isRecording) return;
+    try {
+      recorderRef.current?.stop();
+    } finally {
+      setIsRecording(false);
+      recorderRef.current = null;
+      streamRef.current?.getTracks().forEach((t) => t.stop());
+      streamRef.current = null;
+    }
+  };
 
   return (
     <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
@@ -255,6 +324,8 @@ export function ChatView({
                               alt={artefact.originalName}
                               className="max-h-[420px] w-auto rounded-xl border"
                             />
+                          ) : isAudioMime(artefact.mimeType) ? (
+                            <audio controls src={url} className="w-full" />
                           ) : (
                             <a
                               href={url}
@@ -339,8 +410,26 @@ export function ChatView({
                 rows={1}
                 className="min-h-[44px] flex-1 resize-none"
               />
-              <Button type="submit" className="h-[44px]" disabled={isSending}>
-                {isSending ? "Sending…" : "Send"}
+              <Button
+                type="button"
+                variant={isRecording ? "destructive" : "secondary"}
+                className="h-[44px] w-[44px] px-0"
+                onClick={async () => {
+                  if (isRecording) await stopRecording();
+                  else await startRecording();
+                }}
+                disabled={isUploadingVoice}
+                title={isRecording ? "Stop recording" : "Record voice"}
+              >
+                {isRecording ? <Square className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+              </Button>
+
+              <Button
+                type="submit"
+                className="h-[44px]"
+                disabled={isSending || isRecording || isUploadingVoice}
+              >
+                {isSending ? "Sending…" : isUploadingVoice ? "Uploading…" : "Send"}
               </Button>
             </form>
 

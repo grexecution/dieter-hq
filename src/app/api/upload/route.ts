@@ -19,6 +19,8 @@ function guessExt(mime: string, fallbackName?: string): string {
     "audio/mpeg": "mp3",
     "audio/mp4": "m4a",
     "audio/wav": "wav",
+    "audio/webm": "webm",
+    "video/webm": "webm",
     "application/pdf": "pdf",
   };
   if (byMime[mime]) return byMime[mime];
@@ -79,6 +81,39 @@ export async function POST(req: Request) {
     type: "artefact.upload",
     payload: { id, originalName, mimeType, sizeBytes },
   });
+
+  const isAudio = mimeType.startsWith("audio/") || mimeType === "video/webm";
+  if (isAudio) {
+    // Fire-and-forget transcription. In production, consider moving this to
+    // a durable background job.
+    void (async () => {
+      try {
+        const { transcribeLocalWhisper } = await import("@/server/whisper/transcribe");
+        const text = await transcribeLocalWhisper(abs, { language: "de" });
+        if (!text) return;
+
+        await db.insert(messages).values({
+          id: crypto.randomUUID(),
+          threadId,
+          role: "system",
+          content: `🎙 Transcription (${originalName})\n${text}`,
+          createdAt: new Date(),
+        });
+
+        await logEvent({
+          threadId,
+          type: "audio.transcribe",
+          payload: { artefactId: id, ok: true },
+        });
+      } catch {
+        await logEvent({
+          threadId,
+          type: "audio.transcribe",
+          payload: { artefactId: id, ok: false },
+        });
+      }
+    })();
+  }
 
   return NextResponse.json({ ok: true, artefactId: id, messageId, url });
 }

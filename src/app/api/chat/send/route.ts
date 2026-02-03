@@ -1,7 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
+import path from "node:path";
+import fs from "node:fs/promises";
+
 import { db } from "@/server/db";
-import { messages, outbox } from "@/server/db/schema";
+import { artefacts, messages, outbox } from "@/server/db/schema";
 import { logEvent } from "@/server/events/log";
+import { artefactRelPath, artefactsBaseDir, ensureDirForFile } from "@/server/artefacts/storage";
+import { placeholderSvg } from "@/server/tools/image";
 
 export const runtime = "nodejs";
 
@@ -9,6 +14,14 @@ type Payload = {
   threadId?: string;
   content?: string;
 };
+
+function fmtLabel(d: Date): string {
+  return new Intl.DateTimeFormat("de-AT", {
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: "Europe/Vienna",
+  }).format(d);
+}
 
 export async function POST(req: NextRequest) {
   let body: Payload;
@@ -34,6 +47,63 @@ export async function POST(req: NextRequest) {
     createdAt: now,
   });
 
+  await logEvent({
+    threadId,
+    type: "message.create",
+    payload: { role: "user" },
+  });
+
+  // Tool command: /image <prompt>
+  if (content.startsWith("/image")) {
+    const prompt = content.replace(/^\/image\s*/i, "").trim();
+    const imgId = crypto.randomUUID();
+    const createdAt = new Date();
+
+    const svg = placeholderSvg(prompt || "(empty prompt)");
+    const rel = artefactRelPath({ date: createdAt, id: imgId, ext: "svg" });
+    const abs = path.join(artefactsBaseDir(), rel);
+    await ensureDirForFile(abs);
+    await fs.writeFile(abs, svg, "utf8");
+
+    await db.insert(artefacts).values({
+      id: imgId,
+      threadId,
+      originalName: `image-${imgId}.svg`,
+      mimeType: "image/svg+xml",
+      sizeBytes: Buffer.byteLength(svg, "utf8"),
+      storagePath: rel,
+      createdAt,
+    });
+
+    const url = `/api/artefacts/${encodeURIComponent(imgId)}`;
+    await db.insert(messages).values({
+      id: crypto.randomUUID(),
+      threadId,
+      role: "assistant",
+      content: `🖼️ Generated image\n${url}`,
+      createdAt,
+    });
+
+    await logEvent({
+      threadId,
+      type: "tool.image",
+      payload: { prompt, artefactId: imgId },
+    });
+
+    return NextResponse.json({
+      ok: true,
+      item: {
+        id,
+        threadId,
+        role: "user" as const,
+        content,
+        createdAt: now.getTime(),
+        createdAtLabel: fmtLabel(now),
+      },
+    });
+  }
+
+  // Default: enqueue for Dieter HQ responder (legacy)
   if (threadId === "main") {
     await db.insert(outbox).values({
       id: crypto.randomUUID(),
@@ -53,18 +123,6 @@ export async function POST(req: NextRequest) {
     });
   }
 
-  await logEvent({
-    threadId,
-    type: "message.create",
-    payload: { role: "user" },
-  });
-
-  const label = new Intl.DateTimeFormat("de-AT", {
-    hour: "2-digit",
-    minute: "2-digit",
-    timeZone: "Europe/Vienna",
-  }).format(now);
-
   return NextResponse.json({
     ok: true,
     item: {
@@ -73,7 +131,7 @@ export async function POST(req: NextRequest) {
       role: "user" as const,
       content,
       createdAt: now.getTime(),
-      createdAtLabel: label,
+      createdAtLabel: fmtLabel(now),
     },
   });
 }

@@ -1,6 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import {
   Button,
   Card,
@@ -75,6 +77,15 @@ export function ChatView({
   logoutAction: (formData: FormData) => void;
   sendMessageAction: (formData: FormData) => void;
 }) {
+  const router = useRouter();
+
+  // MVP: auto-refresh main thread so replies show up without manual reload.
+  useEffect(() => {
+    if (activeThreadId !== "main") return;
+    const t = setInterval(() => router.refresh(), 2000);
+    return () => clearInterval(t);
+  }, [activeThreadId, router]);
+
   return (
     <div className="grid gap-6 lg:grid-cols-[340px_1fr]">
       {/* Sidebar */}

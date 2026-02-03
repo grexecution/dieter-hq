@@ -9,13 +9,14 @@ import { messages } from "@/server/db/schema";
 // NOTE: currently unauthenticated. Lock down before exposing beyond localhost.
 
 type InboxPayload = {
-  source: "openclaw";
-  channel: string; // telegram|...
+  source: "openclaw" | "email" | "clickup" | "monitor";
+  channel: string; // telegram|gmail|clickup|monitor|...
   chatId?: string;
   messageId?: string;
   author?: string;
   text: string;
   ts?: number; // unix ms
+  threadId?: string; // optional override; defaults to "main"
 };
 
 export async function POST(req: NextRequest) {
@@ -31,9 +32,12 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: false, error: "missing_text" }, { status: 400 });
   }
 
+  // Default: everything between Greg <-> Dieter (including summaries from
+  // email/clickup/monitor) goes into ONE main thread.
+  const threadId = String(body.threadId ?? "main");
+
   const channel = String(body.channel ?? "unknown");
-  const chatId = body.chatId ? String(body.chatId) : "unknown";
-  const threadId = `inbox:${channel}:${chatId}`;
+  const chatId = body.chatId ? String(body.chatId) : "";
 
   // Use a stable id for dedupe if caller provides messageId.
   const id = body.messageId

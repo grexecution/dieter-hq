@@ -30,8 +30,7 @@ export default async function ChatPage({
     .groupBy(messages.threadId)
     .orderBy(desc(sql`max(${messages.createdAt})`));
 
-  const activeThreadId =
-    sp.thread ?? threads[0]?.threadId ?? crypto.randomUUID();
+  const activeThreadId = sp.thread ?? threads[0]?.threadId ?? "main";
 
   const threadMessages = await db
     .select()

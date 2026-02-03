@@ -69,11 +69,14 @@ export function ChatView({
   sendMessageAction: (formData: FormData) => void;
 }) {
   return (
-    <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
+    <div className="grid gap-6 lg:grid-cols-[340px_1fr]">
       {/* Sidebar */}
-      <Card shadow="sm" className="h-[calc(100dvh-140px)]">
+      <Card shadow="md" className="h-[calc(100dvh-120px)] rounded-2xl border border-default-200/70">
         <CardHeader className="flex items-center justify-between">
-          <div className="text-base font-semibold">Chat</div>
+          <div>
+            <div className="text-base font-semibold leading-tight">Chat</div>
+            <div className="text-xs text-default-500">Threads</div>
+          </div>
           <form action={logoutAction}>
             <Button size="sm" variant="flat" type="submit">
               Logout
@@ -83,7 +86,7 @@ export function ChatView({
         <CardBody className="gap-3">
           <form action={newThreadAction}>
             <Button color="primary" variant="solid" className="w-full" type="submit">
-              + New thread
+              New thread
             </Button>
           </form>
 
@@ -131,7 +134,7 @@ export function ChatView({
       </Card>
 
       {/* Main */}
-      <Card shadow="sm" className="h-[calc(100dvh-140px)]">
+      <Card shadow="md" className="h-[calc(100dvh-120px)] rounded-2xl border border-default-200/70">
         <CardHeader className="flex flex-col items-start gap-2">
           <div className="flex w-full items-start justify-between gap-4">
             <div className="min-w-0">

@@ -17,14 +17,19 @@ export function AppShell({
   active?: "chat" | "kanban" | "calendar" | "events";
 }) {
   return (
-    <div className="min-h-dvh">
-      <Navbar maxWidth="xl" isBordered>
+    <div className="min-h-dvh bg-gradient-to-br from-default-50 via-background to-default-100">
+      <Navbar
+        maxWidth="full"
+        isBordered
+        className="sticky top-0 z-50 bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60"
+      >
         <NavbarBrand>
           <Link href="/" className="font-semibold tracking-tight">
             Dieter HQ
           </Link>
         </NavbarBrand>
-        <NavbarContent justify="end">
+
+        <NavbarContent justify="end" className="gap-2">
           <NavbarItem>
             <Button
               as={Link}
@@ -61,7 +66,7 @@ export function AppShell({
         </NavbarContent>
       </Navbar>
 
-      <main className="mx-auto w-full max-w-5xl px-4 py-6">{children}</main>
+      <main className="mx-auto w-full max-w-7xl px-4 py-8">{children}</main>
     </div>
   );
 }

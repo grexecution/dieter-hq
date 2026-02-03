@@ -14,6 +14,7 @@ type InboxPayload = {
   chatId?: string;
   messageId?: string;
   author?: string;
+  role?: "user" | "assistant" | "system";
   text: string;
   ts?: number; // unix ms
   threadId?: string; // optional override; defaults to "main"
@@ -44,8 +45,10 @@ export async function POST(req: NextRequest) {
     ? `inbox:${channel}:${chatId}:${String(body.messageId)}`
     : crypto.randomUUID();
 
+  const role = body.role ?? "user";
+
   const author = body.author ? String(body.author) : channel;
-  const prefix = `[${author}] `;
+  const prefix = author ? `[${author}] ` : "";
 
   const createdAt = body.ts ? new Date(Number(body.ts)) : new Date();
 
@@ -53,7 +56,7 @@ export async function POST(req: NextRequest) {
     await db.insert(messages).values({
       id,
       threadId,
-      role: "user",
+      role,
       content: prefix + text,
       createdAt,
     });

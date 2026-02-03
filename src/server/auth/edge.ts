@@ -33,8 +33,8 @@ async function hmacSha256Base64url(key: string, data: string): Promise<string> {
 export async function enforceAuth(req: NextRequest): Promise<NextResponse | null> {
   const password = process.env.HQ_PASSWORD;
   if (!password) {
-    // In dev, make it obvious why /chat is blocked.
-    return NextResponse.redirect(new URL("/login?err=missing_password", req.url));
+    // Auth disabled (local/dev convenience): allow through.
+    return null;
   }
 
   const token = req.cookies.get(AUTH_COOKIE_NAME)?.value;

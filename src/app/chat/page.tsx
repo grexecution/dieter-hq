@@ -16,9 +16,9 @@ type SearchParams = {
 export default async function ChatPage({
   searchParams,
 }: {
-  searchParams?: SearchParams;
+  searchParams?: Promise<SearchParams>;
 }) {
-  const sp = searchParams ?? {};
+  const sp = (await searchParams) ?? {};
 
   const threads = await db
     .select({

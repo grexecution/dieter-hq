@@ -38,6 +38,13 @@ export type ArtefactRow = {
 };
 
 function pickTitle(t: ThreadRow): string {
+  // Pretty titles for synthetic inbox threads.
+  if (t.threadId.startsWith("inbox:")) {
+    const parts = t.threadId.split(":");
+    const channel = parts[1] ?? "inbox";
+    const chatId = parts[2] ?? "";
+    return `${channel}${chatId ? ` (${chatId})` : ""}`;
+  }
   return t.threadId.slice(0, 8);
 }
 
@@ -141,10 +148,23 @@ export function ChatView({
               <div className="text-xs text-default-500">Thread</div>
               <div className="truncate font-mono text-sm">{activeThreadId}</div>
             </div>
-            <Snippet size="sm" symbol="" className="max-w-[220px]" codeString={activeThreadId}>
+            <Snippet
+              size="sm"
+              symbol=""
+              className="max-w-[220px]"
+              codeString={activeThreadId}
+            >
               copy id
             </Snippet>
           </div>
+
+          {/* OpenClaw-style inbox banner: show last message loud */}
+          {threadMessages.length ? (
+            <div className="w-full truncate text-lg font-semibold text-danger">
+              {threadMessages[threadMessages.length - 1]?.content}
+            </div>
+          ) : null}
+
           <div className="text-xs text-default-400">
             {threadMessages.length} messages
           </div>

@@ -9,17 +9,7 @@ import { clearSessionCookie } from "@/server/auth/node";
 import { AppShell } from "../_ui/AppShell";
 import { ChatView } from "./ChatView";
 
-type SearchParams = {
-  thread?: string;
-};
-
-export default async function ChatPage({
-  searchParams,
-}: {
-  searchParams?: Promise<SearchParams>;
-}) {
-  const sp = (await searchParams) ?? {};
-
+export default async function ChatPage() {
   const threads = await db
     .select({
       threadId: messages.threadId,
@@ -30,7 +20,8 @@ export default async function ChatPage({
     .groupBy(messages.threadId)
     .orderBy(desc(sql`max(${messages.createdAt})`));
 
-  const activeThreadId = sp.thread ?? threads[0]?.threadId ?? "main";
+  // Dieter HQ UI only exposes a single thread: main.
+  const activeThreadId = "main";
 
   const threadMessages = await db
     .select()
@@ -50,21 +41,9 @@ export default async function ChatPage({
 
   async function newThreadAction() {
     "use server";
-    const threadId = crypto.randomUUID();
-    const now = new Date();
-    await db.insert(messages).values({
-      id: crypto.randomUUID(),
-      threadId,
-      role: "system",
-      content: "New thread.",
-      createdAt: now,
-    });
-    await logEvent({
-      threadId,
-      type: "thread.create",
-      payload: { threadId },
-    });
-    redirect(`/chat?thread=${encodeURIComponent(threadId)}`);
+    // UI no longer exposes multi-threading. Keep this server action wired
+    // (hidden) to avoid changing any existing plumbing.
+    redirect("/chat");
   }
 
   async function logoutAction() {

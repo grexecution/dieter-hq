@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Button } from "@heroui/react";
+import { Button } from "@/components/ui/button";
 
 export function ChatComposer({ threadId }: { threadId: string }) {
   const router = useRouter();
@@ -57,23 +57,22 @@ export function ChatComposer({ threadId }: { threadId: string }) {
 
   return (
     <div
-      className="mt-4 rounded-large border border-default-200 bg-content1 p-3"
+      className="mt-4 rounded-xl border bg-card/60 p-3 backdrop-blur"
       onDragOver={(e) => e.preventDefault()}
       onDrop={onDrop}
     >
-      <div className="flex items-center justify-between gap-2">
-        <div className="text-sm text-default-500">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <div className="text-sm text-muted-foreground">
           Drag & drop or paste an image/file here.
         </div>
         <Button
           type="button"
           size="sm"
-          variant="flat"
-          onPress={() => inputRef.current?.click()}
-          isDisabled={isUploading}
-          isLoading={isUploading}
+          variant="secondary"
+          onClick={() => inputRef.current?.click()}
+          disabled={isUploading}
         >
-          Upload
+          {isUploading ? "Uploading…" : "Upload"}
         </Button>
       </div>
 

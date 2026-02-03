@@ -2,18 +2,13 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import {
-  Avatar,
-  Button,
-  Card,
-  CardBody,
-  CardHeader,
-  Chip,
-  Divider,
-  ScrollShadow,
-  Snippet,
-  Textarea,
-} from "@heroui/react";
+
+import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
+import { Textarea } from "@/components/ui/textarea";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { cn } from "@/lib/utils";
 
 import { ChatComposer } from "./ChatComposer";
 
@@ -48,17 +43,6 @@ export type ArtefactRow = {
   sizeBytes: number;
 };
 
-function pickTitle(t: ThreadRow): string {
-  // Pretty titles for synthetic inbox threads.
-  if (t.threadId.startsWith("inbox:")) {
-    const parts = t.threadId.split(":");
-    const channel = parts[1] ?? "inbox";
-    const chatId = parts[2] ?? "";
-    return `${channel}${chatId ? ` (${chatId})` : ""}`;
-  }
-  return t.threadId.slice(0, 8);
-}
-
 function extractArtefactIdFromContent(content: string): string | null {
   // Our upload message currently stores a URL like /api/artefacts/<id>
   const m = content.match(/\/api\/artefacts\/([0-9a-fA-F-]{8,})/);
@@ -67,6 +51,14 @@ function extractArtefactIdFromContent(content: string): string | null {
 
 function isImageMime(m: string): boolean {
   return m.startsWith("image/");
+}
+
+function initials(name: string): string {
+  const parts = name.trim().split(/\s+/).slice(0, 2);
+  return parts
+    .map((p) => p[0])
+    .join("")
+    .toUpperCase();
 }
 
 export function ChatView({
@@ -128,183 +120,185 @@ export function ChatView({
     };
   }, [activeThreadId, lastCreatedAt]);
 
+  const mainCount = threads.find((t) => t.threadId === "main")?.count ?? liveMessages.length;
+
   return (
     <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
-      {/* Sidebar (keep minimal; main thread is the default) */}
-      <Card
-        shadow="md"
-        className="h-[calc(100dvh-120px)] rounded-2xl border border-default-200/70 bg-background/70 backdrop-blur"
-      >
-        <CardHeader className="flex items-center justify-between">
-          <div>
-            <div className="text-base font-semibold leading-tight">Inbox</div>
-            <div className="text-xs text-default-500">Dieter HQ</div>
+      {/* Sidebar */}
+      <aside className="h-[calc(100dvh-120px)] rounded-2xl border bg-card/50 p-4 shadow-sm backdrop-blur">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <div className="text-sm font-semibold leading-tight">Chat</div>
+            <div className="text-xs text-muted-foreground">Dieter HQ • main</div>
           </div>
           <form action={logoutAction}>
-            <Button size="sm" variant="flat" type="submit">
+            <Button size="sm" variant="secondary" type="submit">
               Logout
             </Button>
           </form>
-        </CardHeader>
-        <CardBody className="gap-3">
-          <Button
-            as={Link}
-            href="/chat?thread=main"
-            variant={activeThreadId === "main" ? "solid" : "flat"}
-            color={activeThreadId === "main" ? "primary" : "default"}
-            className="h-auto justify-start px-3 py-3"
-          >
-            <div className="flex w-full items-center justify-between gap-3">
-              <div className="text-left">
-                <div className="font-semibold">{pickTitle({ threadId: "main", lastAt: 0, count: 0 })}</div>
-                <div className="text-xs opacity-70">{threads.find((t) => t.threadId === "main")?.count ?? liveMessages.length} msgs</div>
-              </div>
-              <Chip size="sm" variant="flat">
+        </div>
+
+        <Separator className="my-4" />
+
+        <div className="space-y-2">
+          <Button asChild variant="outline" className="h-auto w-full justify-between px-3 py-3">
+            <Link href="/chat">
+              <span className="flex flex-col items-start">
+                <span className="text-sm font-medium">Main</span>
+                <span className="text-xs text-muted-foreground">{mainCount} messages</span>
+              </span>
+              <span className="rounded-full bg-emerald-500/15 px-2 py-0.5 text-xs font-medium text-emerald-600 dark:text-emerald-400">
                 live
-              </Chip>
-            </div>
+              </span>
+            </Link>
           </Button>
 
-          <form action={newThreadAction}>
-            <Button type="submit" variant="flat" className="w-full">
-              New thread (debug)
-            </Button>
-          </form>
+          {/* Keep the server action wired, but don’t expose debug UI */}
+          <form action={newThreadAction} className="hidden" aria-hidden="true" />
+        </div>
 
-          <Divider />
-
-          <div className="text-xs text-default-400">
-            <Link className="hover:underline" href="/events">
-              View event log
-            </Link>
-          </div>
-        </CardBody>
-      </Card>
+        <div className="mt-6 text-xs text-muted-foreground">
+          Tip: paste images directly into the chat.
+        </div>
+      </aside>
 
       {/* Main */}
-      <Card
-        shadow="md"
-        className="h-[calc(100dvh-120px)] rounded-2xl border border-default-200/70 bg-background/70 backdrop-blur"
-      >
-        <CardHeader className="flex flex-col items-start gap-3">
-          <div className="flex w-full items-start justify-between gap-4">
-            <div className="min-w-0">
-              <div className="text-xs text-default-500">Thread</div>
-              <div className="truncate text-base font-semibold">Main</div>
-            </div>
-            <Snippet size="sm" symbol="" className="max-w-[220px]" codeString={activeThreadId}>
-              copy id
-            </Snippet>
+      <section className="flex h-[calc(100dvh-120px)] flex-col overflow-hidden rounded-2xl border bg-card/50 shadow-sm backdrop-blur">
+        <header className="flex items-center justify-between gap-4 px-4 py-3">
+          <div className="min-w-0">
+            <div className="text-xs text-muted-foreground">Thread</div>
+            <div className="truncate text-base font-semibold">Main</div>
           </div>
+          <div className="text-xs text-muted-foreground">{mainCount} msgs</div>
+        </header>
 
-          {/* Loud last message banner */}
-          {liveMessages.length ? (
-            <div className="w-full truncate text-lg font-semibold text-danger">
-              {displayContent(liveMessages[liveMessages.length - 1]?.content).text}
-            </div>
-          ) : null}
-        </CardHeader>
+        <Separator />
 
-        <Divider />
+        <ScrollArea className="flex-1">
+          <div className="mx-auto flex w-full max-w-3xl flex-col gap-4 px-4 py-6">
+            {liveMessages.length ? (
+              liveMessages.map((m) => {
+                const artefactId = extractArtefactIdFromContent(m.content);
+                const artefact = artefactId ? artefactsById[artefactId] : null;
+                const url = artefactId
+                  ? `/api/artefacts/${encodeURIComponent(artefactId)}`
+                  : null;
 
-        <CardBody className="flex flex-col gap-4 overflow-hidden">
-          {/* Messages */}
-          <ScrollShadow className="flex-1 overflow-y-auto px-1">
-            <div className="flex flex-col gap-3">
-              {liveMessages.length ? (
-                liveMessages.map((m) => {
-                  const artefactId = extractArtefactIdFromContent(m.content);
-                  const artefact = artefactId ? artefactsById[artefactId] : null;
-                  const url = artefactId
-                    ? `/api/artefacts/${encodeURIComponent(artefactId)}`
-                    : null;
+                const isUser = m.role === "user";
+                const meta = displayContent(m.content);
+                const author = isUser ? "You" : meta.author ?? "Dieter";
 
-                  const isUser = m.role === "user";
-                  const meta = displayContent(m.content);
+                return (
+                  <div
+                    key={m.id}
+                    className={cn(
+                      "flex items-end gap-3",
+                      isUser ? "justify-end" : "justify-start",
+                    )}
+                  >
+                    {!isUser ? (
+                      <Avatar className="h-8 w-8 border bg-background">
+                        <AvatarFallback>{initials(author)}</AvatarFallback>
+                      </Avatar>
+                    ) : null}
 
-                  return (
                     <div
-                      key={m.id}
-                      className={`flex items-end gap-2 ${isUser ? "justify-end" : "justify-start"}`}
+                      className={cn(
+                        "w-full max-w-[720px] rounded-2xl px-4 py-3 text-sm shadow-sm ring-1",
+                        isUser
+                          ? "bg-primary text-primary-foreground ring-primary/15"
+                          : "bg-background/70 text-foreground ring-border",
+                      )}
                     >
-                      {!isUser ? (
-                        <Avatar name={meta.author ?? "Dieter"} size="sm" className="shrink-0" />
-                      ) : null}
-
-                      <div
-                        className={`max-w-[780px] rounded-2xl px-4 py-3 shadow-sm ring-1 ${
-                          isUser
-                            ? "bg-primary text-primary-foreground ring-primary/20"
-                            : "bg-content1 ring-default-200"
-                        }`}
-                      >
-                        <div className="flex items-center justify-between gap-3">
-                          <div className="text-xs opacity-70">
-                            {isUser ? "You" : meta.author ?? "Dieter"}
-                          </div>
-                          <div className="text-xs opacity-60">{m.createdAtLabel}</div>
+                      <div className="flex items-center justify-between gap-3">
+                        <div
+                          className={cn(
+                            "text-xs font-medium",
+                            isUser ? "text-primary-foreground/80" : "text-muted-foreground",
+                          )}
+                        >
+                          {author}
                         </div>
-
-                        {artefact && url ? (
-                          <div className="mt-2 grid gap-2">
-                            <div className="text-sm font-medium">📎 {artefact.originalName}</div>
-                            {isImageMime(artefact.mimeType) ? (
-                              // eslint-disable-next-line @next/next/no-img-element
-                              <img
-                                src={url}
-                                alt={artefact.originalName}
-                                className="max-h-[420px] w-auto rounded-xl border border-default-200"
-                              />
-                            ) : (
-                              <a
-                                href={url}
-                                className="text-sm underline"
-                                target="_blank"
-                                rel="noreferrer"
-                              >
-                                Download
-                              </a>
-                            )}
-                          </div>
-                        ) : (
-                          <div className="mt-2 whitespace-pre-wrap text-sm leading-relaxed">
-                            {meta.text}
-                          </div>
-                        )}
+                        <div
+                          className={cn(
+                            "text-xs",
+                            isUser ? "text-primary-foreground/70" : "text-muted-foreground",
+                          )}
+                        >
+                          {m.createdAtLabel}
+                        </div>
                       </div>
 
-                      {isUser ? (
-                        <Avatar name="G" size="sm" className="shrink-0" />
-                      ) : null}
+                      {artefact && url ? (
+                        <div className="mt-2 grid gap-2">
+                          <div className={cn("text-sm font-medium", isUser && "text-primary-foreground")}>
+                            📎 {artefact.originalName}
+                          </div>
+                          {isImageMime(artefact.mimeType) ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img
+                              src={url}
+                              alt={artefact.originalName}
+                              className="max-h-[420px] w-auto rounded-xl border"
+                            />
+                          ) : (
+                            <a
+                              href={url}
+                              className={cn(
+                                "text-sm underline",
+                                isUser ? "text-primary-foreground" : "text-foreground",
+                              )}
+                              target="_blank"
+                              rel="noreferrer"
+                            >
+                              Download
+                            </a>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="mt-2 whitespace-pre-wrap leading-relaxed">
+                          {meta.text}
+                        </div>
+                      )}
                     </div>
-                  );
-                })
-              ) : (
-                <div className="rounded-2xl border border-dashed border-default-200 p-10 text-center text-sm text-default-500">
-                  Schreib einfach los – ich antworte hier.
-                </div>
-              )}
-            </div>
-          </ScrollShadow>
 
-          {/* Composer */}
-          <form action={sendMessageAction} className="flex items-end gap-3">
-            <Textarea
-              name="content"
-              placeholder="Write a message…"
-              minRows={1}
-              maxRows={6}
-              className="flex-1"
-              variant="flat"
-            />
-            <Button color="primary" type="submit" className="h-[44px]">
-              Send
-            </Button>
-          </form>
+                    {isUser ? (
+                      <Avatar className="h-8 w-8 border bg-background">
+                        <AvatarFallback>G</AvatarFallback>
+                      </Avatar>
+                    ) : null}
+                  </div>
+                );
+              })
+            ) : (
+              <div className="rounded-2xl border border-dashed bg-background/40 p-10 text-center text-sm text-muted-foreground">
+                Schreib einfach los – ich antworte hier.
+              </div>
+            )}
+          </div>
+        </ScrollArea>
 
-          <ChatComposer threadId={activeThreadId} />
-        </CardBody>
-      </Card>
+        <Separator />
+
+        <div className="px-4 py-4">
+          <div className="mx-auto w-full max-w-3xl">
+            {/* Composer */}
+            <form action={sendMessageAction} className="flex items-end gap-3">
+              <Textarea
+                name="content"
+                placeholder="Write a message…"
+                rows={1}
+                className="min-h-[44px] flex-1 resize-none"
+              />
+              <Button type="submit" className="h-[44px]">
+                Send
+              </Button>
+            </form>
+
+            <ChatComposer threadId={activeThreadId} />
+          </div>
+        </div>
+      </section>
     </div>
   );
 }

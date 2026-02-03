@@ -25,3 +25,14 @@ export const artefacts = sqliteTable("artefacts", {
   storagePath: text("storage_path").notNull(),
   createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
 });
+
+export const outbox = sqliteTable("outbox", {
+  id: text("id").primaryKey(),
+  threadId: text("thread_id").notNull(),
+  channel: text("channel").notNull(),
+  target: text("target").notNull(),
+  text: text("text").notNull(),
+  status: text("status", { enum: ["pending", "sent"] }).notNull(),
+  createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+  sentAt: integer("sent_at", { mode: "timestamp_ms" }),
+});

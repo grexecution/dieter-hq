@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/server/db";
 import { outbox } from "@/server/db/schema";
-import { asc, eq } from "drizzle-orm";
+import { and, asc, eq } from "drizzle-orm";
 
 // Outbox Bridge v0
 // Used by OpenClaw to fetch messages composed in HQ (to send to Telegram, etc.).
@@ -14,10 +14,16 @@ export async function GET(req: NextRequest) {
     Math.min(50, Number(req.nextUrl.searchParams.get("limit") ?? 20)),
   );
 
+  const channel = req.nextUrl.searchParams.get("channel");
+
+  const where = channel
+    ? and(eq(outbox.status, "pending"), eq(outbox.channel, channel))
+    : eq(outbox.status, "pending");
+
   const pending = await db
     .select()
     .from(outbox)
-    .where(eq(outbox.status, "pending"))
+    .where(where)
     .orderBy(asc(outbox.createdAt))
     .limit(limit);
 

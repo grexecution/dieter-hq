@@ -88,14 +88,14 @@ export default async function ChatPage({
       createdAt: now,
     });
 
-    // If you chat in MAIN, enqueue for delivery via OpenClaw (Telegram, etc.).
+    // If you chat in MAIN, enqueue for Dieter HQ responder.
     if (activeThreadId === "main") {
       const { outbox } = await import("@/server/db/schema");
       await db.insert(outbox).values({
         id: crypto.randomUUID(),
         threadId: "main",
-        channel: "telegram",
-        target: "16156553",
+        channel: "hq",
+        target: "main",
         text: content,
         status: "pending",
         createdAt: now,
@@ -105,7 +105,7 @@ export default async function ChatPage({
       await logEvent({
         threadId: "main",
         type: "outbox.enqueue",
-        payload: { channel: "telegram" },
+        payload: { channel: "hq" },
       });
     }
 

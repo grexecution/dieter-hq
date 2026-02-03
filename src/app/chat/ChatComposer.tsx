@@ -57,12 +57,12 @@ export function ChatComposer({ threadId }: { threadId: string }) {
 
   return (
     <div
-      className="mt-4 rounded-xl border bg-card/60 p-3 backdrop-blur"
+      className="mt-4 rounded-xl border border-zinc-200 bg-white/50 p-3 backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/40"
       onDragOver={(e) => e.preventDefault()}
       onDrop={onDrop}
     >
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-        <div className="text-sm text-muted-foreground">
+        <div className="text-sm text-zinc-500 dark:text-zinc-400">
           Drag & drop or paste an image/file here.
         </div>
         <Button

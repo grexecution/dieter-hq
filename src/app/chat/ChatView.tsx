@@ -125,11 +125,11 @@ export function ChatView({
   return (
     <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
       {/* Sidebar */}
-      <aside className="h-[calc(100dvh-120px)] rounded-2xl border bg-card/40 p-4 shadow-sm backdrop-blur">
+      <aside className="h-[calc(100dvh-120px)] rounded-2xl border border-zinc-200/70 bg-white/60 p-4 shadow-sm backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/40">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <div className="text-sm font-semibold leading-tight">Chat</div>
-            <div className="text-xs text-muted-foreground">Dieter HQ • main</div>
+            <div className="text-xs text-zinc-500 dark:text-zinc-400">Dieter HQ • main</div>
           </div>
           <form action={logoutAction}>
             <Button size="sm" variant="secondary" type="submit">
@@ -157,19 +157,19 @@ export function ChatView({
           <form action={newThreadAction} className="hidden" aria-hidden="true" />
         </div>
 
-        <div className="mt-6 text-xs text-muted-foreground">
+        <div className="mt-6 text-xs text-zinc-500 dark:text-zinc-400">
           Tip: paste images directly into the chat.
         </div>
       </aside>
 
       {/* Main */}
-      <section className="flex h-[calc(100dvh-120px)] flex-col overflow-hidden rounded-2xl border bg-card/40 shadow-sm backdrop-blur">
+      <section className="flex h-[calc(100dvh-120px)] flex-col overflow-hidden rounded-2xl border border-zinc-200/70 bg-white/60 shadow-sm backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/40">
         <header className="flex items-center justify-between gap-4 px-4 py-3">
           <div className="min-w-0">
-            <div className="text-xs text-muted-foreground">Thread</div>
+            <div className="text-xs text-zinc-500 dark:text-zinc-400">Thread</div>
             <div className="truncate text-base font-semibold">Main</div>
           </div>
-          <div className="text-xs text-muted-foreground">{mainCount} msgs</div>
+          <div className="text-xs text-zinc-500 dark:text-zinc-400">{mainCount} msgs</div>
         </header>
 
         <Separator />
@@ -197,7 +197,7 @@ export function ChatView({
                     )}
                   >
                     {!isUser ? (
-                      <Avatar className="h-8 w-8 border bg-background">
+                      <Avatar className="h-8 w-8 border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950">
                         <AvatarFallback>{initials(author)}</AvatarFallback>
                       </Avatar>
                     ) : null}
@@ -206,15 +206,17 @@ export function ChatView({
                       className={cn(
                         "w-full max-w-[720px] rounded-2xl px-4 py-3 text-sm shadow-sm ring-1",
                         isUser
-                          ? "bg-primary text-primary-foreground ring-primary/20"
-                          : "bg-background/70 text-foreground ring-border/60",
+                          ? "bg-zinc-900 text-white ring-zinc-900/10 dark:bg-zinc-50 dark:text-zinc-900 dark:ring-zinc-50/10"
+                          : "bg-white/80 text-zinc-900 ring-zinc-200/70 dark:bg-zinc-950/60 dark:text-zinc-50 dark:ring-zinc-800",
                       )}
                     >
                       <div className="flex items-center justify-between gap-3">
                         <div
                           className={cn(
                             "text-xs font-medium",
-                            isUser ? "text-primary-foreground/80" : "text-muted-foreground",
+                            isUser
+                              ? "text-white/80 dark:text-zinc-900/70"
+                              : "text-zinc-500 dark:text-zinc-400",
                           )}
                         >
                           {author}
@@ -222,7 +224,9 @@ export function ChatView({
                         <div
                           className={cn(
                             "text-xs",
-                            isUser ? "text-primary-foreground/70" : "text-muted-foreground",
+                            isUser
+                              ? "text-white/70 dark:text-zinc-900/60"
+                              : "text-zinc-500 dark:text-zinc-400",
                           )}
                         >
                           {m.createdAtLabel}
@@ -231,7 +235,12 @@ export function ChatView({
 
                       {artefact && url ? (
                         <div className="mt-2 grid gap-2">
-                          <div className={cn("text-sm font-medium", isUser && "text-primary-foreground")}>
+                          <div
+                            className={cn(
+                              "text-sm font-medium",
+                              isUser && "text-white dark:text-zinc-900",
+                            )}
+                          >
                             📎 {artefact.originalName}
                           </div>
                           {isImageMime(artefact.mimeType) ? (
@@ -246,7 +255,9 @@ export function ChatView({
                               href={url}
                               className={cn(
                                 "text-sm underline",
-                                isUser ? "text-primary-foreground" : "text-foreground",
+                                isUser
+                                  ? "text-white dark:text-zinc-900"
+                                  : "text-zinc-900 dark:text-zinc-50",
                               )}
                               target="_blank"
                               rel="noreferrer"
@@ -271,7 +282,7 @@ export function ChatView({
                 );
               })
             ) : (
-              <div className="rounded-2xl border border-dashed bg-background/40 p-10 text-center text-sm text-muted-foreground">
+              <div className="rounded-2xl border border-dashed border-zinc-200 bg-white/40 p-10 text-center text-sm text-zinc-500 dark:border-zinc-800 dark:bg-zinc-950/30 dark:text-zinc-400">
                 Schreib einfach los – ich antworte hier.
               </div>
             )}

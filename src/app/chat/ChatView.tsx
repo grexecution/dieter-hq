@@ -105,6 +105,8 @@ export function ChatView({
   }, [liveMessages]);
 
   // Realtime: subscribe via SSE and append messages.
+  // Cloudflare / some networks can block/kill EventSource; so we also keep
+  // a low-frequency polling fallback.
   useEffect(() => {
     if (activeThreadId !== "main") return;
 
@@ -130,6 +132,44 @@ export function ChatView({
     return () => {
       es.removeEventListener("message", onMessage);
       es.close();
+    };
+  }, [activeThreadId, lastCreatedAt]);
+
+  // Fallback: poll for new messages every ~2.5s.
+  useEffect(() => {
+    if (activeThreadId !== "main") return;
+
+    let stopped = false;
+
+    const tick = async () => {
+      try {
+        const r = await fetch(
+          `/api/chat/messages?thread=${encodeURIComponent(activeThreadId)}&since=${encodeURIComponent(String(lastCreatedAt))}`,
+          { cache: "no-store" },
+        );
+        if (!r.ok) return;
+        const data = (await r.json()) as { ok: boolean; items: MessageRow[] };
+        if (!data?.ok || !Array.isArray(data.items) || stopped) return;
+        if (!data.items.length) return;
+
+        setLiveMessages((prev) => {
+          const have = new Set(prev.map((m) => m.id));
+          const next = [...prev];
+          for (const it of data.items) if (it?.id && !have.has(it.id)) next.push(it);
+          return next;
+        });
+      } catch {
+        // ignore
+      }
+    };
+
+    const t = setInterval(tick, 2500);
+    // also fire once quickly
+    void tick();
+
+    return () => {
+      stopped = true;
+      clearInterval(t);
     };
   }, [activeThreadId, lastCreatedAt]);
 

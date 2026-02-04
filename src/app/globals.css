@@ -1,5 +1,9 @@
 @import "tailwindcss";
 
+/* Uppy styles */
+@import "@uppy/core/css/style.css";
+@import "@uppy/dashboard/css/style.css";
+
 :root {
   --background: 0 0% 100%;
   --foreground: 222.2 84% 4.9%;

@@ -5,6 +5,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Mic, Square } from "lucide-react";
+import { useReactMediaRecorder } from "react-media-recorder";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
@@ -132,40 +133,24 @@ export function ChatView({
   const [draft, setDraft] = useState("");
   const [isSending, setIsSending] = useState(false);
 
-  const [isRecording, setIsRecording] = useState(false);
-  const recorderRef = useRef<MediaRecorder | null>(null);
-  const streamRef = useRef<MediaStream | null>(null);
-  const chunksRef = useRef<BlobPart[]>([]);
   const [isUploadingVoice, setIsUploadingVoice] = useState(false);
 
-  const startRecording = async () => {
-    if (isRecording || isUploadingVoice) return;
+  const { status, startRecording, stopRecording, mediaBlobUrl, clearBlobUrl } =
+    useReactMediaRecorder({ audio: true });
 
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    streamRef.current = stream;
+  const isRecording = status === "recording";
 
-    const preferredTypes = [
-      "audio/webm;codecs=opus",
-      "audio/webm",
-      "audio/ogg;codecs=opus",
-      "audio/ogg",
-    ];
-    const mimeType = preferredTypes.find((t) => MediaRecorder.isTypeSupported(t));
+  // When recording stops, upload the blob.
+  useEffect(() => {
+    if (!mediaBlobUrl) return;
 
-    const rec = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
-    recorderRef.current = rec;
-    chunksRef.current = [];
-
-    rec.ondataavailable = (e) => {
-      if (e.data && e.data.size > 0) chunksRef.current.push(e.data);
-    };
-
-    rec.onstop = async () => {
+    let cancelled = false;
+    void (async () => {
       try {
         setIsUploadingVoice(true);
-        const blob = new Blob(chunksRef.current, { type: rec.mimeType || "audio/webm" });
+        const blob = await (await fetch(mediaBlobUrl)).blob();
         const file = new File([blob], `voice-${Date.now()}.webm`, {
-          type: blob.type,
+          type: blob.type || "audio/webm",
         });
 
         const fd = new FormData();
@@ -174,27 +159,20 @@ export function ChatView({
 
         const res = await fetch("/api/upload", { method: "POST", body: fd });
         if (!res.ok) throw new Error("upload_failed");
+      } catch {
+        // ignore
       } finally {
-        setIsUploadingVoice(false);
-        chunksRef.current = [];
+        if (!cancelled) {
+          setIsUploadingVoice(false);
+          clearBlobUrl();
+        }
       }
+    })();
+
+    return () => {
+      cancelled = true;
     };
-
-    rec.start();
-    setIsRecording(true);
-  };
-
-  const stopRecording = async () => {
-    if (!isRecording) return;
-    try {
-      recorderRef.current?.stop();
-    } finally {
-      setIsRecording(false);
-      recorderRef.current = null;
-      streamRef.current?.getTracks().forEach((t) => t.stop());
-      streamRef.current = null;
-    }
-  };
+  }, [activeThreadId, clearBlobUrl, mediaBlobUrl]);
 
   return (
     <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
@@ -415,8 +393,8 @@ export function ChatView({
                 variant={isRecording ? "destructive" : "secondary"}
                 className="h-[44px] w-[44px] px-0"
                 onClick={async () => {
-                  if (isRecording) await stopRecording();
-                  else await startRecording();
+                  if (isRecording) stopRecording();
+                  else startRecording();
                 }}
                 disabled={isUploadingVoice}
                 title={isRecording ? "Stop recording" : "Record voice"}

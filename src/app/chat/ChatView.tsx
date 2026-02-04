@@ -193,7 +193,7 @@ export function ChatView({
 
       {/* Mobile HUD overlay */}
       {mobileHudOpen ? (
-        <div className="fixed inset-0 z-[60] bg-black/50 p-3 lg:hidden">
+        <div className="fixed inset-0 z-[60] bg-black/60 p-3 backdrop-blur-sm lg:hidden">
           <div className="h-full w-full overflow-hidden rounded-2xl border bg-background shadow-xl">
             <div className="flex items-center justify-between border-b px-3 py-2">
               <div className="text-sm font-semibold">OpenClaw</div>
@@ -209,7 +209,7 @@ export function ChatView({
       ) : null}
 
       {/* Main */}
-      <section className="flex h-[calc(100dvh-120px)] flex-col overflow-hidden rounded-2xl border border-zinc-200/70 bg-white/60 shadow-sm backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/40">
+      <section className="flex h-[calc(100dvh-120px)] flex-col overflow-hidden rounded-2xl border border-zinc-200/70 bg-white/60 shadow-[0_10px_35px_-15px_rgba(0,0,0,0.25)] backdrop-blur-xl dark:border-zinc-800 dark:bg-zinc-950/40">
         <header className="flex items-center justify-between gap-4 px-4 py-3">
           <div className="flex min-w-0 items-center gap-3">
             {/* Mobile HUD button */}
@@ -237,7 +237,7 @@ export function ChatView({
         <NowBar />
 
         <ScrollArea className="flex-1">
-          <div className="mx-auto flex w-full max-w-3xl flex-col gap-4 px-4 py-6">
+          <div className="mx-auto flex w-full max-w-3xl flex-col gap-4 px-4 py-8">
             {liveMessages.length ? (
               liveMessages.map((m) => {
                 const artefactId = extractArtefactIdFromContent(m.content);
@@ -268,8 +268,8 @@ export function ChatView({
                       className={cn(
                         "w-full max-w-[720px] rounded-2xl px-4 py-3 text-sm shadow-sm ring-1",
                         isUser
-                          ? "bg-zinc-900 text-white ring-zinc-900/10 dark:bg-zinc-50 dark:text-zinc-900 dark:ring-zinc-50/10"
-                          : "bg-white/80 text-zinc-900 ring-zinc-200/70 dark:bg-zinc-950/60 dark:text-zinc-50 dark:ring-zinc-800",
+                          ? "bg-gradient-to-b from-zinc-950 to-zinc-900 text-white ring-zinc-900/10 shadow-[0_10px_30px_-18px_rgba(0,0,0,0.55)] dark:from-zinc-50 dark:to-zinc-100 dark:text-zinc-900 dark:ring-zinc-50/10"
+                          : "bg-white/80 text-zinc-900 ring-zinc-200/70 shadow-[0_10px_30px_-20px_rgba(0,0,0,0.18)] dark:bg-zinc-950/60 dark:text-zinc-50 dark:ring-zinc-800",
                       )}
                     >
                       <div className="flex items-center justify-between gap-3">
@@ -356,7 +356,7 @@ export function ChatView({
 
         <Separator />
 
-        <div className="sticky bottom-0 border-t border-zinc-200/70 bg-white/80 px-4 py-4 backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/60">
+        <div className="sticky bottom-0 border-t border-zinc-200/70 bg-white/80 px-4 py-4 backdrop-blur-xl supports-[backdrop-filter]:bg-white/60 dark:border-zinc-800 dark:bg-zinc-950/60 dark:supports-[backdrop-filter]:bg-zinc-950/40">
           <div className="mx-auto w-full max-w-3xl pb-[env(safe-area-inset-bottom)]">
             {/* Composer */}
             <form
@@ -396,7 +396,7 @@ export function ChatView({
                 onChange={(e) => setDraft(e.target.value)}
                 placeholder="Write a message…"
                 rows={1}
-                className="min-h-[44px] flex-1 resize-none"
+                className="min-h-[44px] flex-1 resize-none rounded-2xl border-zinc-200/70 bg-white/70 shadow-sm backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/40"
               />
               <ChatComposer threadId={activeThreadId} disabled={isSending} />
 

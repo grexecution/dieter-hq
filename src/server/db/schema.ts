@@ -1,5 +1,6 @@
 import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
 
+// --- Chat ---
 export const messages = sqliteTable("messages", {
   id: text("id").primaryKey(),
   threadId: text("thread_id").notNull(),
@@ -16,6 +17,19 @@ export const events = sqliteTable("events", {
   createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
 });
 
+// --- Calendar MVP ---
+export const calendarEvents = sqliteTable("calendar_events", {
+  id: text("id").primaryKey(),
+  title: text("title").notNull(),
+  description: text("description"),
+  startAt: integer("start_at", { mode: "timestamp_ms" }).notNull(),
+  endAt: integer("end_at", { mode: "timestamp_ms" }).notNull(),
+  allDay: integer("all_day", { mode: "boolean" }).notNull().default(false),
+  createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+  updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
+});
+
+// --- Artefacts ---
 export const artefacts = sqliteTable("artefacts", {
   id: text("id").primaryKey(),
   threadId: text("thread_id").notNull(),
@@ -26,6 +40,7 @@ export const artefacts = sqliteTable("artefacts", {
   createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
 });
 
+// --- Outbox ---
 export const outbox = sqliteTable("outbox", {
   id: text("id").primaryKey(),
   threadId: text("thread_id").notNull(),

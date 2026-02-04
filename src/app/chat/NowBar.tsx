@@ -62,7 +62,7 @@ export function NowBar() {
   const lastError = (status?.live?.lastError ?? "").trim();
 
   return (
-    <div className="sticky top-0 z-10 border-b border-zinc-200/70 bg-white/80 px-4 py-2 text-xs backdrop-blur-xl supports-[backdrop-filter]:bg-white/60 dark:border-zinc-800 dark:bg-zinc-950/60 dark:supports-[backdrop-filter]:bg-zinc-950/40">
+    <div className="sticky top-0 z-10 border-b border-white/30 bg-white/65 px-4 py-2 text-xs shadow-sm backdrop-blur-2xl supports-[backdrop-filter]:bg-white/45 dark:border-zinc-800/60 dark:bg-zinc-950/55 dark:supports-[backdrop-filter]:bg-zinc-950/35">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 space-y-0.5">
           <div className="truncate">

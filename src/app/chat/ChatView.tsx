@@ -209,7 +209,7 @@ export function ChatView({
       ) : null}
 
       {/* Main */}
-      <section className="flex h-[calc(100dvh-120px)] flex-col overflow-hidden rounded-2xl border border-zinc-200/70 bg-white/60 shadow-[0_10px_35px_-15px_rgba(0,0,0,0.25)] backdrop-blur-xl dark:border-zinc-800 dark:bg-zinc-950/40">
+      <section className="flex h-[calc(100dvh-120px)] flex-col overflow-hidden rounded-2xl border border-white/40 bg-white/55 shadow-[0_12px_45px_-22px_rgba(0,0,0,0.35)] backdrop-blur-2xl dark:border-zinc-800/60 dark:bg-zinc-950/35">
         <header className="flex items-center justify-between gap-4 px-4 py-3">
           <div className="flex min-w-0 items-center gap-3">
             {/* Mobile HUD button */}
@@ -268,8 +268,8 @@ export function ChatView({
                       className={cn(
                         "w-full max-w-[720px] rounded-2xl px-4 py-3 text-sm shadow-sm ring-1",
                         isUser
-                          ? "bg-gradient-to-b from-zinc-950 to-zinc-900 text-white ring-zinc-900/10 shadow-[0_10px_30px_-18px_rgba(0,0,0,0.55)] dark:from-zinc-50 dark:to-zinc-100 dark:text-zinc-900 dark:ring-zinc-50/10"
-                          : "bg-white/80 text-zinc-900 ring-zinc-200/70 shadow-[0_10px_30px_-20px_rgba(0,0,0,0.18)] dark:bg-zinc-950/60 dark:text-zinc-50 dark:ring-zinc-800",
+                          ? "bg-white/20 text-white ring-white/20 shadow-[0_16px_45px_-28px_rgba(0,0,0,0.65)] backdrop-blur-2xl dark:bg-white/10 dark:ring-white/10"
+                          : "bg-white/55 text-zinc-900 ring-white/40 shadow-[0_16px_45px_-30px_rgba(0,0,0,0.20)] backdrop-blur-2xl dark:bg-zinc-950/35 dark:text-zinc-50 dark:ring-zinc-800/70",
                       )}
                     >
                       <div className="flex items-center justify-between gap-3">
@@ -356,7 +356,7 @@ export function ChatView({
 
         <Separator />
 
-        <div className="sticky bottom-0 border-t border-zinc-200/70 bg-white/80 px-4 py-4 backdrop-blur-xl supports-[backdrop-filter]:bg-white/60 dark:border-zinc-800 dark:bg-zinc-950/60 dark:supports-[backdrop-filter]:bg-zinc-950/40">
+        <div className="sticky bottom-0 border-t border-white/30 bg-white/65 px-4 py-4 backdrop-blur-2xl supports-[backdrop-filter]:bg-white/45 dark:border-zinc-800/60 dark:bg-zinc-950/55 dark:supports-[backdrop-filter]:bg-zinc-950/35">
           <div className="mx-auto w-full max-w-3xl pb-[env(safe-area-inset-bottom)]">
             {/* Composer */}
             <form
@@ -396,7 +396,7 @@ export function ChatView({
                 onChange={(e) => setDraft(e.target.value)}
                 placeholder="Write a message…"
                 rows={1}
-                className="min-h-[44px] flex-1 resize-none rounded-2xl border-zinc-200/70 bg-white/70 shadow-sm backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/40"
+                className="min-h-[44px] flex-1 resize-none rounded-2xl border-white/30 bg-white/55 shadow-[0_10px_30px_-22px_rgba(0,0,0,0.25)] backdrop-blur-2xl dark:border-zinc-800/60 dark:bg-zinc-950/30"
               />
               <ChatComposer threadId={activeThreadId} disabled={isSending} />
 

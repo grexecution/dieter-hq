@@ -14,8 +14,8 @@ export function AppShell({
   active?: "chat" | "kanban" | "calendar" | "events";
 }) {
   return (
-    <div className="min-h-dvh bg-gradient-to-br from-white via-white to-zinc-50 dark:from-zinc-950 dark:via-zinc-950 dark:to-zinc-900">
-      <header className="sticky top-0 z-50 border-b border-zinc-200/70 bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/60 dark:border-zinc-800 dark:bg-zinc-950/70 dark:supports-[backdrop-filter]:bg-zinc-950/50">
+    <div className="min-h-dvh bg-[radial-gradient(1200px_circle_at_20%_0%,rgba(59,130,246,0.12),transparent_55%),radial-gradient(900px_circle_at_80%_15%,rgba(168,85,247,0.10),transparent_60%),radial-gradient(700px_circle_at_50%_90%,rgba(34,197,94,0.08),transparent_60%),linear-gradient(to_br,rgba(255,255,255,0.9),rgba(250,250,250,1))] dark:bg-[radial-gradient(1200px_circle_at_20%_0%,rgba(59,130,246,0.10),transparent_55%),radial-gradient(900px_circle_at_80%_15%,rgba(168,85,247,0.10),transparent_60%),radial-gradient(700px_circle_at_50%_90%,rgba(34,197,94,0.08),transparent_60%),linear-gradient(to_br,rgba(9,9,11,1),rgba(24,24,27,1))]">
+      <header className="sticky top-0 z-50 border-b border-white/30 bg-white/70 shadow-sm backdrop-blur-2xl supports-[backdrop-filter]:bg-white/45 dark:border-zinc-800/60 dark:bg-zinc-950/55 dark:supports-[backdrop-filter]:bg-zinc-950/35">
         <div className="mx-auto flex h-14 w-full max-w-7xl items-center justify-between px-4">
           <Link href="/" className="font-semibold tracking-tight">
             Dieter HQ

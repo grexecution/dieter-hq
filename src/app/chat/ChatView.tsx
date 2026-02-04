@@ -2,6 +2,8 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 
+import { Menu } from "lucide-react";
+
 import dynamic from "next/dynamic";
 
 import { Button } from "@/components/ui/button";
@@ -89,6 +91,7 @@ export function ChatView({
   logoutAction: (formData: FormData) => void;
 }) {
   const [liveMessages, setLiveMessages] = useState<MessageRow[]>(threadMessages);
+  const [mobileHudOpen, setMobileHudOpen] = useState(false);
   const endRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -181,19 +184,50 @@ export function ChatView({
 
   return (
     <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
-      {/* Sidebar */}
-      <div className="lg:sticky lg:top-0">
+      {/* Sidebar (desktop) */}
+      <div className="hidden lg:block lg:sticky lg:top-0">
         <OpenClawStatusSidebar logoutAction={logoutAction} />
         {/* Keep the server action wired, but don’t expose debug UI */}
         <form action={newThreadAction} className="hidden" aria-hidden="true" />
       </div>
 
+      {/* Mobile HUD overlay */}
+      {mobileHudOpen ? (
+        <div className="fixed inset-0 z-[60] bg-black/50 p-3 lg:hidden">
+          <div className="h-full w-full overflow-hidden rounded-2xl border bg-background shadow-xl">
+            <div className="flex items-center justify-between border-b px-3 py-2">
+              <div className="text-sm font-semibold">OpenClaw</div>
+              <Button type="button" variant="ghost" onClick={() => setMobileHudOpen(false)}>
+                Close
+              </Button>
+            </div>
+            <div className="h-[calc(100%-44px)] overflow-auto">
+              <OpenClawStatusSidebar logoutAction={logoutAction} />
+            </div>
+          </div>
+        </div>
+      ) : null}
+
       {/* Main */}
       <section className="flex h-[calc(100dvh-120px)] flex-col overflow-hidden rounded-2xl border border-zinc-200/70 bg-white/60 shadow-sm backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/40">
         <header className="flex items-center justify-between gap-4 px-4 py-3">
-          <div className="min-w-0">
-            <div className="text-xs text-zinc-500 dark:text-zinc-400">Thread</div>
-            <div className="truncate text-base font-semibold">Main</div>
+          <div className="flex min-w-0 items-center gap-3">
+            {/* Mobile HUD button */}
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="h-9 w-9 lg:hidden"
+              onClick={() => setMobileHudOpen(true)}
+              title="Open status"
+            >
+              <Menu className="h-5 w-5" />
+            </Button>
+
+            <div className="min-w-0">
+              <div className="text-xs text-zinc-500 dark:text-zinc-400">Thread</div>
+              <div className="truncate text-base font-semibold">Main</div>
+            </div>
           </div>
           <div className="text-xs text-zinc-500 dark:text-zinc-400">{mainCount} msgs</div>
         </header>
@@ -322,8 +356,8 @@ export function ChatView({
 
         <Separator />
 
-        <div className="px-4 py-4">
-          <div className="mx-auto w-full max-w-3xl">
+        <div className="sticky bottom-0 border-t border-zinc-200/70 bg-white/80 px-4 py-4 backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/60">
+          <div className="mx-auto w-full max-w-3xl pb-[env(safe-area-inset-bottom)]">
             {/* Composer */}
             <form
               className="flex items-end gap-3"

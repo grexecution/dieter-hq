@@ -23,6 +23,7 @@ type TimelineItem = {
 
 type HqStatusFile = {
   current?: string;
+  why?: string;
   next?: string;
   sinceMs?: number;
   updatedAtMs?: number;
@@ -172,6 +173,7 @@ export async function GET() {
     null;
 
   const current = String(status?.current ?? "—");
+  const why = String(status?.why ?? "—");
   const next = String(status?.next ?? "—");
 
   const timeline: TimelineItem[] = (recentEvents ?? []).map((e) => {
@@ -188,6 +190,7 @@ export async function GET() {
     ok: true,
     live: {
       current,
+      why,
       next,
       sinceMs,
       updatedAtMs,

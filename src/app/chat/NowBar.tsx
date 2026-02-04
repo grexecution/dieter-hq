@@ -6,6 +6,7 @@ type Status = {
   ok: boolean;
   live: {
     current: string;
+    why?: string;
     next: string;
     updatedAtMs: number | null;
   };
@@ -49,16 +50,23 @@ export function NowBar() {
   }, []);
 
   const current = status?.live?.current ?? "—";
+  const why = status?.live?.why ?? "—";
   const next = status?.live?.next ?? "—";
   const updated = relTime(status?.live?.updatedAtMs ?? null);
 
   return (
     <div className="sticky top-0 z-10 border-b border-zinc-200/70 bg-white/90 px-4 py-2 text-xs backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/70">
-      <div className="flex items-center justify-between gap-3">
-        <div className="min-w-0">
-          <span className="font-medium">NOW:</span> <span className="truncate">{current}</span>
-          <span className="mx-2 text-zinc-400">•</span>
-          <span className="text-zinc-500 dark:text-zinc-400">NEXT: {next}</span>
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0 space-y-0.5">
+          <div className="truncate">
+            <span className="font-medium">NOW:</span> <span>{current}</span>
+          </div>
+          <div className="truncate text-zinc-500 dark:text-zinc-400">
+            <span className="font-medium text-zinc-500 dark:text-zinc-400">WHY:</span> <span>{why}</span>
+          </div>
+          <div className="truncate text-zinc-500 dark:text-zinc-400">
+            <span className="font-medium text-zinc-500 dark:text-zinc-400">NEXT:</span> <span>{next}</span>
+          </div>
         </div>
         <div className="shrink-0 text-zinc-400">{updated}</div>
       </div>

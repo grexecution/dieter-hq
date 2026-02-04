@@ -27,6 +27,8 @@ type HqStatusFile = {
   next?: string;
   sinceMs?: number;
   updatedAtMs?: number;
+  lastError?: string;
+  tunnel?: { url?: string; ok?: boolean; checkedAtMs?: number };
 };
 
 function isRecord(v: unknown): v is Record<string, unknown> {
@@ -175,6 +177,12 @@ export async function GET() {
   const current = String(status?.current ?? "—");
   const why = String(status?.why ?? "—");
   const next = String(status?.next ?? "—");
+  const lastError = String(status?.lastError ?? "");
+  const tunnelUrl = isRecord(status?.tunnel) ? String(status?.tunnel.url ?? "") : "";
+  const tunnelOk = isRecord(status?.tunnel) ? Boolean(status?.tunnel.ok) : false;
+  const tunnelCheckedAtMs = isRecord(status?.tunnel)
+    ? Number(status?.tunnel.checkedAtMs ?? 0) || null
+    : null;
 
   const timeline: TimelineItem[] = (recentEvents ?? []).map((e) => {
     const ts = new Date(e.createdAt).getTime();
@@ -194,6 +202,8 @@ export async function GET() {
       next,
       sinceMs,
       updatedAtMs,
+      lastError,
+      tunnel: { url: tunnelUrl, ok: tunnelOk, checkedAtMs: tunnelCheckedAtMs },
       statusFile: HQ_STATUS_PATH,
     },
     recent: timeline.slice(0, 10),

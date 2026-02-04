@@ -9,6 +9,8 @@ type Status = {
     why?: string;
     next: string;
     updatedAtMs: number | null;
+    lastError?: string;
+    tunnel?: { url?: string; ok?: boolean; checkedAtMs?: number | null };
   };
 };
 
@@ -53,6 +55,11 @@ export function NowBar() {
   const why = status?.live?.why ?? "—";
   const next = status?.live?.next ?? "—";
   const updated = relTime(status?.live?.updatedAtMs ?? null);
+  const tunnel = status?.live?.tunnel;
+  const tunnelOk = tunnel?.ok === true;
+  const tunnelLabel = tunnel?.url ? new URL(tunnel.url).hostname : "tunnel";
+  const tunnelChecked = relTime(tunnel?.checkedAtMs ?? null);
+  const lastError = (status?.live?.lastError ?? "").trim();
 
   return (
     <div className="sticky top-0 z-10 border-b border-zinc-200/70 bg-white/90 px-4 py-2 text-xs backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/70">
@@ -67,8 +74,20 @@ export function NowBar() {
           <div className="truncate text-zinc-500 dark:text-zinc-400">
             <span className="font-medium text-zinc-500 dark:text-zinc-400">NEXT:</span> <span>{next}</span>
           </div>
+          {lastError ? (
+            <div className="truncate text-rose-600 dark:text-rose-400">
+              <span className="font-medium">ERR:</span> <span>{lastError}</span>
+            </div>
+          ) : null}
         </div>
-        <div className="shrink-0 text-zinc-400">{updated}</div>
+
+        <div className="shrink-0 text-right text-zinc-400">
+          <div>{updated}</div>
+          <div className={tunnelOk ? "text-emerald-600 dark:text-emerald-400" : "text-amber-600 dark:text-amber-400"}>
+            {tunnelOk ? "tunnel ok" : "tunnel?"}
+          </div>
+          <div className="text-[10px] text-zinc-400">{tunnelLabel}{tunnelChecked ? ` · ${tunnelChecked}` : ""}</div>
+        </div>
       </div>
     </div>
   );

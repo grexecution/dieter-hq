@@ -37,6 +37,9 @@ yarn-error.log*
 /data/artefacts/
 /data/*.db
 
+# local build artefacts
+/artifacts/
+
 # vercel
 .vercel
 

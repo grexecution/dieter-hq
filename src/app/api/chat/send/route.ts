@@ -103,7 +103,9 @@ export async function POST(req: NextRequest) {
     });
   }
 
-  // Default: enqueue for Dieter HQ responder (legacy)
+  // Default: enqueue for Dieter HQ responder.
+  // Also add an immediate ACK assistant message so HQ always responds instantly,
+  // even if the external responder job is down.
   if (threadId === "main") {
     await db.insert(outbox).values({
       id: crypto.randomUUID(),
@@ -114,6 +116,14 @@ export async function POST(req: NextRequest) {
       status: "pending",
       createdAt: now,
       sentAt: null,
+    });
+
+    await db.insert(messages).values({
+      id: crypto.randomUUID(),
+      threadId: "main",
+      role: "assistant",
+      content: "[Dieter] ✅ Gesehen. Ich arbeite dran…",
+      createdAt: new Date(now.getTime() + 1),
     });
 
     await logEvent({

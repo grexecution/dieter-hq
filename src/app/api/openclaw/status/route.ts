@@ -2,34 +2,17 @@ import { NextResponse } from "next/server";
 import fs from "node:fs/promises";
 import path from "node:path";
 
+import { db } from "@/server/db";
+import { events } from "@/server/db/schema";
+import { desc } from "drizzle-orm";
+
 export const runtime = "nodejs";
 
 const OPENCLAW_ROOT = "/Users/dieter/.openclaw";
+const WORKSPACE_ROOT = "/Users/dieter/.openclaw/workspace";
+const HQ_STATUS_PATH = path.join(WORKSPACE_ROOT, "memory", "hq-status.json");
 
-type CronJob = {
-  id: string;
-  name: string;
-  enabled: boolean;
-  agentId?: string;
-  schedule?: unknown;
-  state?: {
-    nextRunAtMs?: number;
-    lastRunAtMs?: number;
-    lastStatus?: string;
-    lastDurationMs?: number;
-  };
-};
-
-type SessionSummary = {
-  id: string;
-  file: string;
-  lastAtMs: number;
-  lastAtIso: string;
-  lastUserText?: string;
-  isActive: boolean;
-};
-
-type TimelineKind = "user" | "assistant" | "tool" | "event";
+type TimelineKind = "event";
 
 type TimelineItem = {
   ts: number;
@@ -38,48 +21,15 @@ type TimelineItem = {
   summary: string;
 };
 
-type JsonlTextPart = { type: "text"; text: string };
-
-type JsonlToolCallPart = {
-  type: "toolCall";
-  name?: string;
-  arguments?: {
-    command?: string;
-  };
-};
-
-type JsonlMessage = {
-  role?: string;
-  content?: unknown;
-};
-
-type JsonlEvent = {
-  type?: string;
-  id?: string;
-  timestamp?: string;
-  message?: JsonlMessage;
-  toolName?: string;
+type HqStatusFile = {
+  current?: string;
+  next?: string;
+  sinceMs?: number;
+  updatedAtMs?: number;
 };
 
 function isRecord(v: unknown): v is Record<string, unknown> {
   return !!v && typeof v === "object";
-}
-
-function isTextPart(v: unknown): v is JsonlTextPart {
-  return (
-    isRecord(v) &&
-    v.type === "text" &&
-    typeof v.text === "string" &&
-    v.text.trim().length > 0
-  );
-}
-
-function isToolCallPart(v: unknown): v is JsonlToolCallPart {
-  if (!isRecord(v)) return false;
-  if (v.type !== "toolCall") return false;
-  if (v.name != null && typeof v.name !== "string") return false;
-  if (v.arguments != null && !isRecord(v.arguments)) return false;
-  return true;
 }
 
 async function safeReadJson<T>(filePath: string): Promise<T | null> {
@@ -91,237 +41,165 @@ async function safeReadJson<T>(filePath: string): Promise<T | null> {
   }
 }
 
-async function listCronJobs(): Promise<CronJob[]> {
+async function safeStatMtimeMs(filePath: string): Promise<number | null> {
+  try {
+    const st = await fs.stat(filePath);
+    return Math.floor(st.mtimeMs);
+  } catch {
+    return null;
+  }
+}
+
+function truncate(s: string, n: number): string {
+  const t = s.trim();
+  if (t.length <= n) return t;
+  return `${t.slice(0, Math.max(0, n - 1)).trimEnd()}…`;
+}
+
+function summarizeEvent(type: string, payloadJson: string): string {
+  let payload: unknown = null;
+  try {
+    payload = JSON.parse(payloadJson) as unknown;
+  } catch {
+    // ignore
+  }
+
+  switch (type) {
+    case "message.create": {
+      const role = isRecord(payload) ? String(payload.role ?? "") : "";
+      return role ? `Message sent (${role})` : "Message sent";
+    }
+    case "outbox.enqueue": {
+      const channel = isRecord(payload) ? String(payload.channel ?? "") : "";
+      return channel ? `Queued for ${channel}` : "Queued";
+    }
+    case "tool.image": {
+      const prompt = isRecord(payload) ? String(payload.prompt ?? "") : "";
+      return prompt ? `Generated image: ${truncate(prompt, 80)}` : "Generated image";
+    }
+    case "artefact.upload": {
+      const name = isRecord(payload) ? String(payload.originalName ?? "") : "";
+      return name ? `Uploaded: ${truncate(name, 60)}` : "Uploaded file";
+    }
+    case "audio.transcribe": {
+      const ok = isRecord(payload) ? Boolean(payload.ok) : false;
+      return ok ? "Transcribed audio" : "Audio transcription failed";
+    }
+    case "chat.view": {
+      return "Opened chat";
+    }
+    default: {
+      return type;
+    }
+  }
+}
+
+type CronJob = {
+  id: string;
+  enabled: boolean;
+  state?: { nextRunAtMs?: number | null };
+};
+
+async function listCronJobsSummary(): Promise<{ enabled: number; nextRunAtMs: number | null }> {
   const jobsPath = path.join(OPENCLAW_ROOT, "cron", "jobs.json");
   const data = await safeReadJson<{ jobs?: CronJob[] }>(jobsPath);
-  return Array.isArray(data?.jobs) ? data!.jobs : [];
+  const jobs = Array.isArray(data?.jobs) ? data!.jobs : [];
+
+  const enabled = jobs.filter((j) => j.enabled !== false);
+  const nextRunAtMs = enabled
+    .map((j) => (typeof j.state?.nextRunAtMs === "number" ? j.state?.nextRunAtMs : null))
+    .filter((x): x is number => typeof x === "number" && Number.isFinite(x))
+    .sort((a, b) => a - b)[0];
+
+  return { enabled: enabled.length, nextRunAtMs: nextRunAtMs ?? null };
 }
 
-function parseIsoToMs(iso: string | undefined): number {
-  if (!iso) return 0;
-  const ms = Date.parse(iso);
-  return Number.isFinite(ms) ? ms : 0;
-}
-
-async function readJsonlTail(filePath: string, maxLines = 200): Promise<JsonlEvent[]> {
-  try {
-    const raw = await fs.readFile(filePath, "utf8");
-    const lines = raw.split("\n").filter(Boolean);
-    const tail = lines.slice(Math.max(0, lines.length - maxLines));
-
-    const out: JsonlEvent[] = [];
-    for (const line of tail) {
-      try {
-        const parsed = JSON.parse(line) as unknown;
-        if (isRecord(parsed)) out.push(parsed as JsonlEvent);
-      } catch {
-        // ignore
-      }
-    }
-    return out;
-  } catch {
-    return [];
-  }
-}
-
-function extractLastUserText(events: JsonlEvent[]): string | undefined {
-  for (let i = events.length - 1; i >= 0; i--) {
-    const ev = events[i];
-    if (ev.type !== "message") continue;
-    if (ev.message?.role !== "user") continue;
-
-    const content = ev.message?.content;
-    const parts = Array.isArray(content) ? (content as unknown[]) : [];
-
-    const textParts = parts
-      .filter(isTextPart)
-      .map((p) => p.text.trim())
-      .filter(Boolean);
-
-    const text = textParts.join("\n").trim();
-    if (text) return text.slice(0, 180);
-  }
-  return undefined;
-}
-
-async function listSessions(): Promise<SessionSummary[]> {
+async function listSessionsSummary(): Promise<{ totalRecent: number; active: number }> {
   const dir = path.join(OPENCLAW_ROOT, "agents", "main", "sessions");
   let entries: string[] = [];
   try {
     entries = await fs.readdir(dir);
   } catch {
-    return [];
+    return { totalRecent: 0, active: 0 };
   }
 
   const files = entries.filter((f) => f.endsWith(".jsonl"));
+  const now = Date.now();
+
   const stats = await Promise.all(
     files.map(async (f) => {
       const fp = path.join(dir, f);
       try {
         const st = await fs.stat(fp);
-        return { f, fp, mtimeMs: st.mtimeMs };
+        return st.mtimeMs;
       } catch {
         return null;
       }
     }),
   );
 
-  const sorted = stats
-    .filter((x): x is { f: string; fp: string; mtimeMs: number } => x !== null)
-    .sort((a, b) => b.mtimeMs - a.mtimeMs)
-    .slice(0, 12);
+  const mtimes = stats.filter((x): x is number => typeof x === "number");
+  const active = mtimes.filter((ms) => now - ms < 30 * 60 * 1000).length;
 
-  const now = Date.now();
+  // Keep this number bounded so it stays stable as the directory grows.
+  const totalRecent = mtimes.filter((ms) => now - ms < 24 * 60 * 60 * 1000).length;
 
-  const out: SessionSummary[] = [];
-  for (const item of sorted) {
-    const evs = await readJsonlTail(item.fp, 250);
-    const lastEvent = evs[evs.length - 1];
-
-    const lastAtMs = parseIsoToMs(lastEvent?.timestamp) || Math.floor(item.mtimeMs);
-
-    const sessionHeader = evs.find((e) => e.type === "session");
-    const id = String(sessionHeader?.id ?? path.basename(item.f, ".jsonl"));
-
-    out.push({
-      id,
-      file: item.f,
-      lastAtMs,
-      lastAtIso: new Date(lastAtMs).toISOString(),
-      lastUserText: extractLastUserText(evs),
-      isActive: now - lastAtMs < 30 * 60 * 1000,
-    });
-  }
-
-  return out;
-}
-
-function timelineFromEvents(events: JsonlEvent[]): TimelineItem[] {
-  const items: TimelineItem[] = [];
-
-  for (const ev of events) {
-    const ts = parseIsoToMs(ev.timestamp);
-    if (!ts) continue;
-
-    if (ev.type === "message") {
-      const role = ev.message?.role;
-      const content = ev.message?.content;
-      const parts = Array.isArray(content) ? (content as unknown[]) : [];
-
-      for (const part of parts) {
-        if (!isToolCallPart(part)) continue;
-        const name = String(part.name ?? "tool");
-        const cmd = isRecord(part.arguments) && typeof part.arguments.command === "string"
-          ? String(part.arguments.command)
-          : "";
-        items.push({
-          ts,
-          iso: new Date(ts).toISOString(),
-          kind: "tool",
-          summary: `${name}${cmd ? `: ${cmd}` : ""}`.slice(0, 180),
-        });
-      }
-
-      const text = parts
-        .filter(isTextPart)
-        .map((p) => p.text.trim())
-        .filter(Boolean)
-        .join("\n")
-        .trim();
-
-      if (text && role === "user") {
-        items.push({
-          ts,
-          iso: new Date(ts).toISOString(),
-          kind: "user",
-          summary: text.slice(0, 180),
-        });
-      }
-
-      if (text && role === "assistant") {
-        items.push({
-          ts,
-          iso: new Date(ts).toISOString(),
-          kind: "assistant",
-          summary: text.slice(0, 180),
-        });
-      }
-
-      continue;
-    }
-
-    if (ev.type === "tool_result" || ev.type === "toolResult") {
-      const toolName = String(ev.toolName ?? "tool");
-      items.push({
-        ts,
-        iso: new Date(ts).toISOString(),
-        kind: "tool",
-        summary: `${toolName} result`,
-      });
-      continue;
-    }
-
-    if (typeof ev.type === "string") {
-      items.push({
-        ts,
-        iso: new Date(ts).toISOString(),
-        kind: "event",
-        summary: ev.type,
-      });
-    }
-  }
-
-  items.sort((a, b) => b.ts - a.ts);
-  return items.slice(0, 25);
+  return { totalRecent, active };
 }
 
 export async function GET() {
-  const [jobs, sessions] = await Promise.all([listCronJobs(), listSessions()]);
+  const [status, statusMtimeMs, recentEvents, cronSummary, sessionsSummary] =
+    await Promise.all([
+      safeReadJson<HqStatusFile>(HQ_STATUS_PATH),
+      safeStatMtimeMs(HQ_STATUS_PATH),
+      db
+        .select({ type: events.type, payloadJson: events.payloadJson, createdAt: events.createdAt })
+        .from(events)
+        .orderBy(desc(events.createdAt))
+        .limit(12),
+      listCronJobsSummary(),
+      listSessionsSummary(),
+    ]);
 
-  const enabledJobs = jobs.filter((j) => j.enabled !== false);
-  enabledJobs.sort((a, b) => (a.state?.nextRunAtMs ?? 0) - (b.state?.nextRunAtMs ?? 0));
+  const updatedAtMs =
+    (typeof status?.updatedAtMs === "number" ? status.updatedAtMs : null) ??
+    statusMtimeMs ??
+    null;
 
-  const mostRecentSession = sessions[0];
-  let timeline: TimelineItem[] = [];
+  const sinceMs =
+    (typeof status?.sinceMs === "number" ? status.sinceMs : null) ??
+    updatedAtMs ??
+    null;
 
-  if (mostRecentSession) {
-    const fp = path.join(
-      OPENCLAW_ROOT,
-      "agents",
-      "main",
-      "sessions",
-      mostRecentSession.file,
-    );
-    const tail = await readJsonlTail(fp, 120);
-    timeline = timelineFromEvents(tail);
-  }
+  const current = String(status?.current ?? "—");
+  const next = String(status?.next ?? "—");
 
-  const now = {
-    project: "dieter-hq",
-    task: mostRecentSession?.lastUserText ?? "—",
-    updatedAtMs: Date.now(),
-  };
+  const timeline: TimelineItem[] = (recentEvents ?? []).map((e) => {
+    const ts = new Date(e.createdAt).getTime();
+    return {
+      ts,
+      iso: new Date(ts).toISOString(),
+      kind: "event",
+      summary: summarizeEvent(String(e.type), String(e.payloadJson)),
+    };
+  });
 
   return NextResponse.json({
     ok: true,
-    now,
-    sessions,
-    cron: enabledJobs.map((j) => ({
-      id: j.id,
-      name: j.name,
-      enabled: j.enabled !== false,
-      nextRunAtMs: j.state?.nextRunAtMs ?? null,
-      lastRunAtMs: j.state?.lastRunAtMs ?? null,
-      lastStatus: j.state?.lastStatus ?? null,
-      lastDurationMs: j.state?.lastDurationMs ?? null,
-      schedule: j.schedule ?? null,
-    })),
-    timeline,
+    live: {
+      current,
+      next,
+      sinceMs,
+      updatedAtMs,
+      statusFile: HQ_STATUS_PATH,
+    },
+    recent: timeline.slice(0, 10),
+    details: {
+      sessions: sessionsSummary,
+      cron: cronSummary,
+    },
     source: {
-      adapter: "local-files",
-      cronJobsPath: "/Users/dieter/.openclaw/cron/jobs.json",
-      sessionsPath: "/Users/dieter/.openclaw/agents/main/sessions",
-      todo: "Prefer OpenClaw Gateway HTTP API when available; keep this as fallback adapter.",
+      adapter: "hq-status-file+db-events",
     },
   });
 }

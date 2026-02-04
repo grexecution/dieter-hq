@@ -9,36 +9,25 @@ import { cn } from "@/lib/utils";
 
 type StatusPayload = {
   ok: boolean;
-  now: {
-    project: string;
-    task: string;
-    updatedAtMs: number;
+  live: {
+    current: string;
+    next: string;
+    sinceMs: number | null;
+    updatedAtMs: number | null;
+    statusFile: string;
   };
-  sessions: Array<{
-    id: string;
-    lastAtMs: number;
-    lastAtIso: string;
-    lastUserText?: string;
-    isActive: boolean;
-  }>;
-  cron: Array<{
-    id: string;
-    name: string;
-    enabled: boolean;
-    nextRunAtMs: number | null;
-    lastRunAtMs: number | null;
-    lastStatus: string | null;
-    lastDurationMs: number | null;
-  }>;
-  timeline: Array<{
+  recent: Array<{
     ts: number;
     iso: string;
-    kind: "user" | "assistant" | "tool" | "event";
+    kind: "event";
     summary: string;
   }>;
+  details?: {
+    sessions?: { totalRecent: number; active: number };
+    cron?: { enabled: number; nextRunAtMs: number | null };
+  };
   source?: {
     adapter: string;
-    todo?: string;
   };
 };
 
@@ -46,14 +35,14 @@ function formatRelative(ms: number | null): string {
   if (!ms) return "—";
   const delta = Date.now() - ms;
   const s = Math.max(0, Math.round(delta / 1000));
-  if (s < 60) return `${s}s ago`;
+  if (s < 60) return `${s}s`;
   const m = Math.round(s / 60);
-  if (m < 60) return `${m}m ago`;
+  if (m < 60) return `${m}m`;
   const h = Math.round(m / 60);
-  return `${h}h ago`;
+  return `${h}h`;
 }
 
-function formatIn(ms: number | null): string {
+function formatIn(ms: number | null | undefined): string {
   if (!ms) return "—";
   const delta = ms - Date.now();
   const s = Math.round(delta / 1000);
@@ -65,16 +54,13 @@ function formatIn(ms: number | null): string {
   return `in ${h}h`;
 }
 
-function kindPill(kind: StatusPayload["timeline"][number]["kind"]) {
-  const base =
-    "inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium ring-1";
-  if (kind === "user")
-    return <span className={cn(base, "bg-sky-500/10 text-sky-700 ring-sky-500/20 dark:text-sky-300")}>user</span>;
-  if (kind === "assistant")
-    return <span className={cn(base, "bg-violet-500/10 text-violet-700 ring-violet-500/20 dark:text-violet-300")}>assistant</span>;
-  if (kind === "tool")
-    return <span className={cn(base, "bg-amber-500/10 text-amber-800 ring-amber-500/20 dark:text-amber-200")}>tool</span>;
-  return <span className={cn(base, "bg-zinc-500/10 text-zinc-700 ring-zinc-500/20 dark:text-zinc-300")}>event</span>;
+function fmtTime(ms: number | null): string {
+  if (!ms) return "—";
+  return new Intl.DateTimeFormat("de-AT", {
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: "Europe/Vienna",
+  }).format(new Date(ms));
 }
 
 export function OpenClawStatusSidebar({
@@ -110,18 +96,35 @@ export function OpenClawStatusSidebar({
     };
   }, []);
 
-  const activeCount = useMemo(() => {
-    if (!data?.sessions?.length) return 0;
-    return data.sessions.filter((s) => s.isActive).length;
-  }, [data?.sessions]);
+  const headerMeta = useMemo(() => {
+    const active = data?.details?.sessions?.active ?? 0;
+    const cronEnabled = data?.details?.cron?.enabled ?? 0;
+    return {
+      sessionsLabel: active ? `${active} active` : "idle",
+      cronLabel: cronEnabled ? `${cronEnabled} cron` : "no cron",
+      nextCronIn: formatIn(data?.details?.cron?.nextRunAtMs),
+    };
+  }, [data?.details]);
+
+  const current = data?.live?.current ?? "—";
+  const next = data?.live?.next ?? "—";
+  const sinceMs = data?.live?.sinceMs ?? null;
+  const updatedAtMs = data?.live?.updatedAtMs ?? null;
 
   return (
     <aside className="h-[calc(100dvh-120px)] rounded-2xl border border-zinc-200/70 bg-white/60 p-4 shadow-sm backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/40">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <div className="text-sm font-semibold leading-tight">OpenClaw Status</div>
+          <div className="flex items-center gap-2">
+            <div className="text-sm font-semibold leading-tight">OpenClaw Live</div>
+            <span className="relative inline-flex h-2.5 w-2.5">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-500/50" />
+              <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-500" />
+            </span>
+          </div>
           <div className="text-xs text-zinc-500 dark:text-zinc-400">
-            {activeCount ? `${activeCount} active session${activeCount === 1 ? "" : "s"}` : "idle"}
+            {headerMeta.sessionsLabel} • {headerMeta.cronLabel}
+            {headerMeta.nextCronIn !== "—" ? ` • next ${headerMeta.nextCronIn}` : ""}
             {data?.source?.adapter ? ` • ${data.source.adapter}` : ""}
           </div>
         </div>
@@ -136,149 +139,103 @@ export function OpenClawStatusSidebar({
 
       <ScrollArea className="h-[calc(100dvh-220px)] pr-3">
         <div className="space-y-6">
-          {/* Now */}
+          {/* NOW */}
           <section className="space-y-2">
             <div className="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-              Now
+              NOW
             </div>
-            <div className="rounded-xl border border-zinc-200/70 bg-white/70 p-3 text-sm dark:border-zinc-800 dark:bg-zinc-950/40">
-              <div className="flex items-center justify-between gap-2">
-                <div className="font-medium">{data?.now?.project ?? "—"}</div>
-                <div className="text-xs text-zinc-500 dark:text-zinc-400">
-                  {data?.now?.updatedAtMs ? formatRelative(data.now.updatedAtMs) : ""}
-                </div>
-              </div>
-              <div className="mt-2 text-xs leading-relaxed text-zinc-600 dark:text-zinc-300">
-                {error ? (
-                  <span className="text-rose-600 dark:text-rose-400">Failed to load: {error}</span>
-                ) : (
-                  <span className="line-clamp-6 whitespace-pre-wrap">{data?.now?.task ?? "—"}</span>
-                )}
-              </div>
-            </div>
-          </section>
 
-          {/* Sessions */}
-          <section className="space-y-2">
-            <div className="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-              Sessions
-            </div>
-            <div className="grid gap-2">
-              {(data?.sessions ?? []).slice(0, 6).map((s) => (
+            <div className="rounded-xl border border-zinc-200/70 bg-white/70 p-3 dark:border-zinc-800 dark:bg-zinc-950/40">
+              <div className="relative overflow-hidden">
                 <div
-                  key={s.id}
-                  className="rounded-xl border border-zinc-200/70 bg-white/70 p-3 text-xs dark:border-zinc-800 dark:bg-zinc-950/40"
-                >
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="font-medium">{s.id.slice(0, 8)}</div>
-                    <span
-                      className={cn(
-                        "rounded-full px-2 py-0.5 text-[11px] font-medium",
-                        s.isActive
-                          ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300"
-                          : "bg-zinc-500/10 text-zinc-700 dark:text-zinc-300",
-                      )}
-                    >
-                      {s.isActive ? "active" : "recent"}
-                    </span>
+                  className={cn(
+                    "pointer-events-none absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent",
+                    "bg-[length:200%_100%] opacity-60 dark:via-zinc-950/30",
+                    "animate-shimmer",
+                  )}
+                />
+
+                <div className="relative">
+                  <div className="text-xs text-zinc-500 dark:text-zinc-400">Working on</div>
+                  <div className="mt-1 flex items-start justify-between gap-3">
+                    <div className="min-w-0 text-base font-semibold leading-snug">
+                      <span className="text-zinc-900 dark:text-zinc-50">{current}</span>
+                    </div>
+                    <div className="shrink-0 text-right text-[11px] text-zinc-500 dark:text-zinc-400">
+                      <div>since {formatRelative(sinceMs)}</div>
+                      <div>{fmtTime(sinceMs)}</div>
+                    </div>
                   </div>
-                  <div className="mt-1 text-zinc-500 dark:text-zinc-400">
-                    last: {formatRelative(s.lastAtMs)}
+
+                  <div className="mt-2 text-xs text-zinc-600 dark:text-zinc-300">
+                    <span className="font-medium text-zinc-700 dark:text-zinc-200">Next:</span> {next}
                   </div>
-                  {s.lastUserText ? (
-                    <div className="mt-2 line-clamp-3 whitespace-pre-wrap text-zinc-700 dark:text-zinc-200">
-                      {s.lastUserText}
+
+                  <div className="mt-2 text-[11px] text-zinc-500 dark:text-zinc-400">
+                    updated {formatRelative(updatedAtMs)} ago • {fmtTime(updatedAtMs)}
+                  </div>
+
+                  {error ? (
+                    <div className="mt-2 text-xs text-rose-600 dark:text-rose-400">
+                      Failed to load: {error}
                     </div>
                   ) : null}
                 </div>
-              ))}
-
-              {!data?.sessions?.length ? (
-                <div className="rounded-xl border border-dashed border-zinc-200 bg-white/40 p-3 text-xs text-zinc-500 dark:border-zinc-800 dark:bg-zinc-950/30 dark:text-zinc-400">
-                  No sessions found.
-                </div>
-              ) : null}
+              </div>
             </div>
           </section>
 
-          {/* Cron */}
+          {/* RECENT */}
           <section className="space-y-2">
-            <div className="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-              Cronjobs
-            </div>
-            <div className="grid gap-2">
-              {(data?.cron ?? []).slice(0, 8).map((j) => (
-                <div
-                  key={j.id}
-                  className="rounded-xl border border-zinc-200/70 bg-white/70 p-3 text-xs dark:border-zinc-800 dark:bg-zinc-950/40"
-                >
+            <div className="flex items-center justify-between">
+              <div className="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                Recent
+              </div>
+              <details className="group">
+                <summary className="cursor-pointer select-none text-[11px] text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200">
+                  Details
+                </summary>
+                <div className="mt-2 rounded-lg border border-zinc-200/70 bg-white/70 p-2 text-[11px] text-zinc-600 dark:border-zinc-800 dark:bg-zinc-950/40 dark:text-zinc-300">
                   <div className="flex items-center justify-between gap-2">
-                    <div className="min-w-0 truncate font-medium">{j.name}</div>
-                    <span
-                      className={cn(
-                        "rounded-full px-2 py-0.5 text-[11px] font-medium",
-                        j.lastStatus === "ok"
-                          ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300"
-                          : j.lastStatus
-                            ? "bg-rose-500/15 text-rose-700 dark:text-rose-300"
-                            : "bg-zinc-500/10 text-zinc-700 dark:text-zinc-300",
-                      )}
-                    >
-                      {j.lastStatus ?? "—"}
-                    </span>
+                    <div>Sessions: {data?.details?.sessions?.active ?? 0} active</div>
+                    <div className="text-zinc-500 dark:text-zinc-400">
+                      (full list coming soon)
+                    </div>
                   </div>
-                  <div className="mt-1 text-zinc-500 dark:text-zinc-400">
-                    next: {formatIn(j.nextRunAtMs)}
-                  </div>
-                  <div className="mt-1 text-zinc-500 dark:text-zinc-400">
-                    last: {formatRelative(j.lastRunAtMs)}
-                    {j.lastDurationMs ? ` • ${Math.round(j.lastDurationMs / 1000)}s` : ""}
+                  <div className="mt-1">
+                    Cron: {data?.details?.cron?.enabled ?? 0} enabled • next {formatIn(data?.details?.cron?.nextRunAtMs)}
                   </div>
                 </div>
-              ))}
-              {!data?.cron?.length ? (
-                <div className="rounded-xl border border-dashed border-zinc-200 bg-white/40 p-3 text-xs text-zinc-500 dark:border-zinc-800 dark:bg-zinc-950/30 dark:text-zinc-400">
-                  No enabled cronjobs.
-                </div>
-              ) : null}
+              </details>
             </div>
-          </section>
 
-          {/* Timeline */}
-          <section className="space-y-2">
-            <div className="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-              Recent actions
-            </div>
             <div className="grid gap-2">
-              {(data?.timeline ?? []).slice(0, 12).map((t) => (
+              {(data?.recent ?? []).slice(0, 10).map((t, idx) => (
                 <div
-                  key={`${t.iso}-${t.summary}`}
-                  className="rounded-xl border border-zinc-200/70 bg-white/70 p-3 text-xs dark:border-zinc-800 dark:bg-zinc-950/40"
+                  key={`${t.iso}-${idx}`}
+                  className="relative rounded-xl border border-zinc-200/70 bg-white/70 p-3 text-xs dark:border-zinc-800 dark:bg-zinc-950/40"
                 >
-                  <div className="flex items-center justify-between gap-2">
-                    {kindPill(t.kind)}
-                    <div className="text-[11px] text-zinc-500 dark:text-zinc-400">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="h-1.5 w-1.5 rounded-full bg-zinc-400/70 dark:bg-zinc-500" />
+                        <div className="font-medium text-zinc-800 dark:text-zinc-200">{t.summary}</div>
+                      </div>
+                    </div>
+                    <div className="shrink-0 text-[11px] text-zinc-500 dark:text-zinc-400">
                       {formatRelative(t.ts)}
                     </div>
                   </div>
-                  <div className="mt-2 line-clamp-4 whitespace-pre-wrap text-zinc-700 dark:text-zinc-200">
-                    {t.summary}
-                  </div>
                 </div>
               ))}
-              {!data?.timeline?.length ? (
+
+              {!data?.recent?.length ? (
                 <div className="rounded-xl border border-dashed border-zinc-200 bg-white/40 p-3 text-xs text-zinc-500 dark:border-zinc-800 dark:bg-zinc-950/30 dark:text-zinc-400">
                   No recent actions.
                 </div>
               ) : null}
             </div>
           </section>
-
-          {data?.source?.todo ? (
-            <div className="text-[11px] leading-relaxed text-zinc-500 dark:text-zinc-400">
-              TODO: {data.source.todo}
-            </div>
-          ) : null}
         </div>
       </ScrollArea>
     </aside>

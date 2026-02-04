@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import dynamic from "next/dynamic";
@@ -13,6 +12,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 
 import { ChatComposer } from "./ChatComposer";
+import { OpenClawStatusSidebar } from "./OpenClawStatusSidebar";
 
 const VoiceRecorderButton = dynamic(
   () => import("./VoiceRecorderButton").then((m) => m.VoiceRecorderButton),
@@ -141,42 +141,11 @@ export function ChatView({
   return (
     <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
       {/* Sidebar */}
-      <aside className="h-[calc(100dvh-120px)] rounded-2xl border border-zinc-200/70 bg-white/60 p-4 shadow-sm backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/40">
-        <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0">
-            <div className="text-sm font-semibold leading-tight">Chat</div>
-            <div className="text-xs text-zinc-500 dark:text-zinc-400">Dieter HQ • main</div>
-          </div>
-          <form action={logoutAction}>
-            <Button size="sm" variant="secondary" type="submit">
-              Logout
-            </Button>
-          </form>
-        </div>
-
-        <Separator className="my-4" />
-
-        <div className="space-y-2">
-          <Button asChild variant="outline" className="h-auto w-full justify-between px-3 py-3">
-            <Link href="/chat">
-              <span className="flex flex-col items-start">
-                <span className="text-sm font-medium">Main</span>
-                <span className="text-xs text-muted-foreground">{mainCount} messages</span>
-              </span>
-              <span className="rounded-full bg-emerald-500/15 px-2 py-0.5 text-xs font-medium text-emerald-600 dark:text-emerald-400">
-                live
-              </span>
-            </Link>
-          </Button>
-
-          {/* Keep the server action wired, but don’t expose debug UI */}
-          <form action={newThreadAction} className="hidden" aria-hidden="true" />
-        </div>
-
-        <div className="mt-6 text-xs text-zinc-500 dark:text-zinc-400">
-          Tip: paste images directly into the chat.
-        </div>
-      </aside>
+      <div className="lg:sticky lg:top-0">
+        <OpenClawStatusSidebar logoutAction={logoutAction} />
+        {/* Keep the server action wired, but don’t expose debug UI */}
+        <form action={newThreadAction} className="hidden" aria-hidden="true" />
+      </div>
 
       {/* Main */}
       <section className="flex h-[calc(100dvh-120px)] flex-col overflow-hidden rounded-2xl border border-zinc-200/70 bg-white/60 shadow-sm backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/40">

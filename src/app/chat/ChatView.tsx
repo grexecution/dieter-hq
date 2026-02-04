@@ -12,6 +12,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 
 import { ChatComposer } from "./ChatComposer";
+import { NowBar } from "./NowBar";
 import { OpenClawStatusSidebar } from "./OpenClawStatusSidebar";
 
 const VoiceRecorderButton = dynamic(
@@ -199,6 +200,8 @@ export function ChatView({
 
         <Separator />
 
+        <NowBar />
+
         <ScrollArea className="flex-1">
           <div className="mx-auto flex w-full max-w-3xl flex-col gap-4 px-4 py-6">
             {liveMessages.length ? (
@@ -361,17 +364,14 @@ export function ChatView({
                 rows={1}
                 className="min-h-[44px] flex-1 resize-none"
               />
-              <VoiceRecorderButton
-                threadId={activeThreadId}
-                disabled={isSending}
-              />
+              <ChatComposer threadId={activeThreadId} disabled={isSending} />
+
+              <VoiceRecorderButton threadId={activeThreadId} disabled={isSending} />
 
               <Button type="submit" className="h-[44px]" disabled={isSending}>
                 {isSending ? "Sending…" : "Send"}
               </Button>
             </form>
-
-            <ChatComposer threadId={activeThreadId} />
           </div>
         </div>
       </section>

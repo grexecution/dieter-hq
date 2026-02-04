@@ -6,9 +6,11 @@ import Uppy from "@uppy/core";
 import Dashboard from "@uppy/dashboard";
 import XHRUpload from "@uppy/xhr-upload";
 
+import { Paperclip } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
 
-export function ChatComposer({ threadId }: { threadId: string }) {
+export function ChatComposer({ threadId, disabled }: { threadId: string; disabled?: boolean }) {
   const [open, setOpen] = useState(false);
   const modalTargetRef = useRef<HTMLDivElement | null>(null);
 
@@ -55,6 +57,37 @@ export function ChatComposer({ threadId }: { threadId: string }) {
     return () => window.removeEventListener("paste", onPaste);
   }, [uppy]);
 
+  // Global drag&drop (works anywhere, not just under the text entry)
+  useEffect(() => {
+    const onDragOver = (e: DragEvent) => {
+      if (!e.dataTransfer) return;
+      if (e.dataTransfer.types?.includes?.("Files")) {
+        e.preventDefault();
+      }
+    };
+
+    const onDrop = (e: DragEvent) => {
+      const dt = e.dataTransfer;
+      if (!dt?.files?.length) return;
+      e.preventDefault();
+
+      Array.from(dt.files).forEach((file) => {
+        uppy.addFile({
+          name: file.name,
+          type: file.type,
+          data: file,
+        });
+      });
+    };
+
+    window.addEventListener("dragover", onDragOver);
+    window.addEventListener("drop", onDrop);
+    return () => {
+      window.removeEventListener("dragover", onDragOver);
+      window.removeEventListener("drop", onDrop);
+    };
+  }, [uppy]);
+
   // Mount Dashboard plugin into our modal container when open.
   useEffect(() => {
     if (!open) return;
@@ -90,12 +123,17 @@ export function ChatComposer({ threadId }: { threadId: string }) {
   }, [uppy]);
 
   return (
-    <div className="mt-4 flex items-center justify-between gap-3 rounded-xl border border-zinc-200 bg-white/50 p-3 backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/40">
-      <div className="text-sm text-zinc-500 dark:text-zinc-400">
-        Drag & drop, paste, or attach files.
-      </div>
-      <Button type="button" variant="secondary" onClick={() => setOpen(true)}>
-        Attach
+    <>
+      {/* Small attach button (same footprint as record) */}
+      <Button
+        type="button"
+        variant="secondary"
+        className="h-[44px] w-[44px] px-0"
+        onClick={() => setOpen(true)}
+        disabled={disabled}
+        title="Attach files"
+      >
+        <Paperclip className="h-4 w-4" />
       </Button>
 
       {open ? (
@@ -107,10 +145,13 @@ export function ChatComposer({ threadId }: { threadId: string }) {
                 Close
               </Button>
             </div>
-            <div ref={modalTargetRef} />
+            <div className="text-xs text-zinc-500 dark:text-zinc-400">
+              Tipp: Drag & drop works anywhere in the chat. Paste images too.
+            </div>
+            <div className="mt-2" ref={modalTargetRef} />
           </div>
         </div>
       ) : null}
-    </div>
+    </>
   );
 }

@@ -3,9 +3,9 @@
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 
+import dynamic from "next/dynamic";
+
 import { Button } from "@/components/ui/button";
-import { Mic, Square } from "lucide-react";
-import { useReactMediaRecorder } from "react-media-recorder";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
@@ -13,6 +13,11 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 
 import { ChatComposer } from "./ChatComposer";
+
+const VoiceRecorderButton = dynamic(
+  () => import("./VoiceRecorderButton").then((m) => m.VoiceRecorderButton),
+  { ssr: false },
+);
 
 export type ThreadRow = {
   threadId: string;
@@ -132,47 +137,6 @@ export function ChatView({
 
   const [draft, setDraft] = useState("");
   const [isSending, setIsSending] = useState(false);
-
-  const [isUploadingVoice, setIsUploadingVoice] = useState(false);
-
-  const { status, startRecording, stopRecording, mediaBlobUrl, clearBlobUrl } =
-    useReactMediaRecorder({ audio: true });
-
-  const isRecording = status === "recording";
-
-  // When recording stops, upload the blob.
-  useEffect(() => {
-    if (!mediaBlobUrl) return;
-
-    let cancelled = false;
-    void (async () => {
-      try {
-        setIsUploadingVoice(true);
-        const blob = await (await fetch(mediaBlobUrl)).blob();
-        const file = new File([blob], `voice-${Date.now()}.webm`, {
-          type: blob.type || "audio/webm",
-        });
-
-        const fd = new FormData();
-        fd.set("threadId", activeThreadId);
-        fd.set("file", file);
-
-        const res = await fetch("/api/upload", { method: "POST", body: fd });
-        if (!res.ok) throw new Error("upload_failed");
-      } catch {
-        // ignore
-      } finally {
-        if (!cancelled) {
-          setIsUploadingVoice(false);
-          clearBlobUrl();
-        }
-      }
-    })();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [activeThreadId, clearBlobUrl, mediaBlobUrl]);
 
   return (
     <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
@@ -388,26 +352,13 @@ export function ChatView({
                 rows={1}
                 className="min-h-[44px] flex-1 resize-none"
               />
-              <Button
-                type="button"
-                variant={isRecording ? "destructive" : "secondary"}
-                className="h-[44px] w-[44px] px-0"
-                onClick={async () => {
-                  if (isRecording) stopRecording();
-                  else startRecording();
-                }}
-                disabled={isUploadingVoice}
-                title={isRecording ? "Stop recording" : "Record voice"}
-              >
-                {isRecording ? <Square className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
-              </Button>
+              <VoiceRecorderButton
+                threadId={activeThreadId}
+                disabled={isSending}
+              />
 
-              <Button
-                type="submit"
-                className="h-[44px]"
-                disabled={isSending || isRecording || isUploadingVoice}
-              >
-                {isSending ? "Sending…" : isUploadingVoice ? "Uploading…" : "Send"}
+              <Button type="submit" className="h-[44px]" disabled={isSending}>
+                {isSending ? "Sending…" : "Send"}
               </Button>
             </form>
 

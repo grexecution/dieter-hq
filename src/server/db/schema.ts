@@ -51,3 +51,14 @@ export const outbox = pgTable("outbox", {
   createdAt: timestamp("created_at", { mode: "date", withTimezone: true }).notNull(),
   sentAt: timestamp("sent_at", { mode: "date", withTimezone: true }),
 });
+
+// --- Chat Queue (DieterHQ <-> OpenClaw async) ---
+export const chatQueue = pgTable("chat_queue", {
+  id: text("id").primaryKey(),
+  threadId: text("thread_id").notNull(),
+  userMessage: text("user_message").notNull(),
+  assistantMessage: text("assistant_message"),
+  status: text("status", { enum: ["pending", "processing", "done", "error"] }).notNull().default("pending"),
+  createdAt: timestamp("created_at", { mode: "date", withTimezone: true }).notNull(),
+  processedAt: timestamp("processed_at", { mode: "date", withTimezone: true }),
+});

@@ -44,6 +44,16 @@ When you have a question or need input, **ask on ALL active channels** — not j
 - Don't wait for a reply on one channel before trying another
 - Quick parallel asks > slow sequential waits
 
+## 📧 RULE TWO: EMAILS = DRAFT ONLY
+
+**NEVER send emails directly. No exceptions.**
+
+1. Always create a **draft** first (`gog gmail drafts create ...`)
+2. Tell user the draft is ready
+3. Only send when user explicitly says "send it" / "abschicken" / etc.
+
+This protects against mistakes, wrong recipients, bad timing. Drafts are safe, sends are irreversible.
+
 ## First Run
 
 If `BOOTSTRAP.md` exists, that's your birth certificate. Follow it, figure out who you are, then delete it. You won't need it again.

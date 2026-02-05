@@ -1,6 +1,6 @@
 # USER.md - About Your Human
 
-- **Name:** Greg / Dieter
+- **Name:** Greg
 - **What to call them:** Greg
 - **Pronouns:** er/ihm
 - **Timezone:** Europe/Vienna (GMT+1)
@@ -12,6 +12,7 @@ Bei Rückfragen → **Webchat + Telegram parallel** fragen. Nicht warten.
 
 ## Google Accounts
 
+- **greg.wallner@gmail.com** (gmail, calendar) — **DEFAULT privat**
 - office@dergreg.com (gmail, calendar, drive)
 - g.wallner@bluemonkeys.com (gmail, calendar)
 - wallner@sqdconsulting.com (gmail, calendar)

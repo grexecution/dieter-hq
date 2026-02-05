@@ -57,43 +57,32 @@ function QuickActionCard({
   return (
     <motion.div variants={itemVariants}>
       <Link href={href} className="block">
-        <GlassCard
-          interactive
-          padding="lg"
-          className="group relative overflow-hidden"
+        <div
+          className={cn(
+            "group relative overflow-hidden rounded-2xl p-5 transition-all duration-300",
+            "bg-gradient-to-br shadow-lg hover:shadow-xl hover:scale-[1.02]",
+            gradient,
+            "ring-1 ring-white/20"
+          )}
         >
-          {/* Gradient background accent */}
-          <div
-            className={cn(
-              "absolute -right-8 -top-8 h-32 w-32 rounded-full opacity-20 blur-2xl transition-all group-hover:opacity-30",
-              gradient
-            )}
-          />
-
           <div className="relative flex items-start gap-4">
             {/* Icon */}
-            <div
-              className={cn(
-                "flex h-12 w-12 shrink-0 items-center justify-center rounded-xl transition-transform group-hover:scale-110",
-                "bg-gradient-to-br",
-                gradient
-              )}
-            >
-              <Icon className={cn("h-6 w-6", iconColor)} />
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm transition-transform group-hover:scale-110">
+              <Icon className="h-5 w-5 text-white" />
             </div>
 
             {/* Content */}
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
-                <h3 className="font-semibold tracking-tight">{label}</h3>
-                <ArrowRight className="h-4 w-4 text-foreground-tertiary opacity-0 -translate-x-2 transition-all group-hover:opacity-100 group-hover:translate-x-0" />
+                <h3 className="font-semibold tracking-tight text-white">{label}</h3>
+                <ArrowRight className="h-4 w-4 text-white/60 opacity-0 -translate-x-2 transition-all group-hover:opacity-100 group-hover:translate-x-0" />
               </div>
-              <p className="mt-1 text-sm text-foreground-secondary line-clamp-2">
+              <p className="mt-1 text-sm text-white/80 line-clamp-2">
                 {description}
               </p>
             </div>
           </div>
-        </GlassCard>
+        </div>
       </Link>
     </motion.div>
   );
@@ -120,8 +109,8 @@ function StatusCard() {
 
         <div className="relative">
           <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-500 to-teal-500 shadow-lg shadow-emerald-500/25">
-              <Activity className="h-5 w-5 text-white" />
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-emerald-500 to-teal-500 shadow-lg shadow-emerald-500/25">
+              <Activity className="h-4 w-4 text-white" />
             </div>
             <div>
               <h3 className="font-semibold tracking-tight">Agent Status</h3>
@@ -173,7 +162,7 @@ function Greeting() {
             <span className={cn("bg-gradient-to-r bg-clip-text text-transparent", gradientClass)}>
               {greeting}
             </span>{" "}
-            <span className="inline-block text-3xl md:text-4xl">{emoji}</span>
+            <span className="inline-block text-2xl align-middle">{emoji}</span>
           </h1>
           <p className="mt-2 text-foreground-secondary text-lg">
             What would you like to do today?
@@ -297,8 +286,8 @@ export function HomeView() {
                 <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-gradient-to-br from-blue-500/15 via-indigo-500/10 to-violet-500/15 blur-2xl transition-opacity group-hover:opacity-75" />
                 
                 <div className="relative flex items-center gap-3">
-                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-indigo-500 shadow-lg shadow-blue-500/20">
-                    <Clock className="h-5 w-5 text-white" />
+                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-indigo-500 shadow-lg shadow-blue-500/20">
+                    <Clock className="h-4 w-4 text-white" />
                   </div>
                   <div>
                     <h3 className="font-semibold tracking-tight">Recent</h3>
@@ -327,7 +316,7 @@ export function HomeView() {
           variants={itemVariants}
           className="mt-12 text-center text-xs text-foreground-tertiary"
         >
-          <span className="text-base">🐕</span> Dieter HQ • Your personal AI homebase
+          🐕 Dieter HQ • Your personal AI homebase
         </motion.p>
       </motion.div>
     </AppShell>

@@ -3,7 +3,7 @@ import path from "node:path";
 import fs from "node:fs/promises";
 
 import { db } from "@/server/db";
-import { artefacts, messages, outbox } from "@/server/db/schema";
+import { artefacts, messages } from "@/server/db/schema";
 import { logEvent } from "@/server/events/log";
 import { artefactRelPath, artefactsBaseDir, ensureDirForFile } from "@/server/artefacts/storage";
 import { placeholderSvg } from "@/server/tools/image";
@@ -103,33 +103,59 @@ export async function POST(req: NextRequest) {
     });
   }
 
-  // Default: enqueue for Dieter HQ responder.
-  // Also add an immediate ACK assistant message so HQ always responds instantly,
-  // even if the external responder job is down.
+  // Call OpenClaw gateway for AI response
   if (threadId === "main") {
-    await db.insert(outbox).values({
-      id: crypto.randomUUID(),
-      threadId: "main",
-      channel: "hq",
-      target: "main",
-      text: content,
-      status: "pending",
-      createdAt: now,
-      sentAt: null,
-    });
+    const GATEWAY_HTTP_URL = process.env.OPENCLAW_GATEWAY_HTTP_URL || 'http://127.0.0.1:18789';
+    const GATEWAY_TOKEN = process.env.OPENCLAW_GATEWAY_TOKEN;
+    
+    let assistantContent = '';
+    
+    try {
+      // Call OpenClaw gateway RPC
+      const response = await fetch(`${GATEWAY_HTTP_URL}/rpc`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(GATEWAY_TOKEN && { 'Authorization': `Bearer ${GATEWAY_TOKEN}` }),
+        },
+        body: JSON.stringify({
+          jsonrpc: '2.0',
+          id: crypto.randomUUID(),
+          method: 'agent.chat',
+          params: {
+            message: content,
+            sessionKey: `agent:main:dieter-hq`,
+            options: {
+              channel: 'dieter-hq',
+            },
+          },
+        }),
+      });
 
+      if (response.ok) {
+        const data = await response.json();
+        assistantContent = data.result?.content || data.result?.reply || data.result?.message || 'No response';
+      } else {
+        assistantContent = `⚠️ Gateway error (${response.status}). Is the tunnel running?`;
+      }
+    } catch (err) {
+      console.error('OpenClaw gateway error:', err);
+      assistantContent = '⚠️ Cannot reach OpenClaw gateway. Check tunnel configuration.';
+    }
+
+    // Save assistant response
     await db.insert(messages).values({
       id: crypto.randomUUID(),
       threadId: "main",
       role: "assistant",
-      content: "[Dieter] ✅ Gesehen. Ich arbeite dran…",
+      content: `[Dieter] ${assistantContent}`,
       createdAt: new Date(now.getTime() + 1),
     });
 
     await logEvent({
       threadId: "main",
-      type: "outbox.enqueue",
-      payload: { channel: "hq" },
+      type: "openclaw.response",
+      payload: { channel: "dieter-hq" },
     });
   }
 

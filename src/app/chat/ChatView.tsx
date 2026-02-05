@@ -1,16 +1,12 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-
-import { Menu } from "lucide-react";
-
 import dynamic from "next/dynamic";
+import { Menu, Send, Sparkles, User, Bot } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Separator } from "@/components/ui/separator";
-import { Textarea } from "@/components/ui/textarea";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 
 import { ChatComposer } from "./ChatComposer";
@@ -19,8 +15,12 @@ import { OpenClawStatusSidebar } from "./OpenClawStatusSidebar";
 
 const VoiceRecorderButton = dynamic(
   () => import("./VoiceRecorderButton").then((m) => m.VoiceRecorderButton),
-  { ssr: false },
+  { ssr: false }
 );
+
+// ============================================
+// Types
+// ============================================
 
 export type ThreadRow = {
   threadId: string;
@@ -37,14 +37,6 @@ export type MessageRow = {
   createdAtLabel: string;
 };
 
-function displayContent(raw: string): { author?: string; text: string } {
-  // If content starts with [Author] prefix, split it out.
-  // Avoid RegExp /s flag for older TS targets.
-  const m = raw.match(/^\[(.+?)\]\s*([\s\S]*)$/);
-  if (!m) return { text: raw };
-  return { author: m[1], text: m[2] };
-}
-
 export type ArtefactRow = {
   id: string;
   threadId: string;
@@ -53,8 +45,17 @@ export type ArtefactRow = {
   sizeBytes: number;
 };
 
+// ============================================
+// Utilities
+// ============================================
+
+function displayContent(raw: string): { author?: string; text: string } {
+  const m = raw.match(/^\[(.+?)\]\s*([\s\S]*)$/);
+  if (!m) return { text: raw };
+  return { author: m[1], text: m[2] };
+}
+
 function extractArtefactIdFromContent(content: string): string | null {
-  // Our upload message currently stores a URL like /api/artefacts/<id>
   const m = content.match(/\/api\/artefacts\/([0-9a-fA-F-]{8,})/);
   return m?.[1] ?? null;
 }
@@ -75,6 +76,227 @@ function initials(name: string): string {
     .toUpperCase();
 }
 
+// ============================================
+// Message Bubble Component
+// ============================================
+
+interface MessageBubbleProps {
+  message: MessageRow;
+  artefact: ArtefactRow | null;
+  url: string | null;
+}
+
+function MessageBubble({ message, artefact, url }: MessageBubbleProps) {
+  const isUser = message.role === "user";
+  const isSystem = message.role === "system";
+  const meta = displayContent(message.content);
+  const author = isUser ? "You" : meta.author ?? "Dieter";
+
+  // System messages (hidden or minimal)
+  if (isSystem) {
+    return (
+      <div className="mx-auto max-w-md py-2 text-center">
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-muted/50 px-3 py-1 text-xs text-muted-foreground">
+          <Sparkles className="h-3 w-3" />
+          {meta.text.slice(0, 100)}
+          {meta.text.length > 100 && "..."}
+        </span>
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className={cn(
+        "flex items-end gap-3 animate-fade-in-up",
+        isUser ? "flex-row-reverse" : "flex-row"
+      )}
+    >
+      {/* Avatar */}
+      <Avatar
+        className={cn(
+          "h-8 w-8 shrink-0 ring-2 transition-all",
+          isUser
+            ? "ring-primary/20 bg-primary/10"
+            : "ring-white/30 dark:ring-white/10 bg-background"
+        )}
+      >
+        {isUser ? (
+          <AvatarFallback className="bg-primary/10 text-primary text-xs font-medium">
+            <User className="h-4 w-4" />
+          </AvatarFallback>
+        ) : (
+          <>
+            <AvatarImage src="/dieter-avatar.png" alt={author} />
+            <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white text-xs font-medium">
+              <Bot className="h-4 w-4" />
+            </AvatarFallback>
+          </>
+        )}
+      </Avatar>
+
+      {/* Bubble */}
+      <div
+        className={cn(
+          "group relative max-w-[75%] rounded-2xl px-4 py-3 shadow-sm backdrop-blur-xl transition-all",
+          isUser
+            ? "bg-primary text-primary-foreground rounded-br-md"
+            : "glass rounded-bl-md"
+        )}
+      >
+        {/* Author & Time */}
+        <div className="mb-1 flex items-center justify-between gap-4">
+          <span
+            className={cn(
+              "text-xs font-medium",
+              isUser ? "text-primary-foreground/80" : "text-foreground-secondary"
+            )}
+          >
+            {author}
+          </span>
+          <span
+            className={cn(
+              "text-[10px] opacity-60 transition-opacity group-hover:opacity-100",
+              isUser ? "text-primary-foreground/60" : "text-muted-foreground"
+            )}
+          >
+            {message.createdAtLabel}
+          </span>
+        </div>
+
+        {/* Content */}
+        {artefact && url ? (
+          <div className="space-y-2">
+            <div className="flex items-center gap-2 text-sm font-medium">
+              <span>📎</span>
+              <span className="truncate">{artefact.originalName}</span>
+            </div>
+            {isImageMime(artefact.mimeType) ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={url}
+                alt={artefact.originalName}
+                className="max-h-[360px] w-auto rounded-xl border border-white/20 shadow-lg"
+              />
+            ) : isAudioMime(artefact.mimeType) ? (
+              <audio controls src={url} className="w-full max-w-xs" />
+            ) : (
+              <a
+                href={url}
+                className="inline-flex items-center gap-2 rounded-lg bg-white/10 px-3 py-2 text-sm hover:bg-white/20 transition-colors"
+                target="_blank"
+                rel="noreferrer"
+              >
+                Download {artefact.originalName}
+              </a>
+            )}
+          </div>
+        ) : (
+          <div className="whitespace-pre-wrap text-sm leading-relaxed">
+            {meta.text}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ============================================
+// Chat Composer Section
+// ============================================
+
+interface ComposerProps {
+  draft: string;
+  setDraft: (value: string) => void;
+  isSending: boolean;
+  onSubmit: () => void;
+  threadId: string;
+}
+
+function Composer({ draft, setDraft, isSending, onSubmit, threadId }: ComposerProps) {
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Auto-resize textarea
+  useEffect(() => {
+    const textarea = textareaRef.current;
+    if (textarea) {
+      textarea.style.height = "auto";
+      textarea.style.height = Math.min(textarea.scrollHeight, 160) + "px";
+    }
+  }, [draft]);
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      onSubmit();
+    }
+  };
+
+  return (
+    <div className="sticky bottom-0 border-t border-white/20 bg-background/80 px-4 py-4 backdrop-blur-2xl dark:border-white/5 dark:bg-background/60">
+      <div className="mx-auto w-full max-w-3xl pb-[env(safe-area-inset-bottom)]">
+        <form
+          className="flex items-end gap-3"
+          onSubmit={(e) => {
+            e.preventDefault();
+            onSubmit();
+          }}
+        >
+          {/* Text Input */}
+          <div className="relative flex-1">
+            <textarea
+              ref={textareaRef}
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder="Message Dieter..."
+              rows={1}
+              disabled={isSending}
+              className={cn(
+                "w-full resize-none rounded-2xl border-0 bg-white/60 px-4 py-3 pr-12",
+                "text-sm placeholder:text-muted-foreground",
+                "shadow-sm backdrop-blur-xl transition-all",
+                "focus:outline-none focus:ring-2 focus:ring-primary/50",
+                "disabled:opacity-50",
+                "dark:bg-white/5 dark:placeholder:text-zinc-500"
+              )}
+            />
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex items-center gap-2">
+            <ChatComposer threadId={threadId} disabled={isSending} />
+            <VoiceRecorderButton threadId={threadId} disabled={isSending} />
+            <Button
+              type="submit"
+              size="icon"
+              disabled={isSending || !draft.trim()}
+              className={cn(
+                "h-11 w-11 rounded-full transition-all",
+                draft.trim()
+                  ? "bg-primary text-primary-foreground shadow-lg hover:shadow-xl hover:scale-105"
+                  : "bg-muted text-muted-foreground"
+              )}
+            >
+              <Send className={cn("h-5 w-5", isSending && "animate-pulse")} />
+            </Button>
+          </div>
+        </form>
+
+        {/* Keyboard shortcut hint */}
+        <p className="mt-2 text-center text-[10px] text-muted-foreground/60">
+          Press <kbd className="rounded bg-muted/50 px-1">Enter</kbd> to send,{" "}
+          <kbd className="rounded bg-muted/50 px-1">Shift+Enter</kbd> for new line
+        </p>
+      </div>
+    </div>
+  );
+}
+
+// ============================================
+// Main Chat View
+// ============================================
+
 export function ChatView({
   threads,
   activeThreadId,
@@ -92,15 +314,18 @@ export function ChatView({
 }) {
   const [liveMessages, setLiveMessages] = useState<MessageRow[]>(threadMessages);
   const [mobileHudOpen, setMobileHudOpen] = useState(false);
+  const [draft, setDraft] = useState("");
+  const [isSending, setIsSending] = useState(false);
   const endRef = useRef<HTMLDivElement | null>(null);
 
+  // Sync messages from props
   useEffect(() => {
     setLiveMessages(threadMessages);
   }, [threadMessages]);
 
+  // Auto-scroll to bottom
   useEffect(() => {
-    // Always scroll to newest message (simple + predictable for HQ chat).
-    endRef.current?.scrollIntoView({ block: "end" });
+    endRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
   }, [liveMessages.length]);
 
   const lastCreatedAt = useMemo(() => {
@@ -108,14 +333,12 @@ export function ChatView({
     return last?.createdAt ?? 0;
   }, [liveMessages]);
 
-  // Realtime: subscribe via SSE and append messages.
-  // Cloudflare / some networks can block/kill EventSource; so we also keep
-  // a low-frequency polling fallback.
+  // SSE subscription for real-time messages
   useEffect(() => {
     if (activeThreadId !== "main") return;
 
     const es = new EventSource(
-      `/api/stream?thread=${encodeURIComponent(activeThreadId)}&since=${encodeURIComponent(String(lastCreatedAt))}`,
+      `/api/stream?thread=${encodeURIComponent(activeThreadId)}&since=${encodeURIComponent(String(lastCreatedAt))}`
     );
 
     const onMessage = (ev: MessageEvent) => {
@@ -127,19 +350,18 @@ export function ChatView({
           return [...prev, item];
         });
       } catch {
-        // ignore
+        // ignore parse errors
       }
     };
 
     es.addEventListener("message", onMessage);
-
     return () => {
       es.removeEventListener("message", onMessage);
       es.close();
     };
   }, [activeThreadId, lastCreatedAt]);
 
-  // Fallback: poll for new messages every ~2.5s.
+  // Polling fallback
   useEffect(() => {
     if (activeThreadId !== "main") return;
 
@@ -149,7 +371,7 @@ export function ChatView({
       try {
         const r = await fetch(
           `/api/chat/messages?thread=${encodeURIComponent(activeThreadId)}&since=${encodeURIComponent(String(lastCreatedAt))}`,
-          { cache: "no-store" },
+          { cache: "no-store" }
         );
         if (!r.ok) return;
         const data = (await r.json()) as { ok: boolean; items: MessageRow[] };
@@ -168,7 +390,6 @@ export function ChatView({
     };
 
     const t = setInterval(tick, 2500);
-    // also fire once quickly
     void tick();
 
     return () => {
@@ -177,42 +398,79 @@ export function ChatView({
     };
   }, [activeThreadId, lastCreatedAt]);
 
-  const mainCount = threads.find((t) => t.threadId === "main")?.count ?? liveMessages.length;
+  // Send message handler
+  const handleSend = async () => {
+    const content = draft.trim();
+    if (!content || isSending) return;
 
-  const [draft, setDraft] = useState("");
-  const [isSending, setIsSending] = useState(false);
+    setIsSending(true);
+    setDraft("");
+
+    try {
+      const r = await fetch("/api/chat/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ threadId: activeThreadId, content }),
+      });
+      if (!r.ok) throw new Error("send_failed");
+      const data = (await r.json()) as { ok: boolean; item: MessageRow };
+      if (data?.ok && data.item?.id) {
+        setLiveMessages((prev) => {
+          if (prev.some((m) => m.id === data.item.id)) return prev;
+          return [...prev, data.item];
+        });
+      }
+    } catch {
+      setDraft(content); // Restore on failure
+    } finally {
+      setIsSending(false);
+    }
+  };
+
+  const mainCount = threads.find((t) => t.threadId === "main")?.count ?? liveMessages.length;
 
   return (
     <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
       {/* Sidebar (desktop) */}
-      <div className="hidden lg:block lg:sticky lg:top-0">
+      <aside className="hidden lg:block lg:sticky lg:top-20 lg:h-[calc(100vh-6rem)] lg:self-start">
         <OpenClawStatusSidebar logoutAction={logoutAction} />
-        {/* Keep the server action wired, but don’t expose debug UI */}
         <form action={newThreadAction} className="hidden" aria-hidden="true" />
-      </div>
+      </aside>
 
       {/* Mobile HUD overlay */}
-      {mobileHudOpen ? (
-        <div className="fixed inset-0 z-[60] bg-black/60 p-3 backdrop-blur-sm lg:hidden">
-          <div className="h-full w-full overflow-hidden rounded-2xl border bg-background shadow-xl">
-            <div className="flex items-center justify-between border-b px-3 py-2">
-              <div className="text-sm font-semibold">OpenClaw</div>
-              <Button type="button" variant="ghost" onClick={() => setMobileHudOpen(false)}>
+      {mobileHudOpen && (
+        <div
+          className="fixed inset-0 z-[60] bg-black/50 backdrop-blur-sm lg:hidden animate-fade-in"
+          onClick={() => setMobileHudOpen(false)}
+        >
+          <div
+            className="absolute inset-y-4 left-4 w-[calc(100%-2rem)] max-w-sm overflow-hidden rounded-2xl border border-white/20 bg-background/95 shadow-2xl backdrop-blur-xl animate-slide-in-left"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
+              <span className="text-sm font-semibold">OpenClaw Status</span>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => setMobileHudOpen(false)}
+              >
                 Close
               </Button>
             </div>
-            <div className="h-[calc(100%-44px)] overflow-auto">
+            <div className="h-[calc(100%-52px)] overflow-auto">
               <OpenClawStatusSidebar logoutAction={logoutAction} />
             </div>
           </div>
         </div>
-      ) : null}
+      )}
 
-      {/* Main */}
-      <section className="flex h-[calc(100dvh-120px)] flex-col overflow-hidden rounded-2xl border border-white/40 bg-white/55 shadow-[0_12px_45px_-22px_rgba(0,0,0,0.35)] backdrop-blur-2xl dark:border-zinc-800/60 dark:bg-zinc-950/35">
-        <header className="flex items-center justify-between gap-4 px-4 py-3">
+      {/* Main Chat Area */}
+      <section className="flex h-[calc(100dvh-120px)] flex-col overflow-hidden rounded-2xl border border-white/20 bg-white/40 shadow-xl backdrop-blur-2xl dark:border-white/5 dark:bg-zinc-900/40">
+        {/* Header */}
+        <header className="flex items-center justify-between gap-4 border-b border-white/10 px-4 py-3 dark:border-white/5">
           <div className="flex min-w-0 items-center gap-3">
-            {/* Mobile HUD button */}
+            {/* Mobile menu button */}
             <Button
               type="button"
               variant="ghost"
@@ -224,21 +482,40 @@ export function ChatView({
               <Menu className="h-5 w-5" />
             </Button>
 
-            <div className="min-w-0">
-              <div className="text-xs text-zinc-500 dark:text-zinc-400">Thread</div>
-              <div className="truncate text-base font-semibold">Main</div>
+            <div className="flex items-center gap-3">
+              <div className="relative">
+                <Avatar className="h-10 w-10 ring-2 ring-primary/20">
+                  <AvatarImage src="/dieter-avatar.png" alt="Dieter" />
+                  <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white">
+                    <Bot className="h-5 w-5" />
+                  </AvatarFallback>
+                </Avatar>
+                {/* Online indicator */}
+                <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-background bg-green-500" />
+              </div>
+              <div className="min-w-0">
+                <h1 className="truncate text-base font-semibold">Dieter</h1>
+                <p className="text-xs text-muted-foreground">
+                  AI Assistant • Online
+                </p>
+              </div>
             </div>
           </div>
-          <div className="text-xs text-zinc-500 dark:text-zinc-400">{mainCount} msgs</div>
+
+          <div className="flex items-center gap-2">
+            <span className="rounded-full bg-muted/50 px-2.5 py-1 text-xs text-muted-foreground tabular-nums">
+              {mainCount} messages
+            </span>
+          </div>
         </header>
 
-        <Separator />
-
+        {/* Now Bar */}
         <NowBar />
 
+        {/* Messages */}
         <ScrollArea className="flex-1">
-          <div className="mx-auto flex w-full max-w-3xl flex-col gap-4 px-4 py-8">
-            {liveMessages.length ? (
+          <div className="mx-auto flex w-full max-w-3xl flex-col gap-4 px-4 py-6">
+            {liveMessages.length > 0 ? (
               liveMessages.map((m) => {
                 const artefactId = extractArtefactIdFromContent(m.content);
                 const artefact = artefactId ? artefactsById[artefactId] : null;
@@ -246,168 +523,41 @@ export function ChatView({
                   ? `/api/artefacts/${encodeURIComponent(artefactId)}`
                   : null;
 
-                const isUser = m.role === "user";
-                const meta = displayContent(m.content);
-                const author = isUser ? "You" : meta.author ?? "Dieter";
-
                 return (
-                  <div
+                  <MessageBubble
                     key={m.id}
-                    className={cn(
-                      "flex items-end gap-3",
-                      isUser ? "justify-end" : "justify-start",
-                    )}
-                  >
-                    {!isUser ? (
-                      <Avatar className="h-8 w-8 border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950">
-                        <AvatarFallback>{initials(author)}</AvatarFallback>
-                      </Avatar>
-                    ) : null}
-
-                    <div
-                      className={cn(
-                        "w-full max-w-[720px] rounded-2xl px-4 py-3 text-sm shadow-sm ring-1",
-                        isUser
-                          ? "bg-white/20 text-white ring-white/20 shadow-[0_16px_45px_-28px_rgba(0,0,0,0.65)] backdrop-blur-2xl dark:bg-white/10 dark:ring-white/10"
-                          : "bg-white/55 text-zinc-900 ring-white/40 shadow-[0_16px_45px_-30px_rgba(0,0,0,0.20)] backdrop-blur-2xl dark:bg-zinc-950/35 dark:text-zinc-50 dark:ring-zinc-800/70",
-                      )}
-                    >
-                      <div className="flex items-center justify-between gap-3">
-                        <div
-                          className={cn(
-                            "text-xs font-medium",
-                            isUser
-                              ? "text-white/80 dark:text-zinc-900/70"
-                              : "text-zinc-500 dark:text-zinc-400",
-                          )}
-                        >
-                          {author}
-                        </div>
-                        <div
-                          className={cn(
-                            "text-xs",
-                            isUser
-                              ? "text-white/70 dark:text-zinc-900/60"
-                              : "text-zinc-500 dark:text-zinc-400",
-                          )}
-                        >
-                          {m.createdAtLabel}
-                        </div>
-                      </div>
-
-                      {artefact && url ? (
-                        <div className="mt-2 grid gap-2">
-                          <div
-                            className={cn(
-                              "text-sm font-medium",
-                              isUser && "text-white dark:text-zinc-900",
-                            )}
-                          >
-                            📎 {artefact.originalName}
-                          </div>
-                          {isImageMime(artefact.mimeType) ? (
-                            // eslint-disable-next-line @next/next/no-img-element
-                            <img
-                              src={url}
-                              alt={artefact.originalName}
-                              className="max-h-[420px] w-auto rounded-xl border"
-                            />
-                          ) : isAudioMime(artefact.mimeType) ? (
-                            <audio controls src={url} className="w-full" />
-                          ) : (
-                            <a
-                              href={url}
-                              className={cn(
-                                "text-sm underline",
-                                isUser
-                                  ? "text-white dark:text-zinc-900"
-                                  : "text-zinc-900 dark:text-zinc-50",
-                              )}
-                              target="_blank"
-                              rel="noreferrer"
-                            >
-                              Download
-                            </a>
-                          )}
-                        </div>
-                      ) : (
-                        <div className="mt-2 whitespace-pre-wrap leading-relaxed">
-                          {meta.text}
-                        </div>
-                      )}
-                    </div>
-
-                    {isUser ? (
-                      <Avatar className="h-8 w-8 border bg-background">
-                        <AvatarFallback>G</AvatarFallback>
-                      </Avatar>
-                    ) : null}
-                  </div>
+                    message={m}
+                    artefact={artefact}
+                    url={url}
+                  />
                 );
               })
             ) : (
-              <div className="rounded-2xl border border-dashed border-zinc-200 bg-white/40 p-10 text-center text-sm text-zinc-500 dark:border-zinc-800 dark:bg-zinc-950/30 dark:text-zinc-400">
-                Schreib einfach los – ich antworte hier.
+              <div className="flex flex-col items-center justify-center py-20 text-center">
+                <div className="mb-4 rounded-full bg-gradient-to-br from-blue-500/20 to-purple-600/20 p-6">
+                  <Bot className="h-12 w-12 text-primary" />
+                </div>
+                <h2 className="mb-2 text-lg font-semibold">
+                  Hey, I'm Dieter! 🐶
+                </h2>
+                <p className="max-w-sm text-sm text-muted-foreground">
+                  Your personal AI assistant. Ask me anything, and I'll do my
+                  best to help. Start typing below!
+                </p>
               </div>
             )}
             <div ref={endRef} />
           </div>
         </ScrollArea>
 
-        <Separator />
-
-        <div className="sticky bottom-0 border-t border-white/30 bg-white/65 px-4 py-4 backdrop-blur-2xl supports-[backdrop-filter]:bg-white/45 dark:border-zinc-800/60 dark:bg-zinc-950/55 dark:supports-[backdrop-filter]:bg-zinc-950/35">
-          <div className="mx-auto w-full max-w-3xl pb-[env(safe-area-inset-bottom)]">
-            {/* Composer */}
-            <form
-              className="flex items-end gap-3"
-              onSubmit={async (e) => {
-                e.preventDefault();
-                const content = draft.trim();
-                if (!content || isSending) return;
-
-                setIsSending(true);
-                setDraft("");
-
-                try {
-                  const r = await fetch("/api/chat/send", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ threadId: activeThreadId, content }),
-                  });
-                  if (!r.ok) throw new Error("send_failed");
-                  const data = (await r.json()) as { ok: boolean; item: MessageRow };
-                  if (data?.ok && data.item?.id) {
-                    setLiveMessages((prev) => {
-                      if (prev.some((m) => m.id === data.item.id)) return prev;
-                      return [...prev, data.item];
-                    });
-                  }
-                } catch {
-                  // restore draft on failure
-                  setDraft(content);
-                } finally {
-                  setIsSending(false);
-                }
-              }}
-            >
-              <Textarea
-                value={draft}
-                onChange={(e) => setDraft(e.target.value)}
-                placeholder="Write a message…"
-                rows={1}
-                className="min-h-[44px] flex-1 resize-none rounded-2xl border-white/30 bg-white/55 shadow-[0_10px_30px_-22px_rgba(0,0,0,0.25)] backdrop-blur-2xl dark:border-zinc-800/60 dark:bg-zinc-950/30"
-              />
-              <ChatComposer threadId={activeThreadId} disabled={isSending} />
-
-              <VoiceRecorderButton threadId={activeThreadId} disabled={isSending} />
-
-              <Button type="submit" className="h-[44px]" disabled={isSending}>
-                {isSending ? "Sending…" : "Send"}
-              </Button>
-            </form>
-          </div>
-        </div>
+        {/* Composer */}
+        <Composer
+          draft={draft}
+          setDraft={setDraft}
+          isSending={isSending}
+          onSubmit={handleSend}
+          threadId={activeThreadId}
+        />
       </section>
     </div>
   );

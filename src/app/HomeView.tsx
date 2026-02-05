@@ -103,14 +103,25 @@ function QuickActionCard({
 function StatusCard() {
   return (
     <motion.div variants={itemVariants}>
-      <GlassCard variant="medium" padding="lg" className="relative overflow-hidden">
-        {/* Animated gradient */}
-        <div className="absolute -right-12 -top-12 h-40 w-40 rounded-full bg-gradient-to-br from-green-500/20 to-emerald-500/20 blur-3xl" />
+      <GlassCard variant="medium" padding="lg" className="relative overflow-hidden group">
+        {/* Animated gradient background */}
+        <motion.div 
+          className="absolute -right-12 -top-12 h-40 w-40 rounded-full bg-gradient-to-br from-emerald-400/30 via-green-500/20 to-teal-500/30 blur-3xl"
+          animate={{ 
+            scale: [1, 1.1, 1],
+            opacity: [0.5, 0.7, 0.5]
+          }}
+          transition={{ 
+            duration: 4,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }}
+        />
 
         <div className="relative">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-green-500/10">
-              <Activity className="h-5 w-5 text-green-500" />
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-500 to-teal-500 shadow-lg shadow-emerald-500/25">
+              <Activity className="h-5 w-5 text-white" />
             </div>
             <div>
               <h3 className="font-semibold tracking-tight">Agent Status</h3>
@@ -120,11 +131,14 @@ function StatusCard() {
 
           <div className="mt-4 flex items-center gap-4 text-sm">
             <div className="flex items-center gap-2">
-              <span className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
+              <span className="relative flex h-2.5 w-2.5">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+                <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-500" />
+              </span>
               <span className="text-foreground-secondary">Online</span>
             </div>
             <div className="flex items-center gap-2">
-              <CheckCircle2 className="h-4 w-4 text-green-500" />
+              <CheckCircle2 className="h-4 w-4 text-emerald-500" />
               <span className="text-foreground-secondary">Ready</span>
             </div>
           </div>
@@ -139,13 +153,16 @@ function Greeting() {
   const hour = new Date().getHours();
   let greeting = "Good evening";
   let emoji = "🌙";
+  let gradientClass = "from-indigo-500 via-purple-500 to-pink-500";
 
   if (hour < 12) {
     greeting = "Good morning";
     emoji = "☀️";
+    gradientClass = "from-amber-500 via-orange-500 to-rose-500";
   } else if (hour < 17) {
     greeting = "Good afternoon";
     emoji = "🌤";
+    gradientClass = "from-sky-500 via-blue-500 to-indigo-500";
   }
 
   return (
@@ -153,18 +170,30 @@ function Greeting() {
       <div className="flex items-start justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight md:text-4xl">
-            {greeting} {emoji}
+            <span className={cn("bg-gradient-to-r bg-clip-text text-transparent", gradientClass)}>
+              {greeting}
+            </span>{" "}
+            <span className="inline-block text-3xl md:text-4xl">{emoji}</span>
           </h1>
           <p className="mt-2 text-foreground-secondary text-lg">
             What would you like to do today?
           </p>
         </div>
-        <div className="hidden md:block">
-          <div className="flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1.5 text-sm font-medium text-primary">
+        <motion.div 
+          className="hidden md:block"
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ delay: 0.3 }}
+        >
+          <div className="flex items-center gap-2 rounded-full bg-gradient-to-r from-emerald-500/20 to-teal-500/20 px-4 py-2 text-sm font-medium text-emerald-600 dark:text-emerald-400 ring-1 ring-emerald-500/30">
+            <span className="relative flex h-2 w-2">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+            </span>
             <Sparkles className="h-4 w-4" />
             <span>Dieter is ready</span>
           </div>
-        </div>
+        </motion.div>
       </div>
     </motion.div>
   );
@@ -177,7 +206,7 @@ const QUICK_ACTIONS: QuickActionProps[] = [
     icon: MessageCircle,
     label: "Chat with Dieter",
     description: "Start a conversation, ask questions, or get help with anything",
-    gradient: "from-blue-500 to-blue-600",
+    gradient: "from-blue-500 via-indigo-500 to-violet-500",
     iconColor: "text-white",
   },
   {
@@ -185,7 +214,7 @@ const QUICK_ACTIONS: QuickActionProps[] = [
     icon: Calendar,
     label: "Calendar",
     description: "View your schedule and upcoming events",
-    gradient: "from-purple-500 to-purple-600",
+    gradient: "from-fuchsia-500 via-purple-500 to-indigo-500",
     iconColor: "text-white",
   },
   {
@@ -193,7 +222,7 @@ const QUICK_ACTIONS: QuickActionProps[] = [
     icon: LayoutGrid,
     label: "Tasks",
     description: "Manage your tasks and projects",
-    gradient: "from-amber-500 to-orange-500",
+    gradient: "from-orange-500 via-amber-500 to-yellow-500",
     iconColor: "text-white",
   },
 ];
@@ -201,20 +230,26 @@ const QUICK_ACTIONS: QuickActionProps[] = [
 // Shortcut Pills
 function ShortcutPills() {
   const shortcuts = [
-    { label: "New chat", icon: MessageCircle, href: "/chat" },
-    { label: "Today", icon: Clock, href: "/calendar" },
-    { label: "Quick note", icon: Zap, href: "/chat" },
+    { label: "New chat", icon: MessageCircle, href: "/chat", color: "text-blue-500", bg: "hover:bg-blue-500/10" },
+    { label: "Today", icon: Clock, href: "/calendar", color: "text-purple-500", bg: "hover:bg-purple-500/10" },
+    { label: "Quick note", icon: Zap, href: "/chat", color: "text-amber-500", bg: "hover:bg-amber-500/10" },
   ];
 
   return (
     <motion.div variants={itemVariants} className="flex flex-wrap gap-2">
-      {shortcuts.map((s) => (
-        <Link key={s.label} href={s.href}>
-          <GlassButton variant="glass" size="sm" className="gap-2">
-            <s.icon className="h-4 w-4" />
-            {s.label}
-          </GlassButton>
-        </Link>
+      {shortcuts.map((s, i) => (
+        <motion.div
+          key={s.label}
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+        >
+          <Link href={s.href}>
+            <GlassButton variant="glass" size="sm" className={cn("gap-2 transition-colors", s.bg)}>
+              <s.icon className={cn("h-4 w-4", s.color)} />
+              {s.label}
+            </GlassButton>
+          </Link>
+        </motion.div>
       ))}
     </motion.div>
   );
@@ -257,10 +292,13 @@ export function HomeView() {
           <div className="grid gap-4 md:grid-cols-2">
             <StatusCard />
             <motion.div variants={itemVariants}>
-              <GlassCard variant="subtle" padding="lg">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-500/10">
-                    <Clock className="h-5 w-5 text-blue-500" />
+              <GlassCard variant="subtle" padding="lg" className="relative overflow-hidden group">
+                {/* Subtle gradient accent */}
+                <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-gradient-to-br from-blue-500/15 via-indigo-500/10 to-violet-500/15 blur-2xl transition-opacity group-hover:opacity-75" />
+                
+                <div className="relative flex items-center gap-3">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-indigo-500 shadow-lg shadow-blue-500/20">
+                    <Clock className="h-5 w-5 text-white" />
                   </div>
                   <div>
                     <h3 className="font-semibold tracking-tight">Recent</h3>
@@ -269,10 +307,10 @@ export function HomeView() {
                     </p>
                   </div>
                 </div>
-                <div className="mt-4">
+                <div className="relative mt-4">
                   <Link
                     href="/chat"
-                    className="flex items-center gap-2 text-sm text-primary hover:underline"
+                    className="inline-flex items-center gap-2 text-sm font-medium text-blue-600 dark:text-blue-400 transition-all hover:gap-3"
                   >
                     <MessageCircle className="h-4 w-4" />
                     Open last conversation
@@ -289,7 +327,7 @@ export function HomeView() {
           variants={itemVariants}
           className="mt-12 text-center text-xs text-foreground-tertiary"
         >
-          🐕 Dieter HQ • Your personal AI homebase
+          <span className="text-base">🐕</span> Dieter HQ • Your personal AI homebase
         </motion.p>
       </motion.div>
     </AppShell>

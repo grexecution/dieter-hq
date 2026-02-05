@@ -13,28 +13,28 @@ export const CHAT_TABS: ChatTab[] = [
     id: "life",
     name: "Life", 
     icon: MessageCircle,
-    emoji: "💬",
+    emoji: "🌟",
     description: "Personal conversations & general topics"
   },
   {
     id: "sport",
     name: "Sport",
     icon: Dumbbell,
-    emoji: "🏃",
+    emoji: "💪",
     description: "Training, fitness & health discussions"
   },
   {
     id: "work", 
     name: "Work",
     icon: Briefcase,
-    emoji: "💼",
+    emoji: "🚀",
     description: "Business, projects & professional topics"
   },
   {
     id: "dev",
     name: "Dev",
     icon: Code,
-    emoji: "🔧", 
+    emoji: "⚡",
     description: "Development, coding & tech support"
   }
 ];

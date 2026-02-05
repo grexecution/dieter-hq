@@ -91,12 +91,21 @@ interface TabNavigationProps {
 }
 
 function TabNavigation({ activeTab, onTabChange, threadCounts }: TabNavigationProps) {
+  // Per-tab accent colors for vibrancy
+  const tabColors: Record<string, { text: string; bg: string; badge: string }> = {
+    life: { text: "text-blue-600 dark:text-blue-400", bg: "bg-blue-500/15", badge: "bg-blue-500/20 text-blue-600 dark:text-blue-400" },
+    sport: { text: "text-emerald-600 dark:text-emerald-400", bg: "bg-emerald-500/15", badge: "bg-emerald-500/20 text-emerald-600 dark:text-emerald-400" },
+    work: { text: "text-amber-600 dark:text-amber-400", bg: "bg-amber-500/15", badge: "bg-amber-500/20 text-amber-600 dark:text-amber-400" },
+    dev: { text: "text-violet-600 dark:text-violet-400", bg: "bg-violet-500/15", badge: "bg-violet-500/20 text-violet-600 dark:text-violet-400" },
+  };
+
   return (
     <div className="border-b border-white/10 bg-white/30 dark:border-white/5 dark:bg-zinc-900/30">
       <div className="mx-auto flex max-w-3xl items-center gap-0.5 overflow-x-auto px-2 py-2 scrollbar-hide">
         {CHAT_TABS.map((tab) => {
           const isActive = activeTab === tab.id;
           const messageCount = threadCounts[tab.id] || 0;
+          const colors = tabColors[tab.id] || { text: "text-primary", bg: "bg-primary/10", badge: "bg-primary/20 text-primary" };
           
           return (
             <motion.button
@@ -106,7 +115,7 @@ function TabNavigation({ activeTab, onTabChange, threadCounts }: TabNavigationPr
                 "relative flex min-w-[70px] flex-1 flex-col items-center justify-center gap-1 rounded-xl px-3 py-2 text-xs font-medium transition-all",
                 "focus:outline-none",
                 isActive
-                  ? "text-primary"
+                  ? colors.text
                   : "text-muted-foreground hover:text-foreground"
               )}
               whileTap={{ scale: 0.95 }}
@@ -115,19 +124,22 @@ function TabNavigation({ activeTab, onTabChange, threadCounts }: TabNavigationPr
               {/* Background */}
               {isActive && (
                 <motion.div
-                  className="absolute inset-0 rounded-xl bg-primary/10 dark:bg-primary/15"
+                  className={cn("absolute inset-0 rounded-xl", colors.bg)}
                   layoutId="activeTabBg"
                   transition={{ type: "spring", bounce: 0.2, duration: 0.5 }}
                 />
               )}
               
               {/* Content */}
-              <span className="relative z-10 text-lg">{tab.emoji}</span>
+              <span className="relative z-10 text-base">{tab.emoji}</span>
               <span className="relative z-10 truncate text-[11px]">{tab.name}</span>
               
               {/* Badge */}
               {messageCount > 0 && !isActive && (
-                <span className="absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary/20 px-1 text-[9px] font-semibold text-primary">
+                <span className={cn(
+                  "absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[9px] font-semibold",
+                  colors.badge
+                )}>
                   {messageCount > 99 ? "99" : messageCount}
                 </span>
               )}
@@ -159,8 +171,8 @@ function MessageBubble({ message, artefact, url }: MessageBubbleProps) {
   if (isSystem) {
     return (
       <div className="mx-auto max-w-md py-2 text-center">
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-muted/50 px-3 py-1 text-xs text-muted-foreground">
-          <Sparkles className="h-3 w-3" />
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-violet-500/10 via-purple-500/10 to-fuchsia-500/10 px-3 py-1.5 text-xs text-muted-foreground ring-1 ring-purple-500/20">
+          <Sparkles className="h-3.5 w-3.5 text-purple-500" />
           {meta.text.slice(0, 100)}
           {meta.text.length > 100 && "..."}
         </span>
@@ -234,7 +246,7 @@ function MessageBubble({ message, artefact, url }: MessageBubbleProps) {
         {artefact && url ? (
           <div className="space-y-2">
             <div className="flex items-center gap-2 text-sm font-medium">
-              <span>📎</span>
+              <span className="text-base">📎</span>
               <span className="truncate">{artefact.originalName}</span>
             </div>
             {isImageMime(artefact.mimeType) ? (
@@ -325,12 +337,32 @@ function ChatContent({ activeTab, messages, artefactsById }: ChatContentProps) {
               transition={{ duration: 0.3 }}
               className="flex flex-col items-center justify-center py-20 text-center"
             >
-              <div className="mb-4 rounded-full bg-gradient-to-br from-blue-500/20 to-purple-600/20 p-6">
-                {currentTab && <currentTab.icon className="h-12 w-12 text-primary" />}
-              </div>
-              <h2 className="mb-2 text-lg font-semibold">
-                {currentTab?.emoji} {currentTab?.name} Chat
-              </h2>
+              {/* Per-tab gradient colors */}
+              {(() => {
+                const gradients: Record<string, string> = {
+                  life: "from-blue-500 via-indigo-500 to-violet-500",
+                  sport: "from-emerald-500 via-green-500 to-teal-500",
+                  work: "from-amber-500 via-orange-500 to-rose-500",
+                  dev: "from-violet-500 via-purple-500 to-fuchsia-500",
+                };
+                const gradient = gradients[activeTab] || "from-blue-500 to-purple-600";
+                
+                return (
+                  <>
+                    <motion.div 
+                      className={cn("mb-4 rounded-2xl bg-gradient-to-br p-5 shadow-lg", gradient)}
+                      initial={{ scale: 0.8, rotate: -10 }}
+                      animate={{ scale: 1, rotate: 0 }}
+                      transition={{ type: "spring", bounce: 0.4 }}
+                    >
+                      {currentTab && <currentTab.icon className="h-10 w-10 text-white" />}
+                    </motion.div>
+                    <h2 className="mb-2 text-lg font-semibold">
+                      <span className="text-xl">{currentTab?.emoji}</span> {currentTab?.name} Chat
+                    </h2>
+                  </>
+                );
+              })()}
               <p className="max-w-sm text-sm text-muted-foreground mb-2">
                 {currentTab?.description}
               </p>

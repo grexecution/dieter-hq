@@ -38,16 +38,26 @@ function DesktopHeader({ active }: { active?: string }) {
           {/* Logo */}
           <Link
             href="/"
-            className="flex items-center gap-2 font-semibold tracking-tight transition-opacity hover:opacity-80"
+            className="flex items-center gap-2 font-semibold tracking-tight transition-all hover:scale-105"
           >
-            <span className="text-xl">🐕</span>
-            <span className="text-sm">Dieter HQ</span>
+            <span className="text-lg">🐕</span>
+            <span className="bg-gradient-to-r from-blue-600 via-indigo-500 to-violet-500 bg-clip-text text-sm font-bold text-transparent dark:from-blue-400 dark:via-indigo-400 dark:to-violet-400">
+              Dieter HQ
+            </span>
           </Link>
 
           {/* Nav Links */}
           <div className="flex items-center gap-1">
             {NAV_ITEMS.slice(1).map((item) => {
               const isActive = active === item.id;
+              // Per-item accent colors for more personality
+              const accentColors: Record<string, { text: string; bg: string; shadow: string }> = {
+                chat: { text: "text-blue-600 dark:text-blue-400", bg: "bg-blue-500/15", shadow: "shadow-blue-500/10" },
+                calendar: { text: "text-purple-600 dark:text-purple-400", bg: "bg-purple-500/15", shadow: "shadow-purple-500/10" },
+                kanban: { text: "text-amber-600 dark:text-amber-400", bg: "bg-amber-500/15", shadow: "shadow-amber-500/10" },
+              };
+              const accent = accentColors[item.id] || { text: "text-primary", bg: "bg-primary/10", shadow: "" };
+              
               return (
                 <Link
                   key={item.id}
@@ -55,7 +65,7 @@ function DesktopHeader({ active }: { active?: string }) {
                   className={cn(
                     "relative flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-medium transition-all hover-press",
                     isActive
-                      ? "text-primary"
+                      ? accent.text
                       : "text-foreground-secondary hover:text-foreground"
                   )}
                 >
@@ -64,7 +74,7 @@ function DesktopHeader({ active }: { active?: string }) {
                   {isActive && (
                     <motion.div
                       layoutId="desktop-nav-indicator"
-                      className="absolute inset-0 rounded-xl bg-primary/10"
+                      className={cn("absolute inset-0 rounded-xl shadow-sm", accent.bg, accent.shadow)}
                       transition={{ type: "spring", bounce: 0.2, duration: 0.5 }}
                     />
                   )}
@@ -85,6 +95,14 @@ function DesktopHeader({ active }: { active?: string }) {
 
 // Mobile Bottom Tab Bar
 function MobileTabBar({ active }: { active?: string }) {
+  // Per-item accent colors
+  const accentColors: Record<string, { text: string; bg: string }> = {
+    home: { text: "text-emerald-600 dark:text-emerald-400", bg: "bg-emerald-500/15" },
+    chat: { text: "text-blue-600 dark:text-blue-400", bg: "bg-blue-500/15" },
+    calendar: { text: "text-purple-600 dark:text-purple-400", bg: "bg-purple-500/15" },
+    kanban: { text: "text-amber-600 dark:text-amber-400", bg: "bg-amber-500/15" },
+  };
+
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 md:hidden">
       <div className="glass-medium border-t border-white/10 pb-safe dark:border-white/5">
@@ -92,6 +110,8 @@ function MobileTabBar({ active }: { active?: string }) {
           {NAV_ITEMS.map((item) => {
             const isActive =
               active === item.id || (item.id === "home" && !active);
+            const accent = accentColors[item.id] || { text: "text-primary", bg: "bg-primary/10" };
+            
             return (
               <Link
                 key={item.id}
@@ -99,7 +119,7 @@ function MobileTabBar({ active }: { active?: string }) {
                 className={cn(
                   "relative flex min-w-[64px] flex-col items-center gap-1 rounded-xl px-3 py-2 transition-all hover-press",
                   isActive
-                    ? "text-primary"
+                    ? accent.text
                     : "text-foreground-tertiary hover:text-foreground-secondary"
                 )}
               >
@@ -110,7 +130,7 @@ function MobileTabBar({ active }: { active?: string }) {
                 >
                   <item.icon
                     className={cn(
-                      "h-6 w-6 transition-all",
+                      "h-5 w-5 transition-all",
                       isActive && "scale-110"
                     )}
                     strokeWidth={isActive ? 2.5 : 2}
@@ -127,7 +147,7 @@ function MobileTabBar({ active }: { active?: string }) {
                 {isActive && (
                   <motion.div
                     layoutId="mobile-tab-indicator"
-                    className="absolute inset-0 rounded-xl bg-primary/10"
+                    className={cn("absolute inset-0 rounded-xl", accent.bg)}
                     transition={{ type: "spring", bounce: 0.25, duration: 0.5 }}
                   />
                 )}

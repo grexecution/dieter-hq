@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import path from "node:path";
 import fs from "node:fs/promises";
 
@@ -31,13 +31,21 @@ export async function POST(req: NextRequest) {
   try {
     body = (await req.json()) as Payload;
   } catch {
-    return NextResponse.json({ ok: false, error: "invalid_json" }, { status: 400 });
+    return new Response(JSON.stringify({ ok: false, error: "invalid_json" }), {
+      status: 400,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 
   const threadId = String(body.threadId ?? "main");
   const raw = String(body.content ?? "");
   const content = raw.trim();
-  if (!content) return NextResponse.json({ ok: false, error: "missing_content" }, { status: 400 });
+  if (!content) {
+    return new Response(JSON.stringify({ ok: false, error: "missing_content" }), {
+      status: 400,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
 
   const now = new Date();
   const id = crypto.randomUUID();
@@ -93,7 +101,7 @@ export async function POST(req: NextRequest) {
       payload: { prompt, artefactId: imgId },
     });
 
-    return NextResponse.json({
+    return new Response(JSON.stringify({
       ok: true,
       item: {
         id,
@@ -103,14 +111,14 @@ export async function POST(req: NextRequest) {
         createdAt: now.getTime(),
         createdAtLabel: fmtLabel(now),
       },
+    }), {
+      headers: { "Content-Type": "application/json" },
     });
   }
 
-  // Call OpenClaw gateway (instant via Tailscale Funnel)
+  // Call OpenClaw gateway with streaming
   const supportedThreadIds = ["life", "sport", "work", "dev", "main"];
   if (supportedThreadIds.includes(threadId)) {
-    let assistantContent = '';
-    
     const contextPrefixes: Record<string, string> = {
       life: "[Life Context] ",
       sport: "[Sport Context] ",
@@ -120,53 +128,148 @@ export async function POST(req: NextRequest) {
     };
     const contextPrefix = contextPrefixes[threadId] || "";
     const contextualMessage = contextPrefix + content;
-    
-    try {
-      const response = await fetch(`${GATEWAY_HTTP_URL}/v1/chat/completions`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(GATEWAY_PASSWORD && { 'Authorization': `Bearer ${GATEWAY_PASSWORD}` }),
-          'x-openclaw-agent-id': 'main',
-          'x-openclaw-session-key': `agent:main:dieter-hq:${threadId}`,
-        },
-        body: JSON.stringify({
-          model: 'openclaw:main',
-          messages: [
-            { role: 'user', content: contextualMessage }
-          ],
-          user: `dieter-hq:${threadId}`,
-        }),
-      });
 
-      if (response.ok) {
-        const data = await response.json();
-        assistantContent = data.choices?.[0]?.message?.content || 'No response';
-      } else {
-        assistantContent = `⚠️ Gateway error (${response.status}).`;
-      }
-    } catch (err) {
-      console.error('OpenClaw gateway error:', err);
-      assistantContent = '⚠️ Cannot reach OpenClaw gateway.';
-    }
+    // Create SSE stream for frontend
+    const encoder = new TextEncoder();
+    const stream = new ReadableStream({
+      async start(controller) {
+        // First, send the user message confirmation
+        controller.enqueue(encoder.encode(`data: ${JSON.stringify({
+          type: "user_confirmed",
+          item: {
+            id,
+            threadId,
+            role: "user",
+            content,
+            createdAt: now.getTime(),
+            createdAtLabel: fmtLabel(now),
+          }
+        })}\n\n`));
 
-    // Save assistant response
-    await db.insert(messages).values({
-      id: crypto.randomUUID(),
-      threadId,
-      role: "assistant",
-      content: assistantContent,
-      createdAt: new Date(now.getTime() + 1),
+        let fullContent = "";
+        const assistantMsgId = crypto.randomUUID();
+
+        try {
+          const response = await fetch(`${GATEWAY_HTTP_URL}/v1/chat/completions`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              ...(GATEWAY_PASSWORD && { 'Authorization': `Bearer ${GATEWAY_PASSWORD}` }),
+              'x-openclaw-agent-id': 'main',
+              'x-openclaw-session-key': `agent:main:dieter-hq:${threadId}`,
+              'x-openclaw-source': 'dieter-hq',
+            },
+            body: JSON.stringify({
+              model: 'openclaw:main',
+              messages: [
+                { role: 'user', content: contextualMessage }
+              ],
+              user: `dieter-hq:${threadId}`,
+              stream: true,
+            }),
+          });
+
+          if (!response.ok) {
+            fullContent = `⚠️ Gateway error (${response.status}).`;
+            controller.enqueue(encoder.encode(`data: ${JSON.stringify({
+              type: "delta",
+              content: fullContent,
+            })}\n\n`));
+          } else if (!response.body) {
+            fullContent = "⚠️ No response body from gateway.";
+            controller.enqueue(encoder.encode(`data: ${JSON.stringify({
+              type: "delta",
+              content: fullContent,
+            })}\n\n`));
+          } else {
+            // Parse SSE stream from OpenClaw
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+            let buffer = "";
+
+            while (true) {
+              const { done, value } = await reader.read();
+              if (done) break;
+
+              buffer += decoder.decode(value, { stream: true });
+              const lines = buffer.split("\n");
+              buffer = lines.pop() || "";
+
+              for (const line of lines) {
+                if (!line.startsWith("data: ")) continue;
+                const payload = line.slice(6).trim();
+                if (payload === "[DONE]") continue;
+
+                try {
+                  const chunk = JSON.parse(payload);
+                  const delta = chunk.choices?.[0]?.delta?.content;
+                  if (delta) {
+                    fullContent += delta;
+                    // Send delta to frontend
+                    controller.enqueue(encoder.encode(`data: ${JSON.stringify({
+                      type: "delta",
+                      content: delta,
+                    })}\n\n`));
+                  }
+                } catch {
+                  // Ignore parse errors for malformed chunks
+                }
+              }
+            }
+          }
+        } catch (err) {
+          console.error('OpenClaw gateway error:', err);
+          fullContent = fullContent || '⚠️ Cannot reach OpenClaw gateway.';
+          controller.enqueue(encoder.encode(`data: ${JSON.stringify({
+            type: "delta",
+            content: fullContent,
+          })}\n\n`));
+        }
+
+        // Save complete assistant response to DB
+        const assistantCreatedAt = new Date();
+        await db.insert(messages).values({
+          id: assistantMsgId,
+          threadId,
+          role: "assistant",
+          content: fullContent || "No response",
+          createdAt: assistantCreatedAt,
+        });
+
+        await logEvent({
+          threadId,
+          type: "openclaw.response",
+          payload: { channel: "dieter-hq", context: threadId },
+        });
+
+        // Send completion signal
+        controller.enqueue(encoder.encode(`data: ${JSON.stringify({
+          type: "done",
+          item: {
+            id: assistantMsgId,
+            threadId,
+            role: "assistant",
+            content: fullContent || "No response",
+            createdAt: assistantCreatedAt.getTime(),
+            createdAtLabel: fmtLabel(assistantCreatedAt),
+          }
+        })}\n\n`));
+
+        controller.close();
+      },
     });
 
-    await logEvent({
-      threadId,
-      type: "openclaw.response",
-      payload: { channel: "dieter-hq", context: threadId },
+    return new Response(stream, {
+      headers: {
+        "Content-Type": "text/event-stream",
+        "Cache-Control": "no-cache",
+        "Connection": "keep-alive",
+      },
     });
   }
 
-  return NextResponse.json({
+  // Fallback for unsupported threads (non-streaming)
+  return new Response(JSON.stringify({
     ok: true,
     item: {
       id,
@@ -176,5 +279,7 @@ export async function POST(req: NextRequest) {
       createdAt: now.getTime(),
       createdAtLabel: fmtLabel(now),
     },
+  }), {
+    headers: { "Content-Type": "application/json" },
   });
 }

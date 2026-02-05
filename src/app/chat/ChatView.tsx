@@ -398,13 +398,19 @@ export function ChatView({
     };
   }, [activeThreadId, lastCreatedAt]);
 
-  // Send message handler
+  // Streaming message state - the assistant message being streamed
+  const [streamingContent, setStreamingContent] = useState<string | null>(null);
+  const [streamingMsgId, setStreamingMsgId] = useState<string | null>(null);
+
+  // Send message handler with SSE streaming
   const handleSend = async () => {
     const content = draft.trim();
     if (!content || isSending) return;
 
     setIsSending(true);
     setDraft("");
+    setStreamingContent("");
+    setStreamingMsgId(null);
 
     try {
       const r = await fetch("/api/chat/send", {
@@ -412,16 +418,79 @@ export function ChatView({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ threadId: activeThreadId, content }),
       });
+
       if (!r.ok) throw new Error("send_failed");
-      const data = (await r.json()) as { ok: boolean; item: MessageRow };
-      if (data?.ok && data.item?.id) {
-        setLiveMessages((prev) => {
-          if (prev.some((m) => m.id === data.item.id)) return prev;
-          return [...prev, data.item];
-        });
+
+      const contentType = r.headers.get("content-type") || "";
+
+      // Handle SSE streaming response
+      if (contentType.includes("text/event-stream") && r.body) {
+        const reader = r.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = "";
+        let accumulatedContent = "";
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split("\n");
+          buffer = lines.pop() || "";
+
+          for (const line of lines) {
+            if (!line.startsWith("data: ")) continue;
+            const payload = line.slice(6).trim();
+            if (!payload) continue;
+
+            try {
+              const event = JSON.parse(payload) as {
+                type: "user_confirmed" | "delta" | "done";
+                item?: MessageRow;
+                content?: string;
+              };
+
+              if (event.type === "user_confirmed" && event.item) {
+                // Add user message to the list
+                setLiveMessages((prev) => {
+                  if (prev.some((m) => m.id === event.item!.id)) return prev;
+                  return [...prev, event.item!];
+                });
+                // Start showing streaming placeholder
+                const tempId = `streaming-${Date.now()}`;
+                setStreamingMsgId(tempId);
+              } else if (event.type === "delta" && event.content) {
+                // Accumulate streaming content
+                accumulatedContent += event.content;
+                setStreamingContent(accumulatedContent);
+              } else if (event.type === "done" && event.item) {
+                // Finalize: add complete assistant message
+                setStreamingContent(null);
+                setStreamingMsgId(null);
+                setLiveMessages((prev) => {
+                  if (prev.some((m) => m.id === event.item!.id)) return prev;
+                  return [...prev, event.item!];
+                });
+              }
+            } catch {
+              // Ignore parse errors
+            }
+          }
+        }
+      } else {
+        // Fallback: non-streaming JSON response
+        const data = (await r.json()) as { ok: boolean; item: MessageRow };
+        if (data?.ok && data.item?.id) {
+          setLiveMessages((prev) => {
+            if (prev.some((m) => m.id === data.item.id)) return prev;
+            return [...prev, data.item];
+          });
+        }
       }
     } catch {
       setDraft(content); // Restore on failure
+      setStreamingContent(null);
+      setStreamingMsgId(null);
     } finally {
       setIsSending(false);
     }
@@ -515,23 +584,56 @@ export function ChatView({
         {/* Messages */}
         <ScrollArea className="flex-1">
           <div className="mx-auto flex w-full max-w-3xl flex-col gap-4 px-4 py-6">
-            {liveMessages.length > 0 ? (
-              liveMessages.map((m) => {
-                const artefactId = extractArtefactIdFromContent(m.content);
-                const artefact = artefactId ? artefactsById[artefactId] : null;
-                const url = artefactId
-                  ? `/api/artefacts/${encodeURIComponent(artefactId)}`
-                  : null;
+            {liveMessages.length > 0 || streamingMsgId ? (
+              <>
+                {liveMessages.map((m) => {
+                  const artefactId = extractArtefactIdFromContent(m.content);
+                  const artefact = artefactId ? artefactsById[artefactId] : null;
+                  const url = artefactId
+                    ? `/api/artefacts/${encodeURIComponent(artefactId)}`
+                    : null;
 
-                return (
-                  <MessageBubble
-                    key={m.id}
-                    message={m}
-                    artefact={artefact}
-                    url={url}
-                  />
-                );
-              })
+                  return (
+                    <MessageBubble
+                      key={m.id}
+                      message={m}
+                      artefact={artefact}
+                      url={url}
+                    />
+                  );
+                })}
+                {/* Streaming message indicator */}
+                {streamingMsgId && (
+                  <div className="flex items-end gap-3 animate-fade-in-up">
+                    <Avatar className="h-8 w-8 shrink-0 ring-2 ring-default/20 bg-default-100">
+                      <AvatarImage src="/dieter-avatar.png" alt="Dieter" />
+                      <AvatarFallback className="bg-primary text-primary-foreground text-xs font-medium">
+                        <Bot className="h-4 w-4" />
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="group relative max-w-[75%] rounded-2xl px-4 py-3 shadow-sm bg-default-100 rounded-bl-md">
+                      <div className="mb-1 flex items-center justify-between gap-4">
+                        <span className="text-xs font-medium text-foreground-secondary">
+                          Dieter
+                        </span>
+                        <span className="text-[10px] opacity-60 text-muted-foreground flex items-center gap-1">
+                          <span className="inline-block h-2 w-2 rounded-full bg-primary animate-pulse" />
+                          typing...
+                        </span>
+                      </div>
+                      <div className="whitespace-pre-wrap text-sm leading-relaxed min-h-[1.5rem]">
+                        {streamingContent || (
+                          <span className="flex items-center gap-1 text-muted-foreground">
+                            <span className="inline-block h-1.5 w-1.5 rounded-full bg-current animate-bounce" style={{ animationDelay: "0ms" }} />
+                            <span className="inline-block h-1.5 w-1.5 rounded-full bg-current animate-bounce" style={{ animationDelay: "150ms" }} />
+                            <span className="inline-block h-1.5 w-1.5 rounded-full bg-current animate-bounce" style={{ animationDelay: "300ms" }} />
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </>
             ) : (
               <div className="flex flex-col items-center justify-center py-20 text-center">
                 <div className="mb-4 rounded-full bg-primary/10 p-6">

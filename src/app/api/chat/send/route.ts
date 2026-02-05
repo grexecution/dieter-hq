@@ -149,8 +149,15 @@ export async function POST(req: NextRequest) {
         let fullContent = "";
         const assistantMsgId = crypto.randomUUID();
 
-        // Route "dev" thread to coder agent, all others to main
-        const agentId = threadId === 'dev' ? 'coder' : 'main';
+        // Thread → Agent Mapping
+        const threadToAgent: Record<string, string> = {
+          'main': 'main',
+          'life': 'main',
+          'dev': 'coder',
+          'sport': 'sport',
+          'work': 'work',
+        };
+        const agentId = threadToAgent[threadId] || 'main';
 
         try {
           const response = await fetch(`${GATEWAY_HTTP_URL}/v1/chat/completions`, {

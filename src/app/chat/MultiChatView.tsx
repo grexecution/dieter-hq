@@ -12,6 +12,7 @@ import { cn } from "@/lib/utils";
 import { ChatComposer } from "./ChatComposer";
 import { NowBar } from "./NowBar";
 import { OpenClawStatusSidebar } from "./OpenClawStatusSidebar";
+import { StatusBar } from "./_components/StatusBar";
 import { CHAT_TABS, type ChatTab } from "./chat-config";
 
 const VoiceRecorderButton = dynamic(
@@ -606,6 +607,9 @@ export function MultiChatView({
             </span>
           </div>
         </header>
+
+        {/* Live Status Bar */}
+        <StatusBar />
 
         {/* Tab Navigation */}
         <TabNavigation 

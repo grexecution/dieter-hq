@@ -1,13 +1,6 @@
 {
-  "version": 2,
-  "name": "dieter-hq",
-  "builds": [
-    { "src": "next.config.js", "use": "@vercel/next" }
-  ],
-  "routes": [
-    { "src": "/(.*)", "dest": "/" }
-  ],
+  "framework": "nextjs",
   "env": {
-    "NEXT_PUBLIC_SITE_URL": "https://dieter-hq.vercel.app"
+    "NEXT_PUBLIC_APP_URL": "https://dieter-hq.vercel.app"
   }
 }

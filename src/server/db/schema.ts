@@ -1,53 +1,53 @@
-import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
+import { pgTable, text, timestamp, boolean, integer } from "drizzle-orm/pg-core";
 
 // --- Chat ---
-export const messages = sqliteTable("messages", {
+export const messages = pgTable("messages", {
   id: text("id").primaryKey(),
   threadId: text("thread_id").notNull(),
   role: text("role", { enum: ["user", "assistant", "system"] }).notNull(),
   content: text("content").notNull(),
-  createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+  createdAt: timestamp("created_at", { mode: "date", withTimezone: true }).notNull(),
 });
 
-export const events = sqliteTable("events", {
+export const events = pgTable("events", {
   id: text("id").primaryKey(),
   threadId: text("thread_id").notNull(),
   type: text("type").notNull(),
   payloadJson: text("payload_json").notNull(),
-  createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+  createdAt: timestamp("created_at", { mode: "date", withTimezone: true }).notNull(),
 });
 
 // --- Calendar MVP ---
-export const calendarEvents = sqliteTable("calendar_events", {
+export const calendarEvents = pgTable("calendar_events", {
   id: text("id").primaryKey(),
   title: text("title").notNull(),
   description: text("description"),
-  startAt: integer("start_at", { mode: "timestamp_ms" }).notNull(),
-  endAt: integer("end_at", { mode: "timestamp_ms" }).notNull(),
-  allDay: integer("all_day", { mode: "boolean" }).notNull().default(false),
-  createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
-  updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
+  startAt: timestamp("start_at", { mode: "date", withTimezone: true }).notNull(),
+  endAt: timestamp("end_at", { mode: "date", withTimezone: true }).notNull(),
+  allDay: boolean("all_day").notNull().default(false),
+  createdAt: timestamp("created_at", { mode: "date", withTimezone: true }).notNull(),
+  updatedAt: timestamp("updated_at", { mode: "date", withTimezone: true }).notNull(),
 });
 
 // --- Artefacts ---
-export const artefacts = sqliteTable("artefacts", {
+export const artefacts = pgTable("artefacts", {
   id: text("id").primaryKey(),
   threadId: text("thread_id").notNull(),
   originalName: text("original_name").notNull(),
   mimeType: text("mime_type").notNull(),
   sizeBytes: integer("size_bytes").notNull(),
   storagePath: text("storage_path").notNull(),
-  createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+  createdAt: timestamp("created_at", { mode: "date", withTimezone: true }).notNull(),
 });
 
 // --- Outbox ---
-export const outbox = sqliteTable("outbox", {
+export const outbox = pgTable("outbox", {
   id: text("id").primaryKey(),
   threadId: text("thread_id").notNull(),
   channel: text("channel").notNull(),
   target: text("target").notNull(),
   text: text("text").notNull(),
   status: text("status", { enum: ["pending", "sent"] }).notNull(),
-  createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
-  sentAt: integer("sent_at", { mode: "timestamp_ms" }),
+  createdAt: timestamp("created_at", { mode: "date", withTimezone: true }).notNull(),
+  sentAt: timestamp("sent_at", { mode: "date", withTimezone: true }),
 });

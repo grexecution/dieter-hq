@@ -1,23 +1,72 @@
-import fs from "node:fs";
-import path from "node:path";
+import { neon } from "@neondatabase/serverless";
+import { drizzle } from "drizzle-orm/neon-http";
 
-import Database from "better-sqlite3";
-import { drizzle } from "drizzle-orm/better-sqlite3";
-import { migrate } from "drizzle-orm/better-sqlite3/migrator";
+import * as schema from "./schema";
 
-const url = process.env.DATABASE_URL ?? "file:./data/app.db";
-// Supports: file:./path/to.db
-const filePath = url.startsWith("file:") ? url.slice("file:".length) : url;
+const sql = neon(process.env.DATABASE_URL!);
+export const db = drizzle(sql, { schema });
 
-// Ensure data dir exists.
-fs.mkdirSync(path.dirname(path.resolve(filePath)), { recursive: true });
-
-const sqlite = new Database(filePath);
-export const db = drizzle(sqlite);
-
-// Run migrations once per process (dev HMR can re-import modules).
-const g = globalThis as unknown as { __hqMigrated?: boolean };
-if (!g.__hqMigrated) {
-  g.__hqMigrated = true;
-  migrate(db, { migrationsFolder: path.resolve(process.cwd(), "src/server/db/migrations") });
+// Create tables if they don't exist (simple migration for MVP)
+// Initialize tables on first use
+let initialized = false;
+export async function initDb() {
+  if (initialized) return;
+  initialized = true;
+  await sql`
+    CREATE TABLE IF NOT EXISTS messages (
+      id TEXT PRIMARY KEY,
+      thread_id TEXT NOT NULL,
+      role TEXT NOT NULL,
+      content TEXT NOT NULL,
+      created_at TIMESTAMPTZ NOT NULL
+    )
+  `;
+  
+  await sql`
+    CREATE TABLE IF NOT EXISTS events (
+      id TEXT PRIMARY KEY,
+      thread_id TEXT NOT NULL,
+      type TEXT NOT NULL,
+      payload_json TEXT NOT NULL,
+      created_at TIMESTAMPTZ NOT NULL
+    )
+  `;
+  
+  await sql`
+    CREATE TABLE IF NOT EXISTS calendar_events (
+      id TEXT PRIMARY KEY,
+      title TEXT NOT NULL,
+      description TEXT,
+      start_at TIMESTAMPTZ NOT NULL,
+      end_at TIMESTAMPTZ NOT NULL,
+      all_day BOOLEAN NOT NULL DEFAULT false,
+      created_at TIMESTAMPTZ NOT NULL,
+      updated_at TIMESTAMPTZ NOT NULL
+    )
+  `;
+  
+  await sql`
+    CREATE TABLE IF NOT EXISTS artefacts (
+      id TEXT PRIMARY KEY,
+      thread_id TEXT NOT NULL,
+      original_name TEXT NOT NULL,
+      mime_type TEXT NOT NULL,
+      size_bytes INTEGER NOT NULL,
+      storage_path TEXT NOT NULL,
+      created_at TIMESTAMPTZ NOT NULL
+    )
+  `;
+  
+  await sql`
+    CREATE TABLE IF NOT EXISTS outbox (
+      id TEXT PRIMARY KEY,
+      thread_id TEXT NOT NULL,
+      channel TEXT NOT NULL,
+      target TEXT NOT NULL,
+      text TEXT NOT NULL,
+      status TEXT NOT NULL,
+      created_at TIMESTAMPTZ NOT NULL,
+      sent_at TIMESTAMPTZ
+    )
+  `;
 }

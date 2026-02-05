@@ -2,38 +2,34 @@
 
 Skills define _how_ tools work. This file is for _your_ specifics — the stuff that's unique to your setup.
 
-## What Goes Here
+## Kalender-Regeln 📅
 
-Things like:
+### Bei privaten Events während Arbeitszeit:
+1. Event in Shared Apple Calendar (Mimi & Greg, Familie, etc.)
+2. **IMMER** simultanen "Out of Office" Eintrag in **Bluemonkeys Google Calendar** machen
+3. **NIE "Dieter" erwähnen** im Bluemonkeys Kalender — ist ein Arbeits-Kalender!
 
-- Camera names and locations
-- SSH hosts and aliases
-- Preferred voices for TTS
-- Speaker/room names
-- Device nicknames
-- Anything environment-specific
+### Bei allen Kalender/Reminder-Einträgen:
+- In Notizen immer schreiben: `🐕 Erstellt von Dieter`
+- **Ausnahme:** Bluemonkeys Kalender (kein Dieter!)
 
-## Examples
+## iCloud CalDAV
 
-```markdown
-### Cameras
+- **Apple ID:** greg.wallner@gmail.com
+- **Kalender:**
+  - Mimi & Greg (Freundin)
+  - The Wallner Awesomeness (Familie)
+  - Erinnerungen
 
-- living-room → Main area, 180° wide angle
-- front-door → Entrance, motion-triggered
+## Google Kalender (gog CLI)
 
-### SSH
+- **Bluemonkeys:** g.wallner@bluemonkeys.com — Arbeitskalender, Out of Office hier
+- **Privat:** greg.wallner@gmail.com
 
-- home-server → 192.168.1.100, user: admin
+## Apple Reminders
 
-### TTS
-
-- Preferred voice: "Nova" (warm, slightly British)
-- Default speaker: Kitchen HomePod
-```
-
-## Why Separate?
-
-Skills are shared. Your setup is yours. Keeping them apart means you can update skills without losing your notes, and share skills without leaking your infrastructure.
+- Listen: Erinnerungen, Familie, Life, Shopping List
+- Bimmelt auf iPhone wenn due time erreicht
 
 ---
 

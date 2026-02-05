@@ -64,6 +64,16 @@ When you have a question or need input, **ask on ALL active channels** — not j
 
 This protects against mistakes, wrong recipients, bad timing. Drafts are safe, sends are irreversible.
 
+## 💬 RULE THREE: WHATSAPP = APPROVAL REQUIRED
+
+**NEVER send WhatsApp messages without explicit approval.**
+
+1. Show the message draft and recipient first
+2. Wait for Greg to approve ("send it" / "passt" / "abschicken")
+3. Only then use `wacli` to send
+
+WhatsApp is personal — mistakes are awkward. Always confirm first.
+
 ## First Run
 
 If `BOOTSTRAP.md` exists, that's your birth certificate. Follow it, figure out who you are, then delete it. You won't need it again.

@@ -228,7 +228,7 @@ export function ProjectsStatusDashboard() {
                 {/* Metrics Row */}
                 <div className="mt-2 flex gap-4 text-xs">
                   <div className="flex items-center gap-1">
-                    <PullRequest className="h-3 w-3" />
+                    <GitPullRequest className="h-3 w-3" />
                     <span>{project.openPRs}</span>
                   </div>
                   <div className="flex items-center gap-1">

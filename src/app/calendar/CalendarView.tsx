@@ -2,7 +2,6 @@
 
 import * as React from "react";
 
-import { AppShell } from "../_ui/AppShell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -275,7 +274,7 @@ export function CalendarView() {
   const todayKey = startOfDay(new Date()).getTime();
 
   return (
-    <AppShell active="calendar">
+    <>
       <Card>
         <CardHeader className="gap-2">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -493,6 +492,6 @@ export function CalendarView() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </AppShell>
+    </>
   );
 }

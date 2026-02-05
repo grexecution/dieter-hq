@@ -4,77 +4,568 @@
 @import "@uppy/core/css/style.css";
 @import "@uppy/dashboard/css/style.css";
 
-:root {
-  --background: 0 0% 100%;
-  --foreground: 222.2 84% 4.9%;
+/* ============================================
+   Design Tokens - iOS-inspired Design System
+   ============================================ */
 
+:root {
+  /* Surface Colors */
+  --background: 0 0% 100%;
+  --background-secondary: 210 40% 98%;
+  --background-tertiary: 210 40% 96.1%;
+  --background-elevated: 0 0% 100%;
+  
+  --foreground: 222.2 84% 4.9%;
+  --foreground-secondary: 215.4 16.3% 46.9%;
+  --foreground-tertiary: 215 20.2% 65.1%;
+
+  /* Card & Surfaces */
   --card: 0 0% 100%;
   --card-foreground: 222.2 84% 4.9%;
-
   --popover: 0 0% 100%;
   --popover-foreground: 222.2 84% 4.9%;
 
-  --primary: 222.2 47.4% 11.2%;
+  /* Brand & Interactive */
+  --primary: 211 100% 50%;
   --primary-foreground: 210 40% 98%;
-
   --secondary: 210 40% 96.1%;
   --secondary-foreground: 222.2 47.4% 11.2%;
-
   --muted: 210 40% 96.1%;
   --muted-foreground: 215.4 16.3% 46.9%;
-
-  --accent: 210 40% 96.1%;
-  --accent-foreground: 222.2 47.4% 11.2%;
-
+  --accent: 211 100% 50%;
+  --accent-foreground: 210 40% 98%;
+  
+  /* Semantic Colors */
   --destructive: 0 84.2% 60.2%;
   --destructive-foreground: 210 40% 98%;
+  --success: 142 71% 45%;
+  --success-foreground: 210 40% 98%;
+  --warning: 28 100% 54%;
+  --warning-foreground: 222.2 84% 4.9%;
+  --info: 211 100% 50%;
+  --info-foreground: 210 40% 98%;
 
+  /* Borders & Inputs */
   --border: 214.3 31.8% 91.4%;
   --input: 214.3 31.8% 91.4%;
-  --ring: 222.2 84% 4.9%;
+  --ring: 211 100% 50%;
+  --divider: 214.3 31.8% 91.4%;
 
+  /* Border Radius */
   --radius: 0.75rem;
+  --radius-sm: 0.5rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.25rem;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-base: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  --shadow-glass: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+
+  /* Frosted Glass - Light Mode */
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-bg-medium: rgba(255, 255, 255, 0.6);
+  --glass-bg-strong: rgba(255, 255, 255, 0.5);
+  --glass-border: rgba(255, 255, 255, 0.3);
+  --glass-border-medium: rgba(255, 255, 255, 0.2);
+  --glass-border-strong: rgba(255, 255, 255, 0.1);
+
+  /* Animation */
+  --duration-fast: 150ms;
+  --duration-base: 200ms;
+  --duration-medium: 300ms;
+  --duration-slow: 400ms;
+  --easing-standard: cubic-bezier(0.4, 0.0, 0.2, 1);
+  --easing-spring: cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .dark {
-  --background: 222.2 84% 4.9%;
+  /* Surface Colors - Elevated surfaces are lighter in dark mode (iOS style) */
+  --background: 240 10% 3.9%;
+  --background-secondary: 222.2 84% 4.9%;
+  --background-tertiary: 217.2 32.6% 17.5%;
+  --background-elevated: 240 5% 8%;
+  
   --foreground: 210 40% 98%;
+  --foreground-secondary: 215 20.2% 65.1%;
+  --foreground-tertiary: 215.4 16.3% 46.9%;
 
-  --card: 222.2 84% 4.9%;
+  /* Card & Surfaces */
+  --card: 240 5% 8%;
   --card-foreground: 210 40% 98%;
-
-  --popover: 222.2 84% 4.9%;
+  --popover: 240 5% 8%;
   --popover-foreground: 210 40% 98%;
 
-  --primary: 210 40% 98%;
+  /* Brand & Interactive */
+  --primary: 211 100% 55%;
   --primary-foreground: 222.2 47.4% 11.2%;
-
   --secondary: 217.2 32.6% 17.5%;
   --secondary-foreground: 210 40% 98%;
-
   --muted: 217.2 32.6% 17.5%;
   --muted-foreground: 215 20.2% 65.1%;
+  --accent: 211 100% 55%;
+  --accent-foreground: 222.2 47.4% 11.2%;
 
-  --accent: 217.2 32.6% 17.5%;
-  --accent-foreground: 210 40% 98%;
-
-  --destructive: 0 62.8% 30.6%;
+  /* Semantic Colors */
+  --destructive: 0 84.2% 65%;
   --destructive-foreground: 210 40% 98%;
+  --success: 142 71% 50%;
+  --success-foreground: 210 40% 98%;
+  --warning: 28 100% 59%;
+  --warning-foreground: 222.2 84% 4.9%;
+  --info: 211 100% 55%;
+  --info-foreground: 222.2 47.4% 11.2%;
 
+  /* Borders & Inputs */
   --border: 217.2 32.6% 17.5%;
   --input: 217.2 32.6% 17.5%;
-  --ring: 212.7 26.8% 83.9%;
+  --ring: 211 100% 55%;
+  --divider: 217.2 32.6% 17.5%;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
+  --shadow-base: 0 1px 3px 0 rgb(0 0 0 / 0.4), 0 1px 2px -1px rgb(0 0 0 / 0.3);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.4), 0 2px 4px -2px rgb(0 0 0 / 0.3);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.5), 0 4px 6px -4px rgb(0 0 0 / 0.4);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.6), 0 8px 10px -6px rgb(0 0 0 / 0.5);
+  --shadow-glass: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+
+  /* Frosted Glass - Dark Mode */
+  --glass-bg: rgba(20, 20, 30, 0.7);
+  --glass-bg-medium: rgba(20, 20, 30, 0.6);
+  --glass-bg-strong: rgba(20, 20, 30, 0.5);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-border-medium: rgba(255, 255, 255, 0.08);
+  --glass-border-strong: rgba(255, 255, 255, 0.05);
+}
+
+/* ============================================
+   Base Styles
+   ============================================ */
+
+* {
+  border-color: hsl(var(--border));
+}
+
+html {
+  /* Smooth scrolling */
+  scroll-behavior: smooth;
+  /* iOS-style momentum scrolling */
+  -webkit-overflow-scrolling: touch;
+  /* Prevent text size adjustment on orientation change */
+  -webkit-text-size-adjust: 100%;
 }
 
 html,
 body {
   height: 100%;
+  margin: 0;
+  padding: 0;
 }
 
 body {
-  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", 
+               system-ui, sans-serif;
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+  /* Better font rendering */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  /* Prevent horizontal overflow */
+  overflow-x: hidden;
 }
 
-* {
-  border-color: hsl(var(--border));
+/* ============================================
+   Typography
+   ============================================ */
+
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+h1 {
+  font-size: clamp(2rem, 5vw, 3rem);
+}
+
+h2 {
+  font-size: clamp(1.5rem, 4vw, 2.25rem);
+}
+
+h3 {
+  font-size: clamp(1.25rem, 3vw, 1.875rem);
+}
+
+p {
+  line-height: 1.6;
+}
+
+/* ============================================
+   Frosted Glass Utilities
+   ============================================ */
+
+@layer utilities {
+  .glass {
+    background: var(--glass-bg);
+    backdrop-filter: blur(8px) saturate(180%);
+    -webkit-backdrop-filter: blur(8px) saturate(180%);
+    border: 1px solid var(--glass-border);
+  }
+
+  .glass-medium {
+    background: var(--glass-bg-medium);
+    backdrop-filter: blur(12px) saturate(180%);
+    -webkit-backdrop-filter: blur(12px) saturate(180%);
+    border: 1px solid var(--glass-border-medium);
+  }
+
+  .glass-strong {
+    background: var(--glass-bg-strong);
+    backdrop-filter: blur(16px) saturate(200%);
+    -webkit-backdrop-filter: blur(16px) saturate(200%);
+    border: 1px solid var(--glass-border-strong);
+  }
+
+  .glass-elevated {
+    background: var(--glass-bg);
+    backdrop-filter: blur(8px) saturate(180%);
+    -webkit-backdrop-filter: blur(8px) saturate(180%);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--shadow-glass);
+  }
+
+  .glass-medium-elevated {
+    background: var(--glass-bg-medium);
+    backdrop-filter: blur(12px) saturate(180%);
+    -webkit-backdrop-filter: blur(12px) saturate(180%);
+    border: 1px solid var(--glass-border-medium);
+    box-shadow: var(--shadow-glass);
+  }
+
+  .glass-strong-elevated {
+    background: var(--glass-bg-strong);
+    backdrop-filter: blur(16px) saturate(200%);
+    -webkit-backdrop-filter: blur(16px) saturate(200%);
+    border: 1px solid var(--glass-border-strong);
+    box-shadow: var(--shadow-glass);
+  }
+}
+
+/* ============================================
+   Smooth Animations
+   ============================================ */
+
+@layer utilities {
+  /* iOS-style smooth transitions */
+  .transition-smooth {
+    transition: all var(--duration-base) var(--easing-standard);
+  }
+
+  .transition-spring {
+    transition: all var(--duration-medium) var(--easing-spring);
+  }
+
+  /* Hover scale effect (subtle iOS-like) */
+  .hover-lift {
+    transition: transform var(--duration-base) var(--easing-standard);
+  }
+
+  .hover-lift:hover {
+    transform: translateY(-2px);
+  }
+
+  .hover-lift:active {
+    transform: translateY(0);
+  }
+
+  /* Press effect (iOS-like) */
+  .hover-press {
+    transition: transform var(--duration-fast) var(--easing-standard);
+  }
+
+  .hover-press:active {
+    transform: scale(0.98);
+  }
+}
+
+/* ============================================
+   Scrollbar Styling (WebKit only)
+   ============================================ */
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--muted-foreground) / 0.3);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground) / 0.5);
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: hsl(var(--muted-foreground) / 0.2);
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground) / 0.4);
+}
+
+/* ============================================
+   Focus Styles
+   ============================================ */
+
+/* iOS-style focus rings */
+:focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* Remove default focus for mouse users, keep for keyboard */
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* ============================================
+   Selection Styles
+   ============================================ */
+
+::selection {
+  background-color: hsl(var(--primary) / 0.2);
+  color: hsl(var(--foreground));
+}
+
+/* ============================================
+   Mobile Optimizations
+   ============================================ */
+
+/* Safe area for notched devices */
+@supports (padding: max(0px)) {
+  body {
+    padding-left: max(0px, env(safe-area-inset-left));
+    padding-right: max(0px, env(safe-area-inset-right));
+  }
+}
+
+/* Touch-friendly tap targets */
+@media (pointer: coarse) {
+  button,
+  a,
+  input,
+  textarea,
+  select {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+/* Prevent iOS zoom on input focus */
+@media screen and (max-width: 768px) {
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="number"],
+  input[type="search"],
+  input[type="tel"],
+  input[type="url"],
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
+}
+
+/* ============================================
+   Utility Classes
+   ============================================ */
+
+/* iOS-style card */
+.card-ios {
+  background: var(--glass-bg);
+  backdrop-filter: blur(8px) saturate(180%);
+  -webkit-backdrop-filter: blur(8px) saturate(180%);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow-glass);
+  border-radius: 0.75rem;
+  padding: 1rem;
+}
+
+@media (min-width: 768px) {
+  .card-ios {
+    padding: 1.5rem;
+  }
+}
+
+/* iOS-style button base */
+.btn-ios-base {
+  transition: all var(--duration-base) var(--easing-standard);
+  border-radius: 0.75rem;
+  padding: 0.625rem 1rem;
+  font-weight: 500;
+  font-size: 0.875rem;
+}
+
+.btn-ios-base:active {
+  transform: scale(0.98);
+}
+
+@media (min-width: 768px) {
+  .btn-ios-base {
+    font-size: 1rem;
+  }
+}
+
+/* iOS-style input */
+.input-ios {
+  background: var(--glass-bg);
+  backdrop-filter: blur(8px) saturate(180%);
+  -webkit-backdrop-filter: blur(8px) saturate(180%);
+  border: 1px solid var(--glass-border);
+  border-radius: 0.5rem;
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+}
+
+.input-ios::placeholder {
+  color: hsl(var(--muted-foreground));
+}
+
+/* Safe spacing for mobile */
+.safe-padding {
+  padding-left: max(1rem, env(safe-area-inset-left));
+  padding-right: max(1rem, env(safe-area-inset-right));
+}
+
+.safe-padding-bottom {
+  padding-bottom: max(1rem, env(safe-area-inset-bottom));
+}
+
+/* ============================================
+   Animation Keyframes
+   ============================================ */
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* Animation utilities */
+.animate-fade-in {
+  animation: fadeIn var(--duration-medium) var(--easing-standard);
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp var(--duration-medium) var(--easing-standard);
+}
+
+.animate-slide-in-right {
+  animation: slideInRight var(--duration-medium) var(--easing-standard);
+}
+
+.animate-slide-in-left {
+  animation: slideInLeft var(--duration-medium) var(--easing-standard);
+}
+
+.animate-scale-in {
+  animation: scaleIn var(--duration-medium) var(--easing-spring);
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* ============================================
+   Responsive Utilities
+   ============================================ */
+
+/* Hide on mobile, show on desktop */
+.desktop-only {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .desktop-only {
+    display: block;
+  }
+}
+
+/* Show on mobile, hide on desktop */
+.mobile-only {
+  display: block;
+}
+
+@media (min-width: 768px) {
+  .mobile-only {
+    display: none;
+  }
+}
+
+/* Full viewport height minus safe areas */
+.vh-full-safe {
+  height: 100vh;
+  height: 100dvh; /* Dynamic viewport height */
 }

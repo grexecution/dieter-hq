@@ -3,12 +3,15 @@ import path from "node:path";
 import fs from "node:fs/promises";
 
 import { db } from "@/server/db";
-import { artefacts, messages, chatQueue } from "@/server/db/schema";
+import { artefacts, messages } from "@/server/db/schema";
 import { logEvent } from "@/server/events/log";
 import { artefactRelPath, artefactsBaseDir, ensureDirForFile } from "@/server/artefacts/storage";
 import { placeholderSvg } from "@/server/tools/image";
 
 export const runtime = "nodejs";
+
+const GATEWAY_HTTP_URL = process.env.OPENCLAW_GATEWAY_HTTP_URL || 'http://127.0.0.1:18789';
+const GATEWAY_PASSWORD = process.env.OPENCLAW_GATEWAY_PASSWORD;
 
 type Payload = {
   threadId?: string;
@@ -103,38 +106,68 @@ export async function POST(req: NextRequest) {
     });
   }
 
-  // Queue message for OpenClaw to process (async via DB polling)
-  const queueId = crypto.randomUUID();
-  
-  // Add context prefix based on thread
-  const contextPrefixes: Record<string, string> = {
-    life: "[Life Context] ",
-    sport: "[Sport Context] ",
-    work: "[Work Context] ",
-    dev: "[Dev Context] ",
-    main: ""
-  };
-  const contextPrefix = contextPrefixes[threadId] || "";
-  const contextualMessage = contextPrefix + content;
+  // Call OpenClaw gateway (instant via Tailscale Funnel)
+  const supportedThreadIds = ["life", "sport", "work", "dev", "main"];
+  if (supportedThreadIds.includes(threadId)) {
+    let assistantContent = '';
+    
+    const contextPrefixes: Record<string, string> = {
+      life: "[Life Context] ",
+      sport: "[Sport Context] ",
+      work: "[Work Context] ",
+      dev: "[Dev Context] ",
+      main: ""
+    };
+    const contextPrefix = contextPrefixes[threadId] || "";
+    const contextualMessage = contextPrefix + content;
+    
+    try {
+      const response = await fetch(`${GATEWAY_HTTP_URL}/v1/chat/completions`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(GATEWAY_PASSWORD && { 'Authorization': `Basic ${Buffer.from(`:${GATEWAY_PASSWORD}`).toString('base64')}` }),
+          'x-openclaw-agent-id': 'main',
+          'x-openclaw-session-key': `agent:main:dieter-hq:${threadId}`,
+        },
+        body: JSON.stringify({
+          model: 'openclaw:main',
+          messages: [
+            { role: 'user', content: contextualMessage }
+          ],
+          user: `dieter-hq:${threadId}`,
+        }),
+      });
 
-  await db.insert(chatQueue).values({
-    id: queueId,
-    threadId,
-    userMessage: contextualMessage,
-    status: 'pending',
-    createdAt: now,
-  });
+      if (response.ok) {
+        const data = await response.json();
+        assistantContent = data.choices?.[0]?.message?.content || 'No response';
+      } else {
+        assistantContent = `⚠️ Gateway error (${response.status}).`;
+      }
+    } catch (err) {
+      console.error('OpenClaw gateway error:', err);
+      assistantContent = '⚠️ Cannot reach OpenClaw gateway.';
+    }
 
-  await logEvent({
-    threadId,
-    type: "openclaw.queued",
-    payload: { queueId, context: threadId },
-  });
+    // Save assistant response
+    await db.insert(messages).values({
+      id: crypto.randomUUID(),
+      threadId,
+      role: "assistant",
+      content: assistantContent,
+      createdAt: new Date(now.getTime() + 1),
+    });
 
-  // Return immediately - response will come async
+    await logEvent({
+      threadId,
+      type: "openclaw.response",
+      payload: { channel: "dieter-hq", context: threadId },
+    });
+  }
+
   return NextResponse.json({
     ok: true,
-    queueId,
     item: {
       id,
       threadId,
@@ -143,6 +176,5 @@ export async function POST(req: NextRequest) {
       createdAt: now.getTime(),
       createdAtLabel: fmtLabel(now),
     },
-    status: 'queued',
   });
 }

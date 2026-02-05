@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/server/db';
-import { messages, chatQueue } from '@/server/db/schema';
-import { eq, asc, and } from 'drizzle-orm';
+import { messages } from '@/server/db/schema';
+import { eq, asc } from 'drizzle-orm';
+
+const GATEWAY_HTTP_URL = process.env.OPENCLAW_GATEWAY_HTTP_URL || 'http://127.0.0.1:18789';
+const GATEWAY_PASSWORD = process.env.OPENCLAW_GATEWAY_PASSWORD;
 
 export async function POST(request: NextRequest) {
   try {
@@ -11,38 +14,72 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Message required' }, { status: 400 });
     }
 
-    const now = new Date();
-    const userMessageId = crypto.randomUUID();
-    const queueId = crypto.randomUUID();
-
     // Save user message to DB
+    const userMessageId = crypto.randomUUID();
     await db.insert(messages).values({
       id: userMessageId,
       threadId,
       role: 'user',
       content: message,
-      createdAt: now,
+      createdAt: new Date(),
     });
 
-    // Add to chat queue for OpenClaw to process
-    await db.insert(chatQueue).values({
-      id: queueId,
+    // Call OpenClaw gateway via OpenAI-compatible endpoint (instant!)
+    let assistantContent = '';
+    
+    try {
+      const response = await fetch(`${GATEWAY_HTTP_URL}/v1/chat/completions`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(GATEWAY_PASSWORD && { 'Authorization': `Basic ${Buffer.from(`:${GATEWAY_PASSWORD}`).toString('base64')}` }),
+          'x-openclaw-agent-id': 'main',
+          'x-openclaw-session-key': `agent:main:dieter-hq:${threadId}`,
+        },
+        body: JSON.stringify({
+          model: 'openclaw:main',
+          messages: [
+            { role: 'user', content: message }
+          ],
+          user: `dieter-hq:${threadId}`,
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        assistantContent = data.choices?.[0]?.message?.content || 'No response from agent';
+      } else {
+        const errorText = await response.text();
+        console.error('Gateway error:', response.status, errorText);
+        assistantContent = `⚠️ Gateway error (${response.status}). Check Tailscale Funnel.`;
+      }
+    } catch (gatewayError) {
+      console.error('Gateway connection error:', gatewayError);
+      assistantContent = '⚠️ Cannot reach OpenClaw gateway.';
+    }
+
+    // Save assistant response to DB
+    const assistantMessageId = crypto.randomUUID();
+    await db.insert(messages).values({
+      id: assistantMessageId,
       threadId,
-      userMessage: message,
-      status: 'pending',
-      createdAt: now,
+      role: 'assistant',
+      content: assistantContent,
+      createdAt: new Date(),
     });
 
     return NextResponse.json({
       ok: true,
-      queueId,
       userMessage: {
         id: userMessageId,
         role: 'user',
         content: message,
       },
-      status: 'queued',
-      message: 'Message queued for processing',
+      assistantMessage: {
+        id: assistantMessageId,
+        role: 'assistant',
+        content: assistantContent,
+      },
     });
   } catch (error) {
     console.error('Chat API error:', error);
@@ -53,52 +90,18 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// GET: Fetch messages + check queue status
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const threadId = searchParams.get('threadId') || 'main';
-  const queueId = searchParams.get('queueId');
 
   try {
-    // If queueId provided, check specific queue item status
-    if (queueId) {
-      const queueItem = await db
-        .select()
-        .from(chatQueue)
-        .where(eq(chatQueue.id, queueId))
-        .limit(1);
-
-      if (queueItem.length > 0) {
-        const item = queueItem[0];
-        return NextResponse.json({
-          queueId: item.id,
-          status: item.status,
-          assistantMessage: item.assistantMessage,
-          processedAt: item.processedAt,
-        });
-      }
-    }
-
-    // Get all messages for thread
     const threadMessages = await db
       .select()
       .from(messages)
       .where(eq(messages.threadId, threadId))
       .orderBy(asc(messages.createdAt));
 
-    // Get pending queue items
-    const pendingQueue = await db
-      .select()
-      .from(chatQueue)
-      .where(and(
-        eq(chatQueue.threadId, threadId),
-        eq(chatQueue.status, 'pending')
-      ));
-
-    return NextResponse.json({ 
-      messages: threadMessages,
-      pendingCount: pendingQueue.length,
-    });
+    return NextResponse.json({ messages: threadMessages });
   } catch (error) {
     console.error('Error fetching messages:', error);
     return NextResponse.json({ error: 'Failed to fetch messages' }, { status: 500 });

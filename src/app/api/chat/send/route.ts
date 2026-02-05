@@ -149,18 +149,21 @@ export async function POST(req: NextRequest) {
         let fullContent = "";
         const assistantMsgId = crypto.randomUUID();
 
+        // Route "dev" thread to coder agent, all others to main
+        const agentId = threadId === 'dev' ? 'coder' : 'main';
+
         try {
           const response = await fetch(`${GATEWAY_HTTP_URL}/v1/chat/completions`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
               ...(GATEWAY_PASSWORD && { 'Authorization': `Bearer ${GATEWAY_PASSWORD}` }),
-              'x-openclaw-agent-id': 'main',
-              'x-openclaw-session-key': `agent:main:dieter-hq:${threadId}`,
+              'x-openclaw-agent-id': agentId,
+              'x-openclaw-session-key': `agent:${agentId}:dieter-hq:${threadId}`,
               'x-openclaw-source': 'dieter-hq',
             },
             body: JSON.stringify({
-              model: 'openclaw:main',
+              model: `openclaw:${agentId}`,
               messages: [
                 { role: 'user', content: contextualMessage }
               ],

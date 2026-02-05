@@ -2,15 +2,19 @@ export const dynamic = "force-dynamic";
 
 import { db } from "@/server/db";
 import { artefacts, messages } from "@/server/db/schema";
-import { asc, desc, eq, sql } from "drizzle-orm";
+import { asc, desc, eq, sql, inArray } from "drizzle-orm";
 import { logEvent } from "@/server/events/log";
 import { clearSessionCookie } from "@/server/auth/node";
 import { redirect } from "next/navigation";
 
 import { AppShell } from "../_ui/AppShell";
-import { ChatView } from "./ChatView";
+import { MultiChatView, CHAT_TABS } from "./MultiChatView";
 
 export default async function ChatPage() {
+  // Get all supported thread IDs
+  const supportedThreadIds = CHAT_TABS.map(tab => tab.id);
+
+  // Load threads with statistics
   const threads = await db
     .select({
       threadId: messages.threadId,
@@ -18,32 +22,61 @@ export default async function ChatPage() {
       count: sql<number>`count(*)`.as("count"),
     })
     .from(messages)
+    .where(inArray(messages.threadId, supportedThreadIds))
     .groupBy(messages.threadId)
     .orderBy(desc(sql`max(${messages.createdAt})`));
 
-  // Dieter HQ UI only exposes a single thread: main.
-  const activeThreadId = "main";
+  // Load messages for all supported threads
+  const threadMessages: Record<string, any[]> = {};
+  
+  for (const tabId of supportedThreadIds) {
+    const messagesForThread = await db
+      .select()
+      .from(messages)
+      .where(eq(messages.threadId, tabId))
+      .orderBy(asc(messages.createdAt));
 
-  const threadMessages = await db
-    .select()
-    .from(messages)
-    .where(eq(messages.threadId, activeThreadId))
-    .orderBy(asc(messages.createdAt));
+    threadMessages[tabId] = messagesForThread.map((m) => {
+      const ts = new Date(m.createdAt).getTime();
+      const label = new Intl.DateTimeFormat("de-AT", {
+        hour: "2-digit",
+        minute: "2-digit",
+        timeZone: "Europe/Vienna",
+      }).format(new Date(ts));
 
-  // Lightweight “internal event log” (placeholder): record page loads.
-  // This is intentionally simple; we can expand to structured events later.
-  if (threadMessages.length || threads.length) {
+      return {
+        id: m.id,
+        threadId: m.threadId,
+        role: m.role,
+        content: m.content,
+        createdAt: ts,
+        createdAtLabel: label,
+      };
+    });
+  }
+
+  // Log event for the first thread with messages (or default to 'life')
+  const activeThreads = Object.keys(threadMessages).filter(id => threadMessages[id].length > 0);
+  const defaultThreadId = activeThreads[0] || "life";
+
+  if (threads.length > 0 || Object.values(threadMessages).some(msgs => msgs.length > 0)) {
     await logEvent({
-      threadId: activeThreadId,
-      type: "chat.view",
-      payload: { threadId: activeThreadId },
+      threadId: defaultThreadId,
+      type: "chat.multi_view",
+      payload: { 
+        threadId: defaultThreadId,
+        supportedThreads: supportedThreadIds,
+        threadCounts: Object.fromEntries(
+          Object.entries(threadMessages).map(([id, msgs]) => [id, msgs.length])
+        )
+      },
     });
   }
 
   async function newThreadAction() {
     "use server";
-    // UI no longer exposes multi-threading. Keep this server action wired
-    // (hidden) to avoid changing any existing plumbing.
+    // UI no longer exposes multi-threading in the old sense. 
+    // Keep this server action wired (hidden) to avoid changing any existing plumbing.
     redirect("/chat");
   }
 
@@ -53,8 +86,8 @@ export default async function ChatPage() {
     redirect("/login");
   }
 
-  // Load artefacts for inline rendering
-  const threadArtefacts = await db
+  // Load artefacts for all threads
+  const allArtefacts = await db
     .select({
       id: artefacts.id,
       threadId: artefacts.threadId,
@@ -63,36 +96,19 @@ export default async function ChatPage() {
       sizeBytes: artefacts.sizeBytes,
     })
     .from(artefacts)
-    .where(eq(artefacts.threadId, activeThreadId));
+    .where(inArray(artefacts.threadId, supportedThreadIds));
 
-  const artefactsById = Object.fromEntries(threadArtefacts.map((a) => [a.id, a]));
+  const artefactsById = Object.fromEntries(allArtefacts.map((a) => [a.id, a]));
 
   return (
     <AppShell active="chat">
-      <ChatView
+      <MultiChatView
         threads={threads.map((t) => ({
           threadId: t.threadId,
           lastAt: t.lastAt,
           count: t.count,
         }))}
-        activeThreadId={activeThreadId}
-        threadMessages={threadMessages.map((m) => {
-          const ts = new Date(m.createdAt).getTime();
-          const label = new Intl.DateTimeFormat("de-AT", {
-            hour: "2-digit",
-            minute: "2-digit",
-            timeZone: "Europe/Vienna",
-          }).format(new Date(ts));
-
-          return {
-            id: m.id,
-            threadId: m.threadId,
-            role: m.role,
-            content: m.content,
-            createdAt: ts,
-            createdAtLabel: label,
-          };
-        })}
+        threadMessages={threadMessages}
         artefactsById={artefactsById}
         newThreadAction={newThreadAction}
         logoutAction={logoutAction}

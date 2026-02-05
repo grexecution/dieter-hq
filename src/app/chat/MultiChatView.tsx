@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import dynamic from "next/dynamic";
-import { Menu, Send, Sparkles, User, Bot } from "lucide-react";
+import { Menu, Send, Sparkles, User, Bot, MessageCircle, Dumbbell, Briefcase, Code } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -12,7 +13,6 @@ import { cn } from "@/lib/utils";
 import { ChatComposer } from "./ChatComposer";
 import { NowBar } from "./NowBar";
 import { OpenClawStatusSidebar } from "./OpenClawStatusSidebar";
-import { AgentStatusPanel } from "@/components/agent-status-panel";
 
 const VoiceRecorderButton = dynamic(
   () => import("./VoiceRecorderButton").then((m) => m.VoiceRecorderButton),
@@ -46,6 +46,49 @@ export type ArtefactRow = {
   sizeBytes: number;
 };
 
+export type ChatTab = {
+  id: string;
+  name: string;
+  icon: React.ComponentType<{ className?: string }>;
+  emoji: string;
+  description: string;
+};
+
+// ============================================
+// Chat Tab Configuration
+// ============================================
+
+export const CHAT_TABS: ChatTab[] = [
+  {
+    id: "life",
+    name: "Life", 
+    icon: MessageCircle,
+    emoji: "💬",
+    description: "Personal conversations & general topics"
+  },
+  {
+    id: "sport",
+    name: "Sport",
+    icon: Dumbbell,
+    emoji: "🏃",
+    description: "Training, fitness & health discussions"
+  },
+  {
+    id: "work", 
+    name: "Work",
+    icon: Briefcase,
+    emoji: "💼",
+    description: "Business, projects & professional topics"
+  },
+  {
+    id: "dev",
+    name: "Dev",
+    icon: Code,
+    emoji: "🔧", 
+    description: "Development, coding & tech support"
+  }
+];
+
 // ============================================
 // Utilities
 // ============================================
@@ -78,6 +121,68 @@ function initials(name: string): string {
 }
 
 // ============================================
+// Tab Navigation Component
+// ============================================
+
+interface TabNavigationProps {
+  activeTab: string;
+  onTabChange: (tabId: string) => void;
+  threadCounts: Record<string, number>;
+}
+
+function TabNavigation({ activeTab, onTabChange, threadCounts }: TabNavigationProps) {
+  return (
+    <div className="border-b border-white/10 bg-white/20 px-4 dark:border-white/5 dark:bg-zinc-900/20">
+      <div className="flex items-center gap-1 overflow-x-auto">
+        {CHAT_TABS.map((tab) => {
+          const isActive = activeTab === tab.id;
+          const messageCount = threadCounts[tab.id] || 0;
+          
+          return (
+            <motion.button
+              key={tab.id}
+              onClick={() => onTabChange(tab.id)}
+              className={cn(
+                "group relative flex min-w-[120px] items-center gap-2 px-4 py-3 text-sm font-medium transition-all",
+                "hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-primary/50 rounded-t-lg",
+                isActive
+                  ? "text-primary bg-white/10 dark:bg-white/5"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              <span className="text-base">{tab.emoji}</span>
+              <span className="truncate">{tab.name}</span>
+              
+              {messageCount > 0 && (
+                <span className={cn(
+                  "ml-auto flex h-5 w-5 items-center justify-center rounded-full text-xs tabular-nums",
+                  isActive 
+                    ? "bg-primary text-primary-foreground" 
+                    : "bg-muted text-muted-foreground"
+                )}>
+                  {messageCount > 99 ? "99+" : messageCount}
+                </span>
+              )}
+              
+              {/* Active indicator */}
+              {isActive && (
+                <motion.div
+                  className="absolute bottom-0 left-0 h-0.5 w-full bg-primary"
+                  layoutId="activeTab"
+                  transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                />
+              )}
+            </motion.button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ============================================
 // Message Bubble Component
 // ============================================
 
@@ -107,11 +212,14 @@ function MessageBubble({ message, artefact, url }: MessageBubbleProps) {
   }
 
   return (
-    <div
+    <motion.div
       className={cn(
-        "flex items-end gap-3 animate-fade-in-up",
+        "flex items-end gap-3",
         isUser ? "flex-row-reverse" : "flex-row"
       )}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
     >
       {/* Avatar */}
       <Avatar
@@ -198,7 +306,86 @@ function MessageBubble({ message, artefact, url }: MessageBubbleProps) {
           </div>
         )}
       </div>
-    </div>
+    </motion.div>
+  );
+}
+
+// ============================================
+// Chat Content Component
+// ============================================
+
+interface ChatContentProps {
+  activeTab: string;
+  messages: MessageRow[];
+  artefactsById: Record<string, ArtefactRow>;
+}
+
+function ChatContent({ activeTab, messages, artefactsById }: ChatContentProps) {
+  const endRef = useRef<HTMLDivElement | null>(null);
+  const currentTab = CHAT_TABS.find(tab => tab.id === activeTab);
+
+  // Auto-scroll to bottom when messages change
+  useEffect(() => {
+    endRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+  }, [messages.length]);
+
+  return (
+    <ScrollArea className="flex-1">
+      <div className="mx-auto flex w-full max-w-3xl flex-col gap-4 px-4 py-6">
+        <AnimatePresence mode="wait">
+          {messages.length > 0 ? (
+            <motion.div
+              key={activeTab}
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.3 }}
+              className="space-y-4"
+            >
+              {messages.map((m) => {
+                const artefactId = extractArtefactIdFromContent(m.content);
+                const artefact = artefactId ? artefactsById[artefactId] : null;
+                const url = artefactId
+                  ? `/api/artefacts/${encodeURIComponent(artefactId)}`
+                  : null;
+
+                return (
+                  <MessageBubble
+                    key={m.id}
+                    message={m}
+                    artefact={artefact}
+                    url={url}
+                  />
+                );
+              })}
+            </motion.div>
+          ) : (
+            <motion.div
+              key={`${activeTab}-empty`}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+              className="flex flex-col items-center justify-center py-20 text-center"
+            >
+              <div className="mb-4 rounded-full bg-gradient-to-br from-blue-500/20 to-purple-600/20 p-6">
+                {currentTab && <currentTab.icon className="h-12 w-12 text-primary" />}
+              </div>
+              <h2 className="mb-2 text-lg font-semibold">
+                {currentTab?.emoji} {currentTab?.name} Chat
+              </h2>
+              <p className="max-w-sm text-sm text-muted-foreground mb-2">
+                {currentTab?.description}
+              </p>
+              <p className="max-w-sm text-xs text-muted-foreground">
+                Start a conversation with Dieter about {currentTab?.name.toLowerCase()} topics!
+              </p>
+            </motion.div>
+          )}
+        </AnimatePresence>
+        <div ref={endRef} />
+      </div>
+    </ScrollArea>
   );
 }
 
@@ -212,10 +399,12 @@ interface ComposerProps {
   isSending: boolean;
   onSubmit: () => void;
   threadId: string;
+  activeTab: string;
 }
 
-function Composer({ draft, setDraft, isSending, onSubmit, threadId }: ComposerProps) {
+function Composer({ draft, setDraft, isSending, onSubmit, threadId, activeTab }: ComposerProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const currentTab = CHAT_TABS.find(tab => tab.id === activeTab);
 
   // Auto-resize textarea
   useEffect(() => {
@@ -250,7 +439,7 @@ function Composer({ draft, setDraft, isSending, onSubmit, threadId }: ComposerPr
               value={draft}
               onChange={(e) => setDraft(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="Message Dieter..."
+              placeholder={`Message Dieter about ${currentTab?.name.toLowerCase() || 'anything'}...`}
               rows={1}
               disabled={isSending}
               className={cn(
@@ -284,157 +473,156 @@ function Composer({ draft, setDraft, isSending, onSubmit, threadId }: ComposerPr
           </div>
         </form>
 
-        {/* Keyboard shortcut hint */}
-        <p className="mt-2 text-center text-[10px] text-muted-foreground/60">
-          Press <kbd className="rounded bg-muted/50 px-1">Enter</kbd> to send,{" "}
-          <kbd className="rounded bg-muted/50 px-1">Shift+Enter</kbd> for new line
-        </p>
+        {/* Context indicator and shortcuts */}
+        <div className="mt-2 flex items-center justify-between">
+          <p className="text-[10px] text-muted-foreground/60">
+            Chatting in <span className="font-medium">{currentTab?.emoji} {currentTab?.name}</span> context
+          </p>
+          <p className="text-[10px] text-muted-foreground/60">
+            <kbd className="rounded bg-muted/50 px-1">Enter</kbd> to send,{" "}
+            <kbd className="rounded bg-muted/50 px-1">Shift+Enter</kbd> for new line
+          </p>
+        </div>
       </div>
     </div>
   );
 }
 
 // ============================================
-// Main Chat View
+// Main Multi-Chat View
 // ============================================
 
-export function ChatView({
+export function MultiChatView({
   threads,
-  activeThreadId,
   threadMessages,
   artefactsById,
   newThreadAction,
   logoutAction,
 }: {
   threads: ThreadRow[];
-  activeThreadId: string;
-  threadMessages: MessageRow[];
+  threadMessages: Record<string, MessageRow[]>;
   artefactsById: Record<string, ArtefactRow>;
   newThreadAction: (formData: FormData) => void;
   logoutAction: (formData: FormData) => void;
 }) {
-  const [liveMessages, setLiveMessages] = useState<MessageRow[]>(threadMessages);
+  const [activeTab, setActiveTab] = useState<string>("life");
+  const [liveMessages, setLiveMessages] = useState<Record<string, MessageRow[]>>(threadMessages);
   const [mobileHudOpen, setMobileHudOpen] = useState(false);
-  const [draft, setDraft] = useState("");
-  const [isSending, setIsSending] = useState(false);
-  const endRef = useRef<HTMLDivElement | null>(null);
+  const [drafts, setDrafts] = useState<Record<string, string>>({});
+  const [sendingStates, setSendingStates] = useState<Record<string, boolean>>({});
+
+  const endRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
   // Sync messages from props
   useEffect(() => {
     setLiveMessages(threadMessages);
   }, [threadMessages]);
 
-  // Auto-scroll to bottom
-  useEffect(() => {
-    endRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
-  }, [liveMessages.length]);
+  // Get current tab data
+  const currentMessages = liveMessages[activeTab] || [];
+  const currentDraft = drafts[activeTab] || "";
+  const isSending = sendingStates[activeTab] || false;
 
-  const lastCreatedAt = useMemo(() => {
-    const last = liveMessages[liveMessages.length - 1];
-    return last?.createdAt ?? 0;
+  // Calculate thread counts for tab navigation
+  const threadCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    for (const tab of CHAT_TABS) {
+      counts[tab.id] = liveMessages[tab.id]?.length || 0;
+    }
+    return counts;
   }, [liveMessages]);
 
-  // SSE subscription for real-time messages
-  useEffect(() => {
-    if (activeThreadId !== "main") return;
+  // Handle tab change
+  const handleTabChange = (tabId: string) => {
+    setActiveTab(tabId);
+  };
 
-    const es = new EventSource(
-      `/api/stream?thread=${encodeURIComponent(activeThreadId)}&since=${encodeURIComponent(String(lastCreatedAt))}`
-    );
+  // Handle draft changes per tab
+  const setDraft = (value: string) => {
+    setDrafts(prev => ({ ...prev, [activeTab]: value }));
+  };
 
-    const onMessage = (ev: MessageEvent) => {
-      try {
-        const item = JSON.parse(ev.data) as MessageRow;
-        if (!item?.id) return;
-        setLiveMessages((prev) => {
-          if (prev.some((m) => m.id === item.id)) return prev;
-          return [...prev, item];
-        });
-      } catch {
-        // ignore parse errors
-      }
-    };
-
-    es.addEventListener("message", onMessage);
-    return () => {
-      es.removeEventListener("message", onMessage);
-      es.close();
-    };
-  }, [activeThreadId, lastCreatedAt]);
-
-  // Polling fallback
-  useEffect(() => {
-    if (activeThreadId !== "main") return;
-
-    let stopped = false;
-
-    const tick = async () => {
-      try {
-        const r = await fetch(
-          `/api/chat/messages?thread=${encodeURIComponent(activeThreadId)}&since=${encodeURIComponent(String(lastCreatedAt))}`,
-          { cache: "no-store" }
-        );
-        if (!r.ok) return;
-        const data = (await r.json()) as { ok: boolean; items: MessageRow[] };
-        if (!data?.ok || !Array.isArray(data.items) || stopped) return;
-        if (!data.items.length) return;
-
-        setLiveMessages((prev) => {
-          const have = new Set(prev.map((m) => m.id));
-          const next = [...prev];
-          for (const it of data.items) if (it?.id && !have.has(it.id)) next.push(it);
-          return next;
-        });
-      } catch {
-        // ignore
-      }
-    };
-
-    const t = setInterval(tick, 2500);
-    void tick();
-
-    return () => {
-      stopped = true;
-      clearInterval(t);
-    };
-  }, [activeThreadId, lastCreatedAt]);
-
-  // Send message handler
+  // Send message handler for current tab
   const handleSend = async () => {
-    const content = draft.trim();
+    const content = currentDraft.trim();
     if (!content || isSending) return;
 
-    setIsSending(true);
-    setDraft("");
+    setSendingStates(prev => ({ ...prev, [activeTab]: true }));
+    setDrafts(prev => ({ ...prev, [activeTab]: "" }));
 
     try {
       const r = await fetch("/api/chat/send", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ threadId: activeThreadId, content }),
+        body: JSON.stringify({ threadId: activeTab, content }),
       });
       if (!r.ok) throw new Error("send_failed");
       const data = (await r.json()) as { ok: boolean; item: MessageRow };
       if (data?.ok && data.item?.id) {
-        setLiveMessages((prev) => {
-          if (prev.some((m) => m.id === data.item.id)) return prev;
-          return [...prev, data.item];
-        });
+        setLiveMessages((prev) => ({
+          ...prev,
+          [activeTab]: [
+            ...(prev[activeTab] || []),
+            data.item
+          ].filter((m, i, arr) => arr.findIndex(msg => msg.id === m.id) === i) // dedup
+        }));
       }
     } catch {
-      setDraft(content); // Restore on failure
+      setDrafts(prev => ({ ...prev, [activeTab]: content })); // Restore on failure
     } finally {
-      setIsSending(false);
+      setSendingStates(prev => ({ ...prev, [activeTab]: false }));
     }
   };
 
-  const mainCount = threads.find((t) => t.threadId === "main")?.count ?? liveMessages.length;
+  // SSE subscription for real-time messages per tab
+  useEffect(() => {
+    const eventSources: EventSource[] = [];
+    
+    for (const tab of CHAT_TABS) {
+      const lastMessage = liveMessages[tab.id]?.[liveMessages[tab.id].length - 1];
+      const lastCreatedAt = lastMessage?.createdAt || 0;
+      
+      const es = new EventSource(
+        `/api/stream?thread=${encodeURIComponent(tab.id)}&since=${encodeURIComponent(String(lastCreatedAt))}`
+      );
+
+      const onMessage = (ev: MessageEvent) => {
+        try {
+          const item = JSON.parse(ev.data) as MessageRow;
+          if (!item?.id || item.threadId !== tab.id) return;
+          
+          setLiveMessages((prev) => {
+            const existing = prev[tab.id] || [];
+            if (existing.some((m) => m.id === item.id)) return prev;
+            
+            return {
+              ...prev,
+              [tab.id]: [...existing, item]
+            };
+          });
+        } catch {
+          // ignore parse errors
+        }
+      };
+
+      es.addEventListener("message", onMessage);
+      eventSources.push(es);
+    }
+
+    return () => {
+      eventSources.forEach(es => {
+        es.close();
+      });
+    };
+  }, [liveMessages]);
+
+  const currentTab = CHAT_TABS.find(tab => tab.id === activeTab);
 
   return (
     <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
       {/* Sidebar (desktop) */}
       <aside className="hidden lg:block lg:sticky lg:top-20 lg:h-[calc(100vh-6rem)] lg:self-start">
-        <AgentStatusPanel />
+        <OpenClawStatusSidebar logoutAction={logoutAction} />
         <form action={newThreadAction} className="hidden" aria-hidden="true" />
       </aside>
 
@@ -449,7 +637,7 @@ export function ChatView({
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
-              <span className="text-sm font-semibold">Agent Status</span>
+              <span className="text-sm font-semibold">OpenClaw Status</span>
               <Button
                 type="button"
                 variant="ghost"
@@ -460,7 +648,7 @@ export function ChatView({
               </Button>
             </div>
             <div className="h-[calc(100%-52px)] overflow-auto">
-              <AgentStatusPanel defaultCollapsed={false} className="h-full" />
+              <OpenClawStatusSidebar logoutAction={logoutAction} />
             </div>
           </div>
         </div>
@@ -495,9 +683,11 @@ export function ChatView({
                 <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-background bg-green-500" />
               </div>
               <div className="min-w-0">
-                <h1 className="truncate text-base font-semibold">Dieter</h1>
+                <h1 className="truncate text-base font-semibold">
+                  Dieter {currentTab && `• ${currentTab.emoji} ${currentTab.name}`}
+                </h1>
                 <p className="text-xs text-muted-foreground">
-                  AI Assistant • Online
+                  AI Assistant • Multi-Context Chat
                 </p>
               </div>
             </div>
@@ -505,59 +695,36 @@ export function ChatView({
 
           <div className="flex items-center gap-2">
             <span className="rounded-full bg-muted/50 px-2.5 py-1 text-xs text-muted-foreground tabular-nums">
-              {mainCount} messages
+              {currentMessages.length} messages
             </span>
           </div>
         </header>
+
+        {/* Tab Navigation */}
+        <TabNavigation 
+          activeTab={activeTab}
+          onTabChange={handleTabChange}
+          threadCounts={threadCounts}
+        />
 
         {/* Now Bar */}
         <NowBar />
 
         {/* Messages */}
-        <ScrollArea className="flex-1">
-          <div className="mx-auto flex w-full max-w-3xl flex-col gap-4 px-4 py-6">
-            {liveMessages.length > 0 ? (
-              liveMessages.map((m) => {
-                const artefactId = extractArtefactIdFromContent(m.content);
-                const artefact = artefactId ? artefactsById[artefactId] : null;
-                const url = artefactId
-                  ? `/api/artefacts/${encodeURIComponent(artefactId)}`
-                  : null;
-
-                return (
-                  <MessageBubble
-                    key={m.id}
-                    message={m}
-                    artefact={artefact}
-                    url={url}
-                  />
-                );
-              })
-            ) : (
-              <div className="flex flex-col items-center justify-center py-20 text-center">
-                <div className="mb-4 rounded-full bg-gradient-to-br from-blue-500/20 to-purple-600/20 p-6">
-                  <Bot className="h-12 w-12 text-primary" />
-                </div>
-                <h2 className="mb-2 text-lg font-semibold">
-                  Hey, I'm Dieter! 🐶
-                </h2>
-                <p className="max-w-sm text-sm text-muted-foreground">
-                  Your personal AI assistant. Ask me anything, and I'll do my
-                  best to help. Start typing below!
-                </p>
-              </div>
-            )}
-            <div ref={endRef} />
-          </div>
-        </ScrollArea>
+        <ChatContent 
+          activeTab={activeTab}
+          messages={currentMessages}
+          artefactsById={artefactsById}
+        />
 
         {/* Composer */}
         <Composer
-          draft={draft}
+          draft={currentDraft}
           setDraft={setDraft}
           isSending={isSending}
           onSubmit={handleSend}
-          threadId={activeThreadId}
+          threadId={activeTab}
+          activeTab={activeTab}
         />
       </section>
     </div>

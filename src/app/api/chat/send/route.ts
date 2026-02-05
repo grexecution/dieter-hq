@@ -103,15 +103,28 @@ export async function POST(req: NextRequest) {
     });
   }
 
-  // Call OpenClaw gateway for AI response
-  if (threadId === "main") {
+  // Call OpenClaw gateway for AI response (support all thread contexts)
+  const supportedThreadIds = ["life", "sport", "work", "dev", "main"];
+  if (supportedThreadIds.includes(threadId)) {
     const GATEWAY_HTTP_URL = process.env.OPENCLAW_GATEWAY_HTTP_URL || 'http://127.0.0.1:18789';
     const GATEWAY_TOKEN = process.env.OPENCLAW_GATEWAY_TOKEN;
     
     let assistantContent = '';
     
+    // Add context-specific message prefix based on thread
+    const contextPrefixes: Record<string, string> = {
+      life: "💬 Life Context: ",
+      sport: "🏃 Sport Context: ",
+      work: "💼 Work Context: ",
+      dev: "🔧 Dev Context: ",
+      main: ""
+    };
+    
+    const contextPrefix = contextPrefixes[threadId] || "";
+    const contextualMessage = contextPrefix + content;
+    
     try {
-      // Call OpenClaw gateway RPC
+      // Call OpenClaw gateway RPC with thread-specific session
       const response = await fetch(`${GATEWAY_HTTP_URL}/rpc`, {
         method: 'POST',
         headers: {
@@ -123,10 +136,11 @@ export async function POST(req: NextRequest) {
           id: crypto.randomUUID(),
           method: 'agent.chat',
           params: {
-            message: content,
-            sessionKey: `agent:main:dieter-hq`,
+            message: contextualMessage,
+            sessionKey: `agent:main:dieter-hq:${threadId}`,
             options: {
               channel: 'dieter-hq',
+              context: threadId,
             },
           },
         }),
@@ -146,16 +160,16 @@ export async function POST(req: NextRequest) {
     // Save assistant response
     await db.insert(messages).values({
       id: crypto.randomUUID(),
-      threadId: "main",
+      threadId,
       role: "assistant",
       content: `[Dieter] ${assistantContent}`,
       createdAt: new Date(now.getTime() + 1),
     });
 
     await logEvent({
-      threadId: "main",
+      threadId,
       type: "openclaw.response",
-      payload: { channel: "dieter-hq" },
+      payload: { channel: "dieter-hq", context: threadId },
     });
   }
 

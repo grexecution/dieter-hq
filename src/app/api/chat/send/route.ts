@@ -126,7 +126,7 @@ export async function POST(req: NextRequest) {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          ...(GATEWAY_PASSWORD && { 'Authorization': `Basic ${Buffer.from(':' + GATEWAY_PASSWORD).toString('base64')}` }),
+          ...(GATEWAY_PASSWORD && { 'Authorization': `Bearer ${GATEWAY_PASSWORD}` }),
           'x-openclaw-agent-id': 'main',
           'x-openclaw-session-key': `agent:main:dieter-hq:${threadId}`,
         },

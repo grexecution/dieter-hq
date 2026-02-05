@@ -11,7 +11,7 @@ import { placeholderSvg } from "@/server/tools/image";
 export const runtime = "nodejs";
 
 const GATEWAY_HTTP_URL = process.env.OPENCLAW_GATEWAY_HTTP_URL || 'http://127.0.0.1:18789';
-const GATEWAY_PASSWORD = process.env.OPENCLAW_GATEWAY_PASSWORD;
+const GATEWAY_TOKEN = process.env.OPENCLAW_GATEWAY_TOKEN;
 
 type Payload = {
   threadId?: string;
@@ -126,7 +126,7 @@ export async function POST(req: NextRequest) {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          ...(GATEWAY_PASSWORD && { 'Authorization': `Basic ${Buffer.from(`:${GATEWAY_PASSWORD}`).toString('base64')}` }),
+          ...(GATEWAY_TOKEN && { 'Authorization': `Bearer ${GATEWAY_TOKEN}` }),
           'x-openclaw-agent-id': 'main',
           'x-openclaw-session-key': `agent:main:dieter-hq:${threadId}`,
         },

@@ -119,7 +119,7 @@ function MessageBubble({ message, artefact, url }: MessageBubbleProps) {
           "h-8 w-8 shrink-0 ring-2 transition-all",
           isUser
             ? "ring-primary/20 bg-primary/10"
-            : "ring-white/30 dark:ring-white/10 bg-background"
+            : "ring-default/20 bg-default-100"
         )}
       >
         {isUser ? (
@@ -129,7 +129,7 @@ function MessageBubble({ message, artefact, url }: MessageBubbleProps) {
         ) : (
           <>
             <AvatarImage src="/dieter-avatar.png" alt={author} />
-            <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white text-xs font-medium">
+            <AvatarFallback className="bg-primary text-primary-foreground text-xs font-medium">
               <Bot className="h-4 w-4" />
             </AvatarFallback>
           </>
@@ -139,10 +139,10 @@ function MessageBubble({ message, artefact, url }: MessageBubbleProps) {
       {/* Bubble */}
       <div
         className={cn(
-          "group relative max-w-[75%] rounded-2xl px-4 py-3 shadow-sm backdrop-blur-xl transition-all",
+          "group relative max-w-[75%] rounded-2xl px-4 py-3 shadow-sm transition-all",
           isUser
             ? "bg-primary text-primary-foreground rounded-br-md"
-            : "glass rounded-bl-md"
+            : "bg-default-100 rounded-bl-md"
         )}
       >
         {/* Author & Time */}
@@ -234,7 +234,7 @@ function Composer({ draft, setDraft, isSending, onSubmit, threadId }: ComposerPr
   };
 
   return (
-    <div className="sticky bottom-0 border-t border-white/20 bg-background/80 px-4 py-4 backdrop-blur-2xl dark:border-white/5 dark:bg-background/60">
+    <div className="sticky bottom-0 border-t border-divider bg-content1 px-4 py-4">
       <div className="mx-auto w-full max-w-3xl pb-[env(safe-area-inset-bottom)]">
         <form
           className="flex items-end gap-3"
@@ -254,12 +254,11 @@ function Composer({ draft, setDraft, isSending, onSubmit, threadId }: ComposerPr
               rows={1}
               disabled={isSending}
               className={cn(
-                "w-full resize-none rounded-2xl border-0 bg-white/60 px-4 py-3 pr-12",
-                "text-sm placeholder:text-muted-foreground",
-                "shadow-sm backdrop-blur-xl transition-all",
-                "focus:outline-none focus:ring-2 focus:ring-primary/50",
-                "disabled:opacity-50",
-                "dark:bg-white/5 dark:placeholder:text-zinc-500"
+                "w-full resize-none rounded-xl border border-divider bg-default-100 px-4 py-3 pr-12",
+                "text-sm placeholder:text-foreground-400",
+                "transition-all",
+                "focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary",
+                "disabled:opacity-50"
               )}
             />
           </div>
@@ -445,10 +444,10 @@ export function ChatView({
           onClick={() => setMobileHudOpen(false)}
         >
           <div
-            className="absolute inset-y-4 left-4 w-[calc(100%-2rem)] max-w-sm overflow-hidden rounded-2xl border border-white/20 bg-background/95 shadow-2xl backdrop-blur-xl animate-slide-in-left"
+            className="absolute inset-y-4 left-4 w-[calc(100%-2rem)] max-w-sm overflow-hidden rounded-2xl border border-divider bg-content1 shadow-2xl animate-slide-in-left"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
+            <div className="flex items-center justify-between border-b border-divider px-4 py-3">
               <span className="text-sm font-semibold">Agent Status</span>
               <Button
                 type="button"
@@ -467,9 +466,9 @@ export function ChatView({
       )}
 
       {/* Main Chat Area */}
-      <section className="flex h-[calc(100dvh-120px)] flex-col overflow-hidden rounded-2xl border border-white/20 bg-white/40 shadow-xl backdrop-blur-2xl dark:border-white/5 dark:bg-zinc-900/40">
+      <section className="flex h-[calc(100dvh-120px)] flex-col overflow-hidden rounded-2xl border border-divider bg-content1 shadow-lg">
         {/* Header */}
-        <header className="flex items-center justify-between gap-4 border-b border-white/10 px-4 py-3 dark:border-white/5">
+        <header className="flex items-center justify-between gap-4 border-b border-divider px-4 py-3">
           <div className="flex min-w-0 items-center gap-3">
             {/* Mobile menu button */}
             <Button
@@ -485,14 +484,14 @@ export function ChatView({
 
             <div className="flex items-center gap-3">
               <div className="relative">
-                <Avatar className="h-10 w-10 ring-2 ring-primary/20">
+                <Avatar className="h-10 w-10 ring-2 ring-default/20">
                   <AvatarImage src="/dieter-avatar.png" alt="Dieter" />
-                  <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white">
+                  <AvatarFallback className="bg-primary text-primary-foreground">
                     <Bot className="h-5 w-5" />
                   </AvatarFallback>
                 </Avatar>
                 {/* Online indicator */}
-                <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-background bg-green-500" />
+                <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-background bg-success" />
               </div>
               <div className="min-w-0">
                 <h1 className="truncate text-base font-semibold">Dieter</h1>
@@ -535,13 +534,13 @@ export function ChatView({
               })
             ) : (
               <div className="flex flex-col items-center justify-center py-20 text-center">
-                <div className="mb-4 rounded-full bg-gradient-to-br from-blue-500/20 to-purple-600/20 p-6">
+                <div className="mb-4 rounded-full bg-primary/10 p-6">
                   <Bot className="h-12 w-12 text-primary" />
                 </div>
-                <h2 className="mb-2 text-lg font-semibold">
+                <h2 className="mb-2 text-lg font-semibold text-foreground">
                   Hey, I'm Dieter! 🐶
                 </h2>
-                <p className="max-w-sm text-sm text-muted-foreground">
+                <p className="max-w-sm text-sm text-foreground-500">
                   Your personal AI assistant. Ask me anything, and I'll do my
                   best to help. Start typing below!
                 </p>

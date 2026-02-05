@@ -232,7 +232,7 @@ export function UnifiedInbox() {
                         handleSnooze(item.id);
                       }}
                     >
-                      <Snooze className="h-3 w-3" />
+                      <Clock className="h-3 w-3" />
                     </Button>
                   </div>
                 )}

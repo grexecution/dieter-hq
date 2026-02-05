@@ -1,6 +1,11 @@
 import type { Config } from "tailwindcss";
 import animate from "tailwindcss-animate";
-import { designTokens } from "./src/design-system/tokens";
+
+// Inline tokens to avoid build-time import issues
+const fontFamily = {
+  sans: ["var(--font-geist-sans)", "system-ui", "sans-serif"],
+  mono: ["var(--font-geist-mono)", "monospace"],
+};
 
 const config: Config = {
   content: ["./src/**/*.{js,ts,jsx,tsx,mdx}"],
@@ -82,10 +87,10 @@ const config: Config = {
         xl: "var(--shadow-xl)",
         glass: "var(--shadow-glass)",
       },
-      // Font family from design tokens
+      // Font family
       fontFamily: {
-        sans: designTokens.typography.fontFamily.sans,
-        mono: designTokens.typography.fontFamily.mono,
+        sans: fontFamily.sans,
+        mono: fontFamily.mono,
       },
       // Animation keyframes
       keyframes: {

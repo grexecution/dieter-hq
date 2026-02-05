@@ -2,8 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { Activity, Zap, Clock, Users, AlertCircle, CheckCircle } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
 interface SubAgent {
@@ -11,7 +9,7 @@ interface SubAgent {
   name: string;
   status: "running" | "idle" | "error";
   task: string;
-  duration: number; // in seconds
+  duration: number;
 }
 
 export function AgentStatusBar() {
@@ -49,73 +47,74 @@ export function AgentStatusBar() {
   }, []);
 
   return (
-    <div className="sticky top-0 z-50 border-b border-white/20 bg-white/70 shadow-sm backdrop-blur-2xl dark:border-zinc-800/60 dark:bg-zinc-950/55">
+    <div className="sticky top-0 z-50 border-b border-zinc-200 bg-white/80 backdrop-blur-lg dark:border-zinc-800 dark:bg-zinc-900/80">
       <div className="flex h-12 items-center justify-between px-4">
         {/* Left: Current Status */}
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2">
             <div className="relative">
-              <Activity className="h-4 w-4 text-primary animate-pulse" />
-              <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-green-500" />
+              <Activity className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+              <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-emerald-500" />
             </div>
-            <span className="text-sm font-medium">Dieter:</span>
+            <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100">Dieter:</span>
           </div>
-          <span className="text-sm text-muted-foreground truncate max-w-[200px]">
+          <span className="text-sm text-zinc-500 truncate max-w-[200px]">
             {currentStatus}
           </span>
         </div>
 
         {/* Center: Metrics */}
         <div className="hidden md:flex items-center gap-4 text-xs">
-          <div className="flex items-center gap-1">
-            <Zap className="h-3 w-3 text-yellow-500" />
+          <div className="flex items-center gap-1 text-zinc-600 dark:text-zinc-400">
+            <Zap className="h-3 w-3 text-amber-500" />
             <span>€{tokensCost.toFixed(2)}</span>
-            <span className="text-muted-foreground">today</span>
+            <span className="text-zinc-400 dark:text-zinc-500">today</span>
           </div>
           
-          <div className="flex items-center gap-1">
-            <Clock className="h-3 w-3 text-blue-500" />
+          <div className="flex items-center gap-1 text-zinc-600 dark:text-zinc-400">
+            <Clock className="h-3 w-3 text-indigo-500" />
             <span>{taskQueue}</span>
-            <span className="text-muted-foreground">queued</span>
+            <span className="text-zinc-400 dark:text-zinc-500">queued</span>
           </div>
           
-          <div className="flex items-center gap-1">
-            <Users className="h-3 w-3 text-purple-500" />
+          <div className="flex items-center gap-1 text-zinc-600 dark:text-zinc-400">
+            <Users className="h-3 w-3 text-indigo-500" />
             <span>{subAgents.filter(a => a.status === "running").length}</span>
-            <span className="text-muted-foreground">active</span>
+            <span className="text-zinc-400 dark:text-zinc-500">active</span>
           </div>
 
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1 text-zinc-600 dark:text-zinc-400">
             <div className={cn(
               "h-3 w-3 rounded-full",
-              memoryUsage < 70 ? "bg-green-500" : memoryUsage < 90 ? "bg-yellow-500" : "bg-red-500"
+              memoryUsage < 70 ? "bg-emerald-500" : memoryUsage < 90 ? "bg-amber-500" : "bg-red-500"
             )} />
             <span>{memoryUsage}%</span>
-            <span className="text-muted-foreground">memory</span>
+            <span className="text-zinc-400 dark:text-zinc-500">memory</span>
           </div>
         </div>
 
         {/* Right: Sub-agents Status */}
         <div className="flex items-center gap-2">
           {subAgents.map((agent) => (
-            <Badge 
+            <span 
               key={agent.id}
-              variant={
-                agent.status === "running" ? "default" : 
-                agent.status === "error" ? "destructive" : "secondary"
-              }
-              className="text-xs h-6"
+              className={cn(
+                "inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium",
+                agent.status === "running" && "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400",
+                agent.status === "error" && "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
+                agent.status === "idle" && "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400"
+              )}
             >
-              {agent.status === "running" && <Activity className="h-2 w-2 mr-1 animate-pulse" />}
-              {agent.status === "error" && <AlertCircle className="h-2 w-2 mr-1" />}
-              {agent.status === "idle" && <CheckCircle className="h-2 w-2 mr-1" />}
+              {agent.status === "running" && <Activity className="h-2 w-2" />}
+              {agent.status === "error" && <AlertCircle className="h-2 w-2" />}
+              {agent.status === "idle" && <CheckCircle className="h-2 w-2" />}
               {agent.name.split(" ")[0]}
-            </Badge>
+            </span>
           ))}
           
-          <Button variant="ghost" size="sm" className="h-6 text-xs px-2">
+          <button className="rounded-md px-2 py-1 text-xs font-medium text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-700 dark:hover:bg-zinc-800 dark:hover:text-zinc-300">
             +
-          </Button>
+          </button>
         </div>
       </div>
     </div>

@@ -2,10 +2,9 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { ChevronLeft, Settings } from "lucide-react";
+import { ChevronLeft } from "lucide-react";
 
 import { ThemeToggle } from "@/components/theme-toggle";
-import { cn } from "@/lib/utils";
 
 interface ChatShellProps {
   children: React.ReactNode;
@@ -15,12 +14,12 @@ interface ChatShellProps {
 function ChatHeader() {
   return (
     <header className="sticky left-0 right-0 top-0 z-50">
-      <div className="glass-medium border-b border-white/10 dark:border-white/5">
+      <div className="border-b border-zinc-200 bg-white/80 backdrop-blur-lg dark:border-zinc-800 dark:bg-zinc-900/80">
         <div className="mx-auto flex h-12 max-w-6xl items-center justify-between px-4">
           {/* Back button */}
           <Link
             href="/"
-            className="flex items-center gap-1 rounded-lg px-2 py-1.5 text-sm font-medium text-foreground-secondary transition-colors hover:bg-white/10 hover:text-foreground hover-press"
+            className="flex items-center gap-1 rounded-lg px-2 py-1.5 text-sm font-medium text-zinc-600 transition-colors hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
           >
             <ChevronLeft className="h-5 w-5" />
             <span className="hidden sm:inline">Home</span>
@@ -28,11 +27,9 @@ function ChatHeader() {
 
           {/* Title */}
           <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-            <h1 className="flex items-center gap-1.5 text-sm font-semibold">
+            <h1 className="flex items-center gap-1.5 text-sm font-semibold text-zinc-900 dark:text-zinc-100">
               <span className="text-base">💬</span>
-              <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent dark:from-blue-400 dark:to-indigo-400">
-                Chat
-              </span>
+              <span>Chat</span>
             </h1>
           </div>
 
@@ -48,7 +45,7 @@ function ChatHeader() {
 
 export function ChatShell({ children }: ChatShellProps) {
   return (
-    <div className="relative flex min-h-dvh flex-col bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(59,130,246,0.08),transparent)] dark:bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(59,130,246,0.05),transparent)]">
+    <div className="relative flex min-h-dvh flex-col bg-zinc-50 dark:bg-zinc-950">
       {/* Compact Header */}
       <ChatHeader />
 

@@ -12,6 +12,7 @@ import { cn } from "@/lib/utils";
 import { ChatComposer } from "./ChatComposer";
 import { NowBar } from "./NowBar";
 import { OpenClawStatusSidebar } from "./OpenClawStatusSidebar";
+import { AgentStatusPanel } from "@/components/agent-status-panel";
 
 const VoiceRecorderButton = dynamic(
   () => import("./VoiceRecorderButton").then((m) => m.VoiceRecorderButton),
@@ -433,7 +434,7 @@ export function ChatView({
     <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
       {/* Sidebar (desktop) */}
       <aside className="hidden lg:block lg:sticky lg:top-20 lg:h-[calc(100vh-6rem)] lg:self-start">
-        <OpenClawStatusSidebar logoutAction={logoutAction} />
+        <AgentStatusPanel />
         <form action={newThreadAction} className="hidden" aria-hidden="true" />
       </aside>
 
@@ -448,7 +449,7 @@ export function ChatView({
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
-              <span className="text-sm font-semibold">OpenClaw Status</span>
+              <span className="text-sm font-semibold">Agent Status</span>
               <Button
                 type="button"
                 variant="ghost"
@@ -459,7 +460,7 @@ export function ChatView({
               </Button>
             </div>
             <div className="h-[calc(100%-52px)] overflow-auto">
-              <OpenClawStatusSidebar logoutAction={logoutAction} />
+              <AgentStatusPanel defaultCollapsed={false} className="h-full" />
             </div>
           </div>
         </div>

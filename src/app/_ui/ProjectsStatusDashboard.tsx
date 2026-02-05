@@ -7,7 +7,7 @@ import {
   CheckCircle2, 
   Clock, 
   Bug, 
-  PullRequest, 
+  GitPullRequest, 
   Shield, 
   Package, 
   Zap,

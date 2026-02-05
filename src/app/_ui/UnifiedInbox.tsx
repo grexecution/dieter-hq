@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Mail, MessageSquare, Calendar, CheckSquare, Star, Archive, Snooze, Edit3, Send } from "lucide-react";
+import { Mail, MessageSquare, Calendar, CheckSquare, Star, Archive, Clock, Edit3, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";

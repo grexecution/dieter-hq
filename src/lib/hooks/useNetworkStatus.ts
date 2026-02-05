@@ -5,7 +5,7 @@ import { getNetworkStatus, setupNetworkListeners } from '../sw-register';
 
 export interface NetworkStatus {
   isOnline: boolean;
-  effectiveType?: '4g' | '3g' | '2g' | 'slow-2g';
+  effectiveType?: string;
   downlink?: number; // Mbps
   rtt?: number; // milliseconds
   saveData?: boolean;

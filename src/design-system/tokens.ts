@@ -1,269 +1,201 @@
 /**
- * Design Tokens for Dieter HQ
- * iOS-inspired design system with frosted glass aesthetics
- * Mobile-first, responsive, and theme-aware
+ * Design System Tokens
+ * 
+ * Centralized design tokens for consistent styling across the application.
+ * These values are used by Tailwind CSS config and components.
  */
 
 export const designTokens = {
-  // Color System
-  colors: {
-    // Base colors - HSL format for easy manipulation
-    light: {
-      // Surface colors
-      background: {
-        primary: '0 0% 100%',        // Pure white
-        secondary: '210 40% 98%',    // Off-white
-        tertiary: '210 40% 96.1%',   // Light gray
-        elevated: '0 0% 100%',       // For cards/modals
-      },
-      foreground: {
-        primary: '222.2 84% 4.9%',   // Near black
-        secondary: '215.4 16.3% 46.9%', // Medium gray
-        tertiary: '215 20.2% 65.1%', // Light gray text
-        inverse: '210 40% 98%',      // For dark backgrounds
-      },
-      // Brand colors
-      accent: {
-        blue: '211 100% 50%',        // iOS blue
-        purple: '271 81% 56%',       // iOS purple
-        pink: '330 81% 60%',         // iOS pink
-        red: '0 84.2% 60.2%',        // iOS red
-        orange: '28 100% 54%',       // iOS orange
-        yellow: '48 100% 54%',       // iOS yellow
-        green: '142 71% 45%',        // iOS green
-        teal: '174 72% 42%',         // iOS teal
-      },
-      // UI states
-      border: '214.3 31.8% 91.4%',
-      input: '214.3 31.8% 91.4%',
-      ring: '211 100% 50%',          // Focus ring
-      divider: '214.3 31.8% 91.4%',
-    },
-    dark: {
-      // Surface colors - elevated surfaces are lighter in dark mode (iOS style)
-      background: {
-        primary: '240 10% 3.9%',     // Near black
-        secondary: '222.2 84% 4.9%', // Dark gray
-        tertiary: '217.2 32.6% 17.5%', // Lighter dark
-        elevated: '240 5% 8%',       // Elevated surfaces
-      },
-      foreground: {
-        primary: '210 40% 98%',      // Near white
-        secondary: '215 20.2% 65.1%', // Medium gray
-        tertiary: '215.4 16.3% 46.9%', // Dark gray text
-        inverse: '222.2 84% 4.9%',   // For light backgrounds
-      },
-      // Brand colors - slightly muted for dark mode
-      accent: {
-        blue: '211 100% 55%',
-        purple: '271 81% 61%',
-        pink: '330 81% 65%',
-        red: '0 84.2% 65%',
-        orange: '28 100% 59%',
-        yellow: '48 100% 59%',
-        green: '142 71% 50%',
-        teal: '174 72% 47%',
-      },
-      border: '217.2 32.6% 17.5%',
-      input: '217.2 32.6% 17.5%',
-      ring: '211 100% 55%',
-      divider: '217.2 32.6% 17.5%',
-    },
-  },
-
-  // Spacing System (based on 4px base unit)
-  spacing: {
-    0: '0',
-    1: '0.25rem',   // 4px
-    2: '0.5rem',    // 8px
-    3: '0.75rem',   // 12px
-    4: '1rem',      // 16px
-    5: '1.25rem',   // 20px
-    6: '1.5rem',    // 24px
-    8: '2rem',      // 32px
-    10: '2.5rem',   // 40px
-    12: '3rem',     // 48px
-    16: '4rem',     // 64px
-    20: '5rem',     // 80px
-    24: '6rem',     // 96px
-    32: '8rem',     // 128px
-  },
-
-  // Typography System
+  // Typography
   typography: {
     fontFamily: {
       sans: [
         '-apple-system',
         'BlinkMacSystemFont',
-        '"SF Pro Display"',
-        '"SF Pro Text"',
+        'SF Pro Text',
+        'SF Pro Display',
+        'Inter',
         'system-ui',
         'sans-serif',
       ],
       mono: [
-        '"SF Mono"',
-        'ui-monospace',
+        'SF Mono',
+        'Fira Code',
         'Monaco',
-        'Consolas',
+        'Menlo',
         'monospace',
       ],
     },
     fontSize: {
-      // iOS-inspired scale
-      xs: ['0.75rem', { lineHeight: '1rem' }],      // 12px
-      sm: ['0.875rem', { lineHeight: '1.25rem' }],  // 14px
-      base: ['1rem', { lineHeight: '1.5rem' }],     // 16px
-      lg: ['1.125rem', { lineHeight: '1.75rem' }],  // 18px
-      xl: ['1.25rem', { lineHeight: '1.75rem' }],   // 20px
-      '2xl': ['1.5rem', { lineHeight: '2rem' }],    // 24px
-      '3xl': ['1.875rem', { lineHeight: '2.25rem' }], // 30px
-      '4xl': ['2.25rem', { lineHeight: '2.5rem' }], // 36px
-      '5xl': ['3rem', { lineHeight: '1' }],         // 48px
+      xs: ['0.75rem', { lineHeight: '1rem' }],
+      sm: ['0.875rem', { lineHeight: '1.25rem' }],
+      base: ['1rem', { lineHeight: '1.5rem' }],
+      lg: ['1.125rem', { lineHeight: '1.75rem' }],
+      xl: ['1.25rem', { lineHeight: '1.75rem' }],
+      '2xl': ['1.5rem', { lineHeight: '2rem' }],
+      '3xl': ['1.875rem', { lineHeight: '2.25rem' }],
+      '4xl': ['2.25rem', { lineHeight: '2.5rem' }],
     },
     fontWeight: {
-      light: '300',
       normal: '400',
       medium: '500',
       semibold: '600',
       bold: '700',
-      heavy: '800',
-    },
-    letterSpacing: {
-      tighter: '-0.02em',
-      tight: '-0.01em',
-      normal: '0',
-      wide: '0.01em',
-      wider: '0.02em',
     },
   },
 
-  // Border Radius (iOS-style rounded corners)
+  // Spacing
+  spacing: {
+    px: '1px',
+    0: '0',
+    0.5: '0.125rem',
+    1: '0.25rem',
+    1.5: '0.375rem',
+    2: '0.5rem',
+    2.5: '0.625rem',
+    3: '0.75rem',
+    3.5: '0.875rem',
+    4: '1rem',
+    5: '1.25rem',
+    6: '1.5rem',
+    7: '1.75rem',
+    8: '2rem',
+    9: '2.25rem',
+    10: '2.5rem',
+    11: '2.75rem',
+    12: '3rem',
+    14: '3.5rem',
+    16: '4rem',
+    20: '5rem',
+    24: '6rem',
+    28: '7rem',
+    32: '8rem',
+    36: '9rem',
+    40: '10rem',
+    44: '11rem',
+    48: '12rem',
+    52: '13rem',
+    56: '14rem',
+    60: '15rem',
+    64: '16rem',
+    72: '18rem',
+    80: '20rem',
+    96: '24rem',
+  },
+
+  // Colors (semantic, not raw values)
+  colors: {
+    brand: {
+      primary: 'hsl(217, 91%, 60%)', // Blue
+      secondary: 'hsl(263, 70%, 50%)', // Purple
+      accent: 'hsl(142, 71%, 45%)', // Green
+    },
+    semantic: {
+      success: 'hsl(142, 76%, 36%)',
+      warning: 'hsl(43, 96%, 56%)',
+      error: 'hsl(0, 84%, 60%)',
+      info: 'hsl(199, 89%, 48%)',
+    },
+  },
+
+  // Border radius
   borderRadius: {
     none: '0',
-    sm: '0.375rem',   // 6px
-    base: '0.5rem',   // 8px
-    md: '0.75rem',    // 12px
-    lg: '1rem',       // 16px
-    xl: '1.25rem',    // 20px
-    '2xl': '1.5rem',  // 24px
-    '3xl': '2rem',    // 32px
+    sm: '0.25rem',
+    DEFAULT: '0.5rem',
+    md: '0.75rem',
+    lg: '1rem',
+    xl: '1.25rem',
+    '2xl': '1.5rem',
+    '3xl': '2rem',
     full: '9999px',
   },
 
-  // Shadows (iOS-inspired)
+  // Shadows
   shadows: {
     sm: '0 1px 2px 0 rgb(0 0 0 / 0.05)',
-    base: '0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)',
+    DEFAULT: '0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)',
     md: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
     lg: '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)',
     xl: '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)',
     '2xl': '0 25px 50px -12px rgb(0 0 0 / 0.25)',
-    inner: 'inset 0 2px 4px 0 rgb(0 0 0 / 0.05)',
-    // Frosted glass specific
-    glass: '0 8px 32px 0 rgba(31, 38, 135, 0.15)',
-    'glass-lg': '0 16px 48px 0 rgba(31, 38, 135, 0.2)',
+    glass: '0 8px 32px rgba(0, 0, 0, 0.1)',
+    glassDark: '0 8px 32px rgba(0, 0, 0, 0.3)',
   },
 
-  // Blur values for frosted glass
-  blur: {
-    none: '0',
-    sm: '4px',
-    base: '8px',
-    md: '12px',
-    lg: '16px',
-    xl: '24px',
-    '2xl': '40px',
-    '3xl': '64px',
-  },
-
-  // Animation & Transitions (iOS-inspired easing)
+  // Animation
   animation: {
-    duration: {
+    durations: {
       fast: '150ms',
       base: '200ms',
       medium: '300ms',
       slow: '400ms',
-      slower: '500ms',
+      verySlow: '600ms',
     },
-    easing: {
-      // iOS standard easing
+    easings: {
       standard: 'cubic-bezier(0.4, 0.0, 0.2, 1)',
-      decelerate: 'cubic-bezier(0.0, 0.0, 0.2, 1)',
       accelerate: 'cubic-bezier(0.4, 0.0, 1, 1)',
-      sharp: 'cubic-bezier(0.4, 0.0, 0.6, 1)',
-      // iOS spring-like easing
+      decelerate: 'cubic-bezier(0.0, 0.0, 0.2, 1)',
       spring: 'cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+      bounce: 'cubic-bezier(0.68, -0.55, 0.265, 1.55)',
     },
+  },
+
+  // Breakpoints
+  breakpoints: {
+    sm: '640px',
+    md: '768px',
+    lg: '1024px',
+    xl: '1280px',
+    '2xl': '1536px',
   },
 
   // Z-index scale
   zIndex: {
-    dropdown: 1000,
-    sticky: 1100,
-    fixed: 1200,
-    overlay: 1300,
-    modal: 1400,
-    popover: 1500,
-    toast: 1600,
-    tooltip: 1700,
+    dropdown: 50,
+    sticky: 100,
+    modal: 200,
+    overlay: 300,
+    toast: 400,
+    tooltip: 500,
   },
 
-  // Breakpoints (mobile-first)
-  breakpoints: {
-    sm: '640px',   // Mobile landscape
-    md: '768px',   // Tablet
-    lg: '1024px',  // Desktop
-    xl: '1280px',  // Large desktop
-    '2xl': '1536px', // Extra large
-  },
-
-  // Glass morphism presets
+  // Glass effect values
   glass: {
-    // Light mode glass
-    light: {
-      subtle: {
-        background: 'rgba(255, 255, 255, 0.7)',
-        backdropFilter: 'blur(8px) saturate(180%)',
-        border: '1px solid rgba(255, 255, 255, 0.3)',
-      },
-      medium: {
-        background: 'rgba(255, 255, 255, 0.6)',
-        backdropFilter: 'blur(12px) saturate(180%)',
-        border: '1px solid rgba(255, 255, 255, 0.2)',
-      },
-      strong: {
-        background: 'rgba(255, 255, 255, 0.5)',
-        backdropFilter: 'blur(16px) saturate(200%)',
-        border: '1px solid rgba(255, 255, 255, 0.1)',
-      },
+    blur: {
+      light: '8px',
+      medium: '16px',
+      strong: '24px',
     },
-    // Dark mode glass
-    dark: {
-      subtle: {
-        background: 'rgba(20, 20, 30, 0.7)',
-        backdropFilter: 'blur(8px) saturate(180%)',
-        border: '1px solid rgba(255, 255, 255, 0.1)',
+    opacity: {
+      light: {
+        bg: 0.4,
+        border: 0.3,
       },
-      medium: {
-        background: 'rgba(20, 20, 30, 0.6)',
-        backdropFilter: 'blur(12px) saturate(180%)',
-        border: '1px solid rgba(255, 255, 255, 0.08)',
-      },
-      strong: {
-        background: 'rgba(20, 20, 30, 0.5)',
-        backdropFilter: 'blur(16px) saturate(200%)',
-        border: '1px solid rgba(255, 255, 255, 0.05)',
+      dark: {
+        bg: 0.3,
+        border: 0.2,
       },
     },
   },
 } as const;
 
-// Type exports
-export type ColorTheme = keyof typeof designTokens.colors;
+export type DesignTokens = typeof designTokens;
+
+// Utility function to get CSS variable value
+export function getCSSVar(name: string): string {
+  return `var(--${name})`;
+}
+
+// Export commonly used token groups
+export const { typography, spacing, colors, borderRadius, shadows, animation } = designTokens;
+
+// Type exports for design system
+export type ColorTheme = 'light' | 'dark' | 'system';
 export type SpacingKey = keyof typeof designTokens.spacing;
 export type FontSize = keyof typeof designTokens.typography.fontSize;
 export type FontWeight = keyof typeof designTokens.typography.fontWeight;
 export type BorderRadius = keyof typeof designTokens.borderRadius;
 export type Shadow = keyof typeof designTokens.shadows;
-export type Blur = keyof typeof designTokens.blur;
+export type Blur = keyof typeof designTokens.glass.blur;
 export type Breakpoint = keyof typeof designTokens.breakpoints;

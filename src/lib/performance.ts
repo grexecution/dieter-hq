@@ -260,7 +260,7 @@ function monitorINP() {
     }
   });
 
-  observer.observe({ type: 'event', durationThreshold: 16, buffered: true });
+  observer.observe({ type: 'event', durationThreshold: 16, buffered: true } as any);
 }
 
 /**

@@ -18,12 +18,12 @@ export interface SWMessagePayload {
  */
 export async function registerServiceWorker(): Promise<SWRegistrationResult> {
   // Check if service workers are supported
-  if (!('serviceWorker' in navigator)) {
+  if (typeof window === 'undefined' || !('serviceWorker' in navigator)) {
     console.warn('[SW] Service workers not supported');
     return {
       registration: null,
       isSupported: false,
-      isOnline: navigator.onLine,
+      isOnline: typeof navigator !== 'undefined' ? navigator.onLine : false,
     };
   }
 
@@ -173,7 +173,7 @@ export async function queueMessage(message: any): Promise<void> {
   // Request background sync
   if ('sync' in navigator.serviceWorker) {
     const registration = await navigator.serviceWorker.ready;
-    await registration.sync.register('sync-messages');
+    await (registration as any).sync?.register('sync-messages');
   }
 }
 
@@ -189,7 +189,7 @@ export async function queueEvent(event: any): Promise<void> {
   // Request background sync
   if ('sync' in navigator.serviceWorker) {
     const registration = await navigator.serviceWorker.ready;
-    await registration.sync.register('sync-events');
+    await (registration as any).sync?.register('sync-events');
   }
 }
 

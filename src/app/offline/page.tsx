@@ -1,3 +1,5 @@
+'use client';
+
 import { WifiOff, RefreshCw } from 'lucide-react';
 
 export default function OfflinePage() {
@@ -85,7 +87,5 @@ export default function OfflinePage() {
   );
 }
 
-export const metadata = {
-  title: 'Offline - Dieter HQ',
-  description: 'You are currently offline',
-};
+// Note: Metadata exported from client components is not supported.
+// Use generateMetadata in a layout.tsx or keep this as a server component wrapper.

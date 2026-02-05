@@ -451,7 +451,7 @@ export class CommunicationDrafter {
 
     // Body
     const bodyTemplate = this.randomChoice(template.bodyTemplates);
-    let body = bodyTemplate
+    const body = bodyTemplate
       .replace('{topic}', this.extractTopic(context))
       .replace('{context}', this.extractContext(context))
       .replace('{action}', this.extractAction(context))

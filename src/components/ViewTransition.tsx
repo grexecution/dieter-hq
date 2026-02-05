@@ -133,7 +133,7 @@ export function ViewTransition({
         exit="exit"
         transition={{
           duration: config.duration,
-          ease: config.ease,
+          ease: config.ease as [number, number, number, number],
         }}
         className={cn('w-full h-full', className)}
       >

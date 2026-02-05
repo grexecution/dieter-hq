@@ -70,3 +70,6 @@ export async function initDb() {
     )
   `;
 }
+
+// Auto-initialize on module load (runs once per cold start)
+initDb().catch(console.error);

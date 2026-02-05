@@ -14,8 +14,8 @@ import { NowBar } from "./NowBar";
 import { OpenClawStatusSidebar } from "./OpenClawStatusSidebar";
 import { AgentStatusPanel } from "@/components/agent-status-panel";
 
-const VoiceRecorderButton = dynamic(
-  () => import("./VoiceRecorderButton").then((m) => m.VoiceRecorderButton),
+const VoiceRecorder = dynamic(
+  () => import("./_components/VoiceRecorder").then((m) => m.VoiceRecorder),
   { ssr: false }
 );
 
@@ -194,10 +194,11 @@ interface ComposerProps {
   setDraft: (value: string) => void;
   isSending: boolean;
   onSubmit: () => void;
+  onVoiceTranscript: (transcript: string) => void;
   threadId: string;
 }
 
-function Composer({ draft, setDraft, isSending, onSubmit, threadId }: ComposerProps) {
+function Composer({ draft, setDraft, isSending, onSubmit, onVoiceTranscript, threadId }: ComposerProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Auto-resize textarea
@@ -249,7 +250,7 @@ function Composer({ draft, setDraft, isSending, onSubmit, threadId }: ComposerPr
           {/* Action Buttons */}
           <div className="flex items-center gap-2">
             <ChatComposer threadId={threadId} disabled={isSending} />
-            <VoiceRecorderButton threadId={threadId} disabled={isSending} />
+            <VoiceRecorder onTranscript={onVoiceTranscript} disabled={isSending} />
             <Button
               type="submit"
               size="icon"
@@ -640,6 +641,10 @@ export function ChatView({
           setDraft={setDraft}
           isSending={isSending}
           onSubmit={handleSend}
+          onVoiceTranscript={(transcript) => {
+            // Set transcript as draft and auto-submit
+            setDraft(transcript);
+          }}
           threadId={activeThreadId}
         />
       </section>

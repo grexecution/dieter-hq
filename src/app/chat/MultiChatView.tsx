@@ -15,8 +15,8 @@ import { OpenClawStatusSidebar } from "./OpenClawStatusSidebar";
 import { StatusBar } from "./_components/StatusBar";
 import { CHAT_TABS, type ChatTab } from "./chat-config";
 
-const VoiceRecorderButton = dynamic(
-  () => import("./VoiceRecorderButton").then((m) => m.VoiceRecorderButton),
+const VoiceRecorder = dynamic(
+  () => import("./_components/VoiceRecorder").then((m) => m.VoiceRecorder),
   { ssr: false }
 );
 
@@ -311,11 +311,12 @@ interface ComposerProps {
   setDraft: (value: string) => void;
   isSending: boolean;
   onSubmit: () => void;
+  onVoiceTranscript: (transcript: string) => void;
   threadId: string;
   activeTab: string;
 }
 
-function Composer({ draft, setDraft, isSending, onSubmit, threadId, activeTab }: ComposerProps) {
+function Composer({ draft, setDraft, isSending, onSubmit, onVoiceTranscript, threadId, activeTab }: ComposerProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const currentTab = CHAT_TABS.find(tab => tab.id === activeTab);
 
@@ -348,7 +349,7 @@ function Composer({ draft, setDraft, isSending, onSubmit, threadId, activeTab }:
           {/* Attachment & Voice - Left side */}
           <div className="flex items-center gap-1">
             <ChatComposer threadId={threadId} disabled={isSending} />
-            <VoiceRecorderButton threadId={threadId} disabled={isSending} />
+            <VoiceRecorder onTranscript={onVoiceTranscript} disabled={isSending} />
           </div>
 
           {/* Text Input */}
@@ -634,6 +635,7 @@ export function MultiChatView({
           setDraft={setDraft}
           isSending={isSending}
           onSubmit={handleSend}
+          onVoiceTranscript={(transcript) => setDraft(transcript)}
           threadId={activeTab}
           activeTab={activeTab}
         />

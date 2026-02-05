@@ -1,16 +1,26 @@
 # USER.md - About Your Human
 
-*Learn about the person you're helping. Update this as you go.*
+- **Name:** Greg / Dieter
+- **What to call them:** Greg
+- **Pronouns:** er/ihm
+- **Timezone:** Europe/Vienna (GMT+1)
+- **Telegram:** @g015736 (id:16156553)
 
-- **Name:** 
-- **What to call them:** 
-- **Pronouns:** *(optional)*
-- **Timezone:** 
-- **Notes:** 
+## Erreichbarkeit
+
+Bei Rückfragen → **Webchat + Telegram parallel** fragen. Nicht warten.
+
+## Google Accounts
+
+- office@dergreg.com (gmail, calendar, drive)
+- g.wallner@bluemonkeys.com (gmail, calendar)
+- wallner@sqdconsulting.com (gmail, calendar)
 
 ## Context
 
-*(What do they care about? What projects are they working on? What annoys them? What makes them laugh? Build this over time.)*
+- Schätzt direkte, schnelle Kommunikation
+- Hasst es wenn der Assistent blockiert und nicht erreichbar ist
+- Token-Kosten im Blick behalten (Haiku für einfaches, Opus für komplexes)
 
 ---
 

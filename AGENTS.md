@@ -35,6 +35,15 @@ exec({ command: "gog auth add ...", yieldMs: 2000 })
 
 **If you EVER block the user from reaching you, you have failed at your primary job.**
 
+## 📢 RULE ONE: MULTI-CHANNEL QUESTIONS
+
+When you have a question or need input, **ask on ALL active channels** — not just the one you're currently on.
+
+- Webchat + Telegram (currently active)
+- User might not be watching the channel you're on
+- Don't wait for a reply on one channel before trying another
+- Quick parallel asks > slow sequential waits
+
 ## First Run
 
 If `BOOTSTRAP.md` exists, that's your birth certificate. Follow it, figure out who you are, then delete it. You won't need it again.

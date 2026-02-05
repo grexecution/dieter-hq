@@ -13,6 +13,7 @@ import { cn } from "@/lib/utils";
 import { ChatComposer } from "./ChatComposer";
 import { NowBar } from "./NowBar";
 import { OpenClawStatusSidebar } from "./OpenClawStatusSidebar";
+import { CHAT_TABS, type ChatTab } from "./chat-config";
 
 const VoiceRecorderButton = dynamic(
   () => import("./VoiceRecorderButton").then((m) => m.VoiceRecorderButton),
@@ -46,48 +47,7 @@ export type ArtefactRow = {
   sizeBytes: number;
 };
 
-export type ChatTab = {
-  id: string;
-  name: string;
-  icon: React.ComponentType<{ className?: string }>;
-  emoji: string;
-  description: string;
-};
-
-// ============================================
-// Chat Tab Configuration
-// ============================================
-
-export const CHAT_TABS: ChatTab[] = [
-  {
-    id: "life",
-    name: "Life", 
-    icon: MessageCircle,
-    emoji: "💬",
-    description: "Personal conversations & general topics"
-  },
-  {
-    id: "sport",
-    name: "Sport",
-    icon: Dumbbell,
-    emoji: "🏃",
-    description: "Training, fitness & health discussions"
-  },
-  {
-    id: "work", 
-    name: "Work",
-    icon: Briefcase,
-    emoji: "💼",
-    description: "Business, projects & professional topics"
-  },
-  {
-    id: "dev",
-    name: "Dev",
-    icon: Code,
-    emoji: "🔧", 
-    description: "Development, coding & tech support"
-  }
-];
+export { CHAT_TABS };
 
 // ============================================
 // Utilities
@@ -132,8 +92,8 @@ interface TabNavigationProps {
 
 function TabNavigation({ activeTab, onTabChange, threadCounts }: TabNavigationProps) {
   return (
-    <div className="border-b border-white/10 bg-white/20 px-4 dark:border-white/5 dark:bg-zinc-900/20">
-      <div className="flex items-center gap-1 overflow-x-auto">
+    <div className="border-b border-white/10 bg-white/30 dark:border-white/5 dark:bg-zinc-900/30">
+      <div className="mx-auto flex max-w-3xl items-center gap-0.5 overflow-x-auto px-2 py-2 scrollbar-hide">
         {CHAT_TABS.map((tab) => {
           const isActive = activeTab === tab.id;
           const messageCount = threadCounts[tab.id] || 0;
@@ -143,36 +103,33 @@ function TabNavigation({ activeTab, onTabChange, threadCounts }: TabNavigationPr
               key={tab.id}
               onClick={() => onTabChange(tab.id)}
               className={cn(
-                "group relative flex min-w-[120px] items-center gap-2 px-4 py-3 text-sm font-medium transition-all",
-                "hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-primary/50 rounded-t-lg",
+                "relative flex min-w-[70px] flex-1 flex-col items-center justify-center gap-1 rounded-xl px-3 py-2 text-xs font-medium transition-all",
+                "focus:outline-none",
                 isActive
-                  ? "text-primary bg-white/10 dark:bg-white/5"
+                  ? "text-primary"
                   : "text-muted-foreground hover:text-foreground"
               )}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
+              whileTap={{ scale: 0.95 }}
+              transition={{ duration: 0.1 }}
             >
-              <span className="text-base">{tab.emoji}</span>
-              <span className="truncate">{tab.name}</span>
-              
-              {messageCount > 0 && (
-                <span className={cn(
-                  "ml-auto flex h-5 w-5 items-center justify-center rounded-full text-xs tabular-nums",
-                  isActive 
-                    ? "bg-primary text-primary-foreground" 
-                    : "bg-muted text-muted-foreground"
-                )}>
-                  {messageCount > 99 ? "99+" : messageCount}
-                </span>
-              )}
-              
-              {/* Active indicator */}
+              {/* Background */}
               {isActive && (
                 <motion.div
-                  className="absolute bottom-0 left-0 h-0.5 w-full bg-primary"
-                  layoutId="activeTab"
-                  transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                  className="absolute inset-0 rounded-xl bg-primary/10 dark:bg-primary/15"
+                  layoutId="activeTabBg"
+                  transition={{ type: "spring", bounce: 0.2, duration: 0.5 }}
                 />
+              )}
+              
+              {/* Content */}
+              <span className="relative z-10 text-lg">{tab.emoji}</span>
+              <span className="relative z-10 truncate text-[11px]">{tab.name}</span>
+              
+              {/* Badge */}
+              {messageCount > 0 && !isActive && (
+                <span className="absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary/20 px-1 text-[9px] font-semibold text-primary">
+                  {messageCount > 99 ? "99" : messageCount}
+                </span>
               )}
             </motion.button>
           );
@@ -423,15 +380,21 @@ function Composer({ draft, setDraft, isSending, onSubmit, threadId, activeTab }:
   };
 
   return (
-    <div className="sticky bottom-0 border-t border-white/20 bg-background/80 px-4 py-4 backdrop-blur-2xl dark:border-white/5 dark:bg-background/60">
-      <div className="mx-auto w-full max-w-3xl pb-[env(safe-area-inset-bottom)]">
+    <div className="sticky bottom-0 glass-medium border-t border-white/10 px-3 py-3 dark:border-white/5 md:px-4 md:py-4">
+      <div className="mx-auto w-full max-w-3xl pb-safe">
         <form
-          className="flex items-end gap-3"
+          className="flex items-end gap-2"
           onSubmit={(e) => {
             e.preventDefault();
             onSubmit();
           }}
         >
+          {/* Attachment & Voice - Left side */}
+          <div className="flex items-center gap-1">
+            <ChatComposer threadId={threadId} disabled={isSending} />
+            <VoiceRecorderButton threadId={threadId} disabled={isSending} />
+          </div>
+
           {/* Text Input */}
           <div className="relative flex-1">
             <textarea
@@ -439,48 +402,40 @@ function Composer({ draft, setDraft, isSending, onSubmit, threadId, activeTab }:
               value={draft}
               onChange={(e) => setDraft(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder={`Message Dieter about ${currentTab?.name.toLowerCase() || 'anything'}...`}
+              placeholder={`Message...`}
               rows={1}
               disabled={isSending}
               className={cn(
-                "w-full resize-none rounded-2xl border-0 bg-white/60 px-4 py-3 pr-12",
-                "text-sm placeholder:text-muted-foreground",
-                "shadow-sm backdrop-blur-xl transition-all",
-                "focus:outline-none focus:ring-2 focus:ring-primary/50",
+                "w-full resize-none rounded-[20px] border border-white/20 bg-white/50 px-4 py-2.5",
+                "text-[15px] placeholder:text-muted-foreground/70",
+                "transition-all focus:outline-none focus:border-primary/30 focus:bg-white/70",
                 "disabled:opacity-50",
-                "dark:bg-white/5 dark:placeholder:text-zinc-500"
+                "dark:bg-white/5 dark:border-white/10 dark:placeholder:text-zinc-500 dark:focus:bg-white/10"
               )}
             />
           </div>
 
-          {/* Action Buttons */}
-          <div className="flex items-center gap-2">
-            <ChatComposer threadId={threadId} disabled={isSending} />
-            <VoiceRecorderButton threadId={threadId} disabled={isSending} />
-            <Button
-              type="submit"
-              size="icon"
-              disabled={isSending || !draft.trim()}
-              className={cn(
-                "h-11 w-11 rounded-full transition-all",
-                draft.trim()
-                  ? "bg-primary text-primary-foreground shadow-lg hover:shadow-xl hover:scale-105"
-                  : "bg-muted text-muted-foreground"
-              )}
-            >
-              <Send className={cn("h-5 w-5", isSending && "animate-pulse")} />
-            </Button>
-          </div>
+          {/* Send Button */}
+          <motion.button
+            type="submit"
+            disabled={isSending || !draft.trim()}
+            className={cn(
+              "flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-all",
+              draft.trim()
+                ? "bg-primary text-primary-foreground shadow-md"
+                : "bg-transparent text-muted-foreground"
+            )}
+            whileTap={{ scale: 0.9 }}
+            transition={{ duration: 0.1 }}
+          >
+            <Send className={cn("h-5 w-5", isSending && "animate-pulse", !draft.trim() && "opacity-50")} />
+          </motion.button>
         </form>
 
-        {/* Context indicator and shortcuts */}
-        <div className="mt-2 flex items-center justify-between">
-          <p className="text-[10px] text-muted-foreground/60">
-            Chatting in <span className="font-medium">{currentTab?.emoji} {currentTab?.name}</span> context
-          </p>
-          <p className="text-[10px] text-muted-foreground/60">
-            <kbd className="rounded bg-muted/50 px-1">Enter</kbd> to send,{" "}
-            <kbd className="rounded bg-muted/50 px-1">Shift+Enter</kbd> for new line
+        {/* Context indicator - Hidden on mobile */}
+        <div className="mt-2 hidden items-center justify-center md:flex">
+          <p className="text-[10px] text-muted-foreground/50">
+            {currentTab?.emoji} {currentTab?.name} • <kbd className="rounded bg-muted/30 px-1">Enter</kbd> to send
           </p>
         </div>
       </div>
@@ -655,9 +610,9 @@ export function MultiChatView({
       )}
 
       {/* Main Chat Area */}
-      <section className="flex h-[calc(100dvh-120px)] flex-col overflow-hidden rounded-2xl border border-white/20 bg-white/40 shadow-xl backdrop-blur-2xl dark:border-white/5 dark:bg-zinc-900/40">
+      <section className="flex h-[calc(100dvh-3rem)] flex-col overflow-hidden md:rounded-2xl md:border md:border-white/20 md:bg-white/40 md:shadow-xl md:backdrop-blur-2xl md:dark:border-white/5 md:dark:bg-zinc-900/40 lg:h-[calc(100dvh-5rem)]">
         {/* Header */}
-        <header className="flex items-center justify-between gap-4 border-b border-white/10 px-4 py-3 dark:border-white/5">
+        <header className="hidden md:flex items-center justify-between gap-4 border-b border-white/10 px-4 py-3 dark:border-white/5">
           <div className="flex min-w-0 items-center gap-3">
             {/* Mobile menu button */}
             <Button

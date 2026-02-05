@@ -7,12 +7,13 @@ import { logEvent } from "@/server/events/log";
 import { clearSessionCookie } from "@/server/auth/node";
 import { redirect } from "next/navigation";
 
-import { AppShell } from "../_ui/AppShell";
-import { MultiChatView, CHAT_TABS } from "./MultiChatView";
+import { ChatShell } from "../_ui/ChatShell";
+import { MultiChatView } from "./MultiChatView";
+import { CHAT_TAB_IDS, CHAT_TABS } from "./chat-config";
 
 export default async function ChatPage() {
   // Get all supported thread IDs
-  const supportedThreadIds = CHAT_TABS.map(tab => tab.id);
+  const supportedThreadIds = CHAT_TAB_IDS;
 
   // Load threads with statistics
   const threads = await db
@@ -101,7 +102,7 @@ export default async function ChatPage() {
   const artefactsById = Object.fromEntries(allArtefacts.map((a) => [a.id, a]));
 
   return (
-    <AppShell active="chat">
+    <ChatShell>
       <MultiChatView
         threads={threads.map((t) => ({
           threadId: t.threadId,
@@ -113,6 +114,6 @@ export default async function ChatPage() {
         newThreadAction={newThreadAction}
         logoutAction={logoutAction}
       />
-    </AppShell>
+    </ChatShell>
   );
 }

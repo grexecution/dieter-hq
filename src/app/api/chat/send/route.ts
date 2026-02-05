@@ -124,31 +124,27 @@ export async function POST(req: NextRequest) {
     const contextualMessage = contextPrefix + content;
     
     try {
-      // Call OpenClaw gateway RPC with thread-specific session
-      const response = await fetch(`${GATEWAY_HTTP_URL}/rpc`, {
+      // Call OpenClaw gateway via OpenAI-compatible endpoint
+      const response = await fetch(`${GATEWAY_HTTP_URL}/v1/chat/completions`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           ...(GATEWAY_TOKEN && { 'Authorization': `Bearer ${GATEWAY_TOKEN}` }),
+          'x-openclaw-agent-id': 'main',
+          'x-openclaw-session-key': `agent:main:dieter-hq:${threadId}`,
         },
         body: JSON.stringify({
-          jsonrpc: '2.0',
-          id: crypto.randomUUID(),
-          method: 'agent.chat',
-          params: {
-            message: contextualMessage,
-            sessionKey: `agent:main:dieter-hq:${threadId}`,
-            options: {
-              channel: 'dieter-hq',
-              context: threadId,
-            },
-          },
+          model: 'openclaw:main',
+          messages: [
+            { role: 'user', content: contextualMessage }
+          ],
+          user: `dieter-hq:${threadId}`,
         }),
       });
 
       if (response.ok) {
         const data = await response.json();
-        assistantContent = data.result?.content || data.result?.reply || data.result?.message || 'No response';
+        assistantContent = data.choices?.[0]?.message?.content || 'No response';
       } else {
         assistantContent = `⚠️ Gateway error (${response.status}). Is the tunnel running?`;
       }

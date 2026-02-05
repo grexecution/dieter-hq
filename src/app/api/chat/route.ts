@@ -24,41 +24,38 @@ export async function POST(request: NextRequest) {
       createdAt: new Date(),
     });
 
-    // Call OpenClaw gateway
+    // Call OpenClaw gateway via OpenAI-compatible endpoint
     let assistantContent = '';
     
     try {
-      // Try the openclaw CLI agent command via HTTP
-      const response = await fetch(`${GATEWAY_HTTP_URL}/rpc`, {
+      const response = await fetch(`${GATEWAY_HTTP_URL}/v1/chat/completions`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           ...(GATEWAY_TOKEN && { 'Authorization': `Bearer ${GATEWAY_TOKEN}` }),
+          'x-openclaw-agent-id': 'main',
+          'x-openclaw-session-key': `agent:main:dieter-hq:${threadId}`,
         },
         body: JSON.stringify({
-          jsonrpc: '2.0',
-          id: crypto.randomUUID(),
-          method: 'agent.chat',
-          params: {
-            message,
-            sessionKey: `agent:main:dieter-hq:${threadId}`,
-            options: {
-              channel: 'dieter-hq',
-            },
-          },
+          model: 'openclaw:main',
+          messages: [
+            { role: 'user', content: message }
+          ],
+          user: `dieter-hq:${threadId}`,
         }),
       });
 
       if (response.ok) {
         const data = await response.json();
-        assistantContent = data.result?.content || data.result?.reply || 'No response from agent';
+        assistantContent = data.choices?.[0]?.message?.content || 'No response from agent';
       } else {
-        // Gateway might not be reachable - fall back to error message
-        assistantContent = `⚠️ OpenClaw gateway not reachable (${response.status}). Make sure the tunnel is running.`;
+        const errorText = await response.text();
+        console.error('Gateway error:', response.status, errorText);
+        assistantContent = `⚠️ Gateway error (${response.status}). Is the tunnel running?`;
       }
     } catch (gatewayError) {
       console.error('Gateway connection error:', gatewayError);
-      assistantContent = '⚠️ Cannot connect to OpenClaw gateway. Please ensure:\n1. Gateway is running (`openclaw gateway status`)\n2. Tunnel is active (Cloudflare/Tailscale)\n3. OPENCLAW_GATEWAY_HTTP_URL is set correctly';
+      assistantContent = '⚠️ Cannot reach OpenClaw gateway. Check tunnel configuration.';
     }
 
     // Save assistant response to DB

@@ -62,34 +62,34 @@ export function NowBar() {
   const lastError = (status?.live?.lastError ?? "").trim();
 
   return (
-    <div className="sticky top-0 z-10 border-b border-white/20 bg-gradient-to-r from-white/60 via-white/70 to-white/60 px-4 py-2.5 text-xs shadow-sm backdrop-blur-2xl dark:border-zinc-800/60 dark:from-zinc-900/60 dark:via-zinc-900/70 dark:to-zinc-900/60">
+    <div className="sticky top-0 z-10 border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50 px-4 py-2 text-xs">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 space-y-0.5">
-          <div className="truncate">
-            <span className="font-semibold text-blue-600 dark:text-blue-400">NOW:</span> <span>{current}</span>
+          <div className="truncate text-zinc-700 dark:text-zinc-300">
+            <span className="font-medium text-zinc-500 dark:text-zinc-400">NOW:</span> {current}
           </div>
           <div className="truncate text-zinc-500 dark:text-zinc-400">
-            <span className="font-semibold text-violet-600 dark:text-violet-400">WHY:</span> <span>{why}</span>
+            <span className="font-medium">WHY:</span> {why}
           </div>
           <div className="truncate text-zinc-500 dark:text-zinc-400">
-            <span className="font-semibold text-amber-600 dark:text-amber-400">NEXT:</span> <span>{next}</span>
+            <span className="font-medium">NEXT:</span> {next}
           </div>
           {lastError ? (
-            <div className="truncate text-rose-600 dark:text-rose-400">
-              <span className="font-semibold">ERR:</span> <span>{lastError}</span>
+            <div className="truncate text-red-600 dark:text-red-400">
+              <span className="font-medium">ERR:</span> {lastError}
             </div>
           ) : null}
         </div>
 
-        <div className="shrink-0 text-right">
-          <div className="text-zinc-400">{updated}</div>
+        <div className="shrink-0 text-right text-zinc-400 dark:text-zinc-500">
+          <div>{updated}</div>
           <div className="flex items-center justify-end gap-1.5">
-            <span className={`h-1.5 w-1.5 rounded-full ${tunnelOk ? "bg-emerald-500 animate-pulse" : "bg-amber-500"}`} />
+            <span className={`h-1.5 w-1.5 rounded-full ${tunnelOk ? "bg-emerald-500" : "bg-amber-500"}`} />
             <span className={tunnelOk ? "text-emerald-600 dark:text-emerald-400" : "text-amber-600 dark:text-amber-400"}>
-              {tunnelOk ? "tunnel ok" : "tunnel?"}
+              {tunnelOk ? "ok" : "?"}
             </span>
           </div>
-          <div className="text-[10px] text-zinc-400">{tunnelLabel}{tunnelChecked ? ` · ${tunnelChecked}` : ""}</div>
+          <div className="text-[10px]">{tunnelLabel}</div>
         </div>
       </div>
     </div>

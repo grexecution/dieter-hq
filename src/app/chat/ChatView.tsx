@@ -97,7 +97,7 @@ function MessageBubble({ message, artefact, url }: MessageBubbleProps) {
   if (isSystem) {
     return (
       <div className="mx-auto max-w-md py-2 text-center">
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-muted/50 px-3 py-1 text-xs text-muted-foreground">
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-zinc-100 dark:bg-zinc-800 px-3 py-1 text-xs text-muted-foreground">
           <Sparkles className="h-3 w-3" />
           {meta.text.slice(0, 100)}
           {meta.text.length > 100 && "..."}
@@ -109,27 +109,20 @@ function MessageBubble({ message, artefact, url }: MessageBubbleProps) {
   return (
     <div
       className={cn(
-        "flex items-end gap-3 animate-fade-in-up",
+        "flex items-end gap-3",
         isUser ? "flex-row-reverse" : "flex-row"
       )}
     >
       {/* Avatar */}
-      <Avatar
-        className={cn(
-          "h-8 w-8 shrink-0 ring-2 transition-all",
-          isUser
-            ? "ring-primary/20 bg-primary/10"
-            : "ring-default/20 bg-default-100"
-        )}
-      >
+      <Avatar className="h-8 w-8 shrink-0">
         {isUser ? (
-          <AvatarFallback className="bg-primary/10 text-primary text-xs font-medium">
+          <AvatarFallback className="bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 text-xs font-medium">
             <User className="h-4 w-4" />
           </AvatarFallback>
         ) : (
           <>
             <AvatarImage src="/dieter-avatar.png" alt={author} />
-            <AvatarFallback className="bg-primary text-primary-foreground text-xs font-medium">
+            <AvatarFallback className="bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 text-xs font-medium">
               <Bot className="h-4 w-4" />
             </AvatarFallback>
           </>
@@ -139,28 +132,18 @@ function MessageBubble({ message, artefact, url }: MessageBubbleProps) {
       {/* Bubble */}
       <div
         className={cn(
-          "group relative max-w-[75%] rounded-2xl px-4 py-3 shadow-sm transition-all",
+          "group relative max-w-[80%] rounded-lg px-4 py-3",
           isUser
-            ? "bg-primary text-primary-foreground rounded-br-md"
-            : "bg-default-100 rounded-bl-md"
+            ? "bg-indigo-50 dark:bg-zinc-700 text-zinc-900 dark:text-zinc-100"
+            : "bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800"
         )}
       >
         {/* Author & Time */}
         <div className="mb-1 flex items-center justify-between gap-4">
-          <span
-            className={cn(
-              "text-xs font-medium",
-              isUser ? "text-primary-foreground/80" : "text-foreground-secondary"
-            )}
-          >
+          <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
             {author}
           </span>
-          <span
-            className={cn(
-              "text-[10px] opacity-60 transition-opacity group-hover:opacity-100",
-              isUser ? "text-primary-foreground/60" : "text-muted-foreground"
-            )}
-          >
+          <span className="text-[10px] text-zinc-400 dark:text-zinc-500">
             {message.createdAtLabel}
           </span>
         </div>
@@ -177,14 +160,14 @@ function MessageBubble({ message, artefact, url }: MessageBubbleProps) {
               <img
                 src={url}
                 alt={artefact.originalName}
-                className="max-h-[360px] w-auto rounded-xl border border-white/20 shadow-lg"
+                className="max-h-[360px] w-auto rounded-lg border border-zinc-200 dark:border-zinc-700"
               />
             ) : isAudioMime(artefact.mimeType) ? (
               <audio controls src={url} className="w-full max-w-xs" />
             ) : (
               <a
                 href={url}
-                className="inline-flex items-center gap-2 rounded-lg bg-white/10 px-3 py-2 text-sm hover:bg-white/20 transition-colors"
+                className="inline-flex items-center gap-2 rounded-lg bg-zinc-100 dark:bg-zinc-800 px-3 py-2 text-sm hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
                 target="_blank"
                 rel="noreferrer"
               >
@@ -604,29 +587,28 @@ export function ChatView({
                 })}
                 {/* Streaming message indicator */}
                 {streamingMsgId && (
-                  <div className="flex items-end gap-3 animate-fade-in-up">
-                    <Avatar className="h-8 w-8 shrink-0 ring-2 ring-default/20 bg-default-100">
+                  <div className="flex items-end gap-3">
+                    <Avatar className="h-8 w-8 shrink-0">
                       <AvatarImage src="/dieter-avatar.png" alt="Dieter" />
-                      <AvatarFallback className="bg-primary text-primary-foreground text-xs font-medium">
+                      <AvatarFallback className="bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 text-xs font-medium">
                         <Bot className="h-4 w-4" />
                       </AvatarFallback>
                     </Avatar>
-                    <div className="group relative max-w-[75%] rounded-2xl px-4 py-3 shadow-sm bg-default-100 rounded-bl-md">
+                    <div className="group relative max-w-[80%] rounded-lg px-4 py-3 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800">
                       <div className="mb-1 flex items-center justify-between gap-4">
-                        <span className="text-xs font-medium text-foreground-secondary">
+                        <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
                           Dieter
                         </span>
-                        <span className="text-[10px] opacity-60 text-muted-foreground flex items-center gap-1">
-                          <span className="inline-block h-2 w-2 rounded-full bg-primary animate-pulse" />
+                        <span className="text-[10px] text-zinc-400 dark:text-zinc-500">
                           typing...
                         </span>
                       </div>
                       <div className="whitespace-pre-wrap text-sm leading-relaxed min-h-[1.5rem]">
                         {streamingContent || (
-                          <span className="flex items-center gap-1 text-muted-foreground">
-                            <span className="inline-block h-1.5 w-1.5 rounded-full bg-current animate-bounce" style={{ animationDelay: "0ms" }} />
-                            <span className="inline-block h-1.5 w-1.5 rounded-full bg-current animate-bounce" style={{ animationDelay: "150ms" }} />
-                            <span className="inline-block h-1.5 w-1.5 rounded-full bg-current animate-bounce" style={{ animationDelay: "300ms" }} />
+                          <span className="flex items-center gap-1.5 text-zinc-400">
+                            <span className="inline-block h-1.5 w-1.5 rounded-full bg-current opacity-60" />
+                            <span className="inline-block h-1.5 w-1.5 rounded-full bg-current opacity-40" />
+                            <span className="inline-block h-1.5 w-1.5 rounded-full bg-current opacity-20" />
                           </span>
                         )}
                       </div>

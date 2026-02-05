@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import dynamic from "next/dynamic";
 import { Menu, Send, Sparkles, User, Bot, MessageCircle, Dumbbell, Briefcase, Code } from "lucide-react";
 
@@ -91,59 +90,36 @@ interface TabNavigationProps {
 }
 
 function TabNavigation({ activeTab, onTabChange, threadCounts }: TabNavigationProps) {
-  // Per-tab accent colors for vibrancy
-  const tabColors: Record<string, { text: string; bg: string; badge: string }> = {
-    life: { text: "text-blue-600 dark:text-blue-400", bg: "bg-blue-500/15", badge: "bg-blue-500/20 text-blue-600 dark:text-blue-400" },
-    sport: { text: "text-emerald-600 dark:text-emerald-400", bg: "bg-emerald-500/15", badge: "bg-emerald-500/20 text-emerald-600 dark:text-emerald-400" },
-    work: { text: "text-amber-600 dark:text-amber-400", bg: "bg-amber-500/15", badge: "bg-amber-500/20 text-amber-600 dark:text-amber-400" },
-    dev: { text: "text-violet-600 dark:text-violet-400", bg: "bg-violet-500/15", badge: "bg-violet-500/20 text-violet-600 dark:text-violet-400" },
-  };
-
   return (
-    <div className="border-b border-white/10 bg-white/30 dark:border-white/5 dark:bg-zinc-900/30">
-      <div className="mx-auto flex max-w-3xl items-center gap-0.5 overflow-x-auto px-2 py-2 scrollbar-hide">
+    <div className="border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50">
+      <div className="mx-auto flex max-w-3xl items-center gap-1 overflow-x-auto px-2 py-1.5 scrollbar-hide">
         {CHAT_TABS.map((tab) => {
           const isActive = activeTab === tab.id;
           const messageCount = threadCounts[tab.id] || 0;
-          const colors = tabColors[tab.id] || { text: "text-primary", bg: "bg-primary/10", badge: "bg-primary/20 text-primary" };
           
           return (
-            <motion.button
+            <button
               key={tab.id}
               onClick={() => onTabChange(tab.id)}
               className={cn(
-                "relative flex min-w-[70px] flex-1 flex-col items-center justify-center gap-1 rounded-xl px-3 py-2 text-xs font-medium transition-all",
-                "focus:outline-none",
+                "relative flex min-w-[70px] flex-1 flex-col items-center justify-center gap-0.5 rounded-lg px-3 py-2 text-xs font-medium transition-colors",
+                "focus:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400",
                 isActive
-                  ? colors.text
-                  : "text-muted-foreground hover:text-foreground"
+                  ? "bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 shadow-sm"
+                  : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800/50"
               )}
-              whileTap={{ scale: 0.95 }}
-              transition={{ duration: 0.1 }}
             >
-              {/* Background */}
-              {isActive && (
-                <motion.div
-                  className={cn("absolute inset-0 rounded-xl", colors.bg)}
-                  layoutId="activeTabBg"
-                  transition={{ type: "spring", bounce: 0.2, duration: 0.5 }}
-                />
-              )}
-              
               {/* Content */}
-              <span className="relative z-10 text-base">{tab.emoji}</span>
-              <span className="relative z-10 truncate text-[11px]">{tab.name}</span>
+              <span className="text-sm">{tab.emoji}</span>
+              <span className="truncate text-[11px]">{tab.name}</span>
               
               {/* Badge */}
               {messageCount > 0 && !isActive && (
-                <span className={cn(
-                  "absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[9px] font-semibold",
-                  colors.badge
-                )}>
+                <span className="absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-zinc-200 dark:bg-zinc-700 px-1 text-[9px] font-medium text-zinc-600 dark:text-zinc-300">
                   {messageCount > 99 ? "99" : messageCount}
                 </span>
               )}
-            </motion.button>
+            </button>
           );
         })}
       </div>
@@ -171,8 +147,8 @@ function MessageBubble({ message, artefact, url }: MessageBubbleProps) {
   if (isSystem) {
     return (
       <div className="mx-auto max-w-md py-2 text-center">
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-violet-500/10 via-purple-500/10 to-fuchsia-500/10 px-3 py-1.5 text-xs text-muted-foreground ring-1 ring-purple-500/20">
-          <Sparkles className="h-3.5 w-3.5 text-purple-500" />
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-zinc-100 dark:bg-zinc-800 px-3 py-1 text-xs text-muted-foreground">
+          <Sparkles className="h-3 w-3" />
           {meta.text.slice(0, 100)}
           {meta.text.length > 100 && "..."}
         </span>
@@ -181,32 +157,22 @@ function MessageBubble({ message, artefact, url }: MessageBubbleProps) {
   }
 
   return (
-    <motion.div
+    <div
       className={cn(
         "flex items-end gap-3",
         isUser ? "flex-row-reverse" : "flex-row"
       )}
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
     >
       {/* Avatar */}
-      <Avatar
-        className={cn(
-          "h-8 w-8 shrink-0 ring-2 transition-all",
-          isUser
-            ? "ring-primary/20 bg-primary/10"
-            : "ring-white/30 dark:ring-white/10 bg-background"
-        )}
-      >
+      <Avatar className="h-8 w-8 shrink-0">
         {isUser ? (
-          <AvatarFallback className="bg-primary/10 text-primary text-xs font-medium">
+          <AvatarFallback className="bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 text-xs font-medium">
             <User className="h-4 w-4" />
           </AvatarFallback>
         ) : (
           <>
             <AvatarImage src="/dieter-avatar.png" alt={author} />
-            <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white text-xs font-medium">
+            <AvatarFallback className="bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 text-xs font-medium">
               <Bot className="h-4 w-4" />
             </AvatarFallback>
           </>
@@ -216,28 +182,18 @@ function MessageBubble({ message, artefact, url }: MessageBubbleProps) {
       {/* Bubble */}
       <div
         className={cn(
-          "group relative max-w-[75%] rounded-2xl px-4 py-3 shadow-sm backdrop-blur-xl transition-all",
+          "group relative max-w-[80%] rounded-lg px-4 py-3",
           isUser
-            ? "bg-primary text-primary-foreground rounded-br-md"
-            : "glass rounded-bl-md"
+            ? "bg-indigo-50 dark:bg-zinc-700 text-zinc-900 dark:text-zinc-100"
+            : "bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800"
         )}
       >
         {/* Author & Time */}
         <div className="mb-1 flex items-center justify-between gap-4">
-          <span
-            className={cn(
-              "text-xs font-medium",
-              isUser ? "text-primary-foreground/80" : "text-foreground-secondary"
-            )}
-          >
+          <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
             {author}
           </span>
-          <span
-            className={cn(
-              "text-[10px] opacity-60 transition-opacity group-hover:opacity-100",
-              isUser ? "text-primary-foreground/60" : "text-muted-foreground"
-            )}
-          >
+          <span className="text-[10px] text-zinc-400 dark:text-zinc-500">
             {message.createdAtLabel}
           </span>
         </div>
@@ -246,7 +202,7 @@ function MessageBubble({ message, artefact, url }: MessageBubbleProps) {
         {artefact && url ? (
           <div className="space-y-2">
             <div className="flex items-center gap-2 text-sm font-medium">
-              <span className="text-base">📎</span>
+              <span>📎</span>
               <span className="truncate">{artefact.originalName}</span>
             </div>
             {isImageMime(artefact.mimeType) ? (
@@ -254,14 +210,14 @@ function MessageBubble({ message, artefact, url }: MessageBubbleProps) {
               <img
                 src={url}
                 alt={artefact.originalName}
-                className="max-h-[360px] w-auto rounded-xl border border-white/20 shadow-lg"
+                className="max-h-[360px] w-auto rounded-lg border border-zinc-200 dark:border-zinc-700"
               />
             ) : isAudioMime(artefact.mimeType) ? (
               <audio controls src={url} className="w-full max-w-xs" />
             ) : (
               <a
                 href={url}
-                className="inline-flex items-center gap-2 rounded-lg bg-white/10 px-3 py-2 text-sm hover:bg-white/20 transition-colors"
+                className="inline-flex items-center gap-2 rounded-lg bg-zinc-100 dark:bg-zinc-800 px-3 py-2 text-sm hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
                 target="_blank"
                 rel="noreferrer"
               >
@@ -275,7 +231,7 @@ function MessageBubble({ message, artefact, url }: MessageBubbleProps) {
           </div>
         )}
       </div>
-    </motion.div>
+    </div>
   );
 }
 
@@ -301,16 +257,8 @@ function ChatContent({ activeTab, messages, artefactsById }: ChatContentProps) {
   return (
     <ScrollArea className="flex-1">
       <div className="mx-auto flex w-full max-w-3xl flex-col gap-4 px-4 py-6">
-        <AnimatePresence mode="wait">
-          {messages.length > 0 ? (
-            <motion.div
-              key={activeTab}
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.3 }}
-              className="space-y-4"
-            >
+        {messages.length > 0 ? (
+            <div key={activeTab} className="space-y-4">
               {messages.map((m) => {
                 const artefactId = extractArtefactIdFromContent(m.content);
                 const artefact = artefactId ? artefactsById[artefactId] : null;
@@ -327,51 +275,26 @@ function ChatContent({ activeTab, messages, artefactsById }: ChatContentProps) {
                   />
                 );
               })}
-            </motion.div>
+            </div>
           ) : (
-            <motion.div
+            <div
               key={`${activeTab}-empty`}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.3 }}
               className="flex flex-col items-center justify-center py-20 text-center"
             >
-              {/* Per-tab gradient colors */}
-              {(() => {
-                const gradients: Record<string, string> = {
-                  life: "from-blue-500 via-indigo-500 to-violet-500",
-                  sport: "from-emerald-500 via-green-500 to-teal-500",
-                  work: "from-amber-500 via-orange-500 to-rose-500",
-                  dev: "from-violet-500 via-purple-500 to-fuchsia-500",
-                };
-                const gradient = gradients[activeTab] || "from-blue-500 to-purple-600";
-                
-                return (
-                  <>
-                    <motion.div 
-                      className={cn("mb-4 rounded-2xl bg-gradient-to-br p-5 shadow-lg", gradient)}
-                      initial={{ scale: 0.8, rotate: -10 }}
-                      animate={{ scale: 1, rotate: 0 }}
-                      transition={{ type: "spring", bounce: 0.4 }}
-                    >
-                      {currentTab && <currentTab.icon className="h-10 w-10 text-white" />}
-                    </motion.div>
-                    <h2 className="mb-2 text-lg font-semibold">
-                      <span className="text-xl">{currentTab?.emoji}</span> {currentTab?.name} Chat
-                    </h2>
-                  </>
-                );
-              })()}
-              <p className="max-w-sm text-sm text-muted-foreground mb-2">
+              <div className="mb-4 rounded-lg bg-zinc-100 dark:bg-zinc-800 p-4">
+                {currentTab && <currentTab.icon className="h-8 w-8 text-zinc-600 dark:text-zinc-400" />}
+              </div>
+              <h2 className="mb-2 text-base font-medium text-zinc-900 dark:text-zinc-100">
+                {currentTab?.emoji} {currentTab?.name}
+              </h2>
+              <p className="max-w-sm text-sm text-zinc-500 dark:text-zinc-400 mb-1">
                 {currentTab?.description}
               </p>
-              <p className="max-w-sm text-xs text-muted-foreground">
-                Start a conversation with Dieter about {currentTab?.name.toLowerCase()} topics!
+              <p className="max-w-sm text-xs text-zinc-400 dark:text-zinc-500">
+                Start a conversation below
               </p>
-            </motion.div>
+            </div>
           )}
-        </AnimatePresence>
         <div ref={endRef} />
       </div>
     </ScrollArea>
@@ -412,7 +335,7 @@ function Composer({ draft, setDraft, isSending, onSubmit, threadId, activeTab }:
   };
 
   return (
-    <div className="sticky bottom-0 glass-medium border-t border-white/10 px-3 py-3 dark:border-white/5 md:px-4 md:py-4">
+    <div className="sticky bottom-0 border-t border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 px-3 py-3 md:px-4 md:py-4">
       <div className="mx-auto w-full max-w-3xl pb-safe">
         <form
           className="flex items-end gap-2"
@@ -434,40 +357,37 @@ function Composer({ draft, setDraft, isSending, onSubmit, threadId, activeTab }:
               value={draft}
               onChange={(e) => setDraft(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder={`Message...`}
+              placeholder="Message..."
               rows={1}
               disabled={isSending}
               className={cn(
-                "w-full resize-none rounded-[20px] border border-white/20 bg-white/50 px-4 py-2.5",
-                "text-[15px] placeholder:text-muted-foreground/70",
-                "transition-all focus:outline-none focus:border-primary/30 focus:bg-white/70",
-                "disabled:opacity-50",
-                "dark:bg-white/5 dark:border-white/10 dark:placeholder:text-zinc-500 dark:focus:bg-white/10"
+                "w-full resize-none rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 px-4 py-2.5",
+                "text-sm placeholder:text-zinc-400 dark:placeholder:text-zinc-500",
+                "transition-colors focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 focus:bg-white dark:focus:bg-zinc-800",
+                "disabled:opacity-50"
               )}
             />
           </div>
 
           {/* Send Button */}
-          <motion.button
+          <button
             type="submit"
             disabled={isSending || !draft.trim()}
             className={cn(
-              "flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-all",
+              "flex h-10 w-10 shrink-0 items-center justify-center rounded-lg transition-colors",
               draft.trim()
-                ? "bg-primary text-primary-foreground shadow-md"
-                : "bg-transparent text-muted-foreground"
+                ? "bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 hover:bg-zinc-800 dark:hover:bg-zinc-200"
+                : "bg-zinc-100 dark:bg-zinc-800 text-zinc-400 dark:text-zinc-500"
             )}
-            whileTap={{ scale: 0.9 }}
-            transition={{ duration: 0.1 }}
           >
-            <Send className={cn("h-5 w-5", isSending && "animate-pulse", !draft.trim() && "opacity-50")} />
-          </motion.button>
+            <Send className={cn("h-4 w-4", isSending && "opacity-50")} />
+          </button>
         </form>
 
         {/* Context indicator - Hidden on mobile */}
         <div className="mt-2 hidden items-center justify-center md:flex">
-          <p className="text-[10px] text-muted-foreground/50">
-            {currentTab?.emoji} {currentTab?.name} • <kbd className="rounded bg-muted/30 px-1">Enter</kbd> to send
+          <p className="text-[10px] text-zinc-400 dark:text-zinc-500">
+            {currentTab?.emoji} {currentTab?.name} · Press Enter to send
           </p>
         </div>
       </div>
@@ -616,15 +536,15 @@ export function MultiChatView({
       {/* Mobile HUD overlay */}
       {mobileHudOpen && (
         <div
-          className="fixed inset-0 z-[60] bg-black/50 backdrop-blur-sm lg:hidden animate-fade-in"
+          className="fixed inset-0 z-[60] bg-black/40 lg:hidden"
           onClick={() => setMobileHudOpen(false)}
         >
           <div
-            className="absolute inset-y-4 left-4 w-[calc(100%-2rem)] max-w-sm overflow-hidden rounded-2xl border border-white/20 bg-background/95 shadow-2xl backdrop-blur-xl animate-slide-in-left"
+            className="absolute inset-y-4 left-4 w-[calc(100%-2rem)] max-w-sm overflow-hidden rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 shadow-lg"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
-              <span className="text-sm font-semibold">OpenClaw Status</span>
+            <div className="flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800 px-4 py-3">
+              <span className="text-sm font-medium">Status</span>
               <Button
                 type="button"
                 variant="ghost"
@@ -642,9 +562,9 @@ export function MultiChatView({
       )}
 
       {/* Main Chat Area */}
-      <section className="flex h-[calc(100dvh-3rem)] flex-col overflow-hidden md:rounded-2xl md:border md:border-white/20 md:bg-white/40 md:shadow-xl md:backdrop-blur-2xl md:dark:border-white/5 md:dark:bg-zinc-900/40 lg:h-[calc(100dvh-5rem)]">
+      <section className="flex h-[calc(100dvh-3rem)] flex-col overflow-hidden md:rounded-lg md:border md:border-zinc-200 md:dark:border-zinc-800 md:bg-white md:dark:bg-zinc-950 lg:h-[calc(100dvh-5rem)]">
         {/* Header */}
-        <header className="hidden md:flex items-center justify-between gap-4 border-b border-white/10 px-4 py-3 dark:border-white/5">
+        <header className="hidden md:flex items-center justify-between gap-4 border-b border-zinc-200 dark:border-zinc-800 px-4 py-3">
           <div className="flex min-w-0 items-center gap-3">
             {/* Mobile menu button */}
             <Button
@@ -660,29 +580,29 @@ export function MultiChatView({
 
             <div className="flex items-center gap-3">
               <div className="relative">
-                <Avatar className="h-10 w-10 ring-2 ring-primary/20">
+                <Avatar className="h-10 w-10">
                   <AvatarImage src="/dieter-avatar.png" alt="Dieter" />
-                  <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white">
+                  <AvatarFallback className="bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900">
                     <Bot className="h-5 w-5" />
                   </AvatarFallback>
                 </Avatar>
                 {/* Online indicator */}
-                <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-background bg-green-500" />
+                <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full border-2 border-white dark:border-zinc-950 bg-emerald-500" />
               </div>
               <div className="min-w-0">
-                <h1 className="truncate text-base font-semibold">
-                  Dieter {currentTab && `• ${currentTab.emoji} ${currentTab.name}`}
+                <h1 className="truncate text-sm font-medium text-zinc-900 dark:text-zinc-100">
+                  Dieter {currentTab && `· ${currentTab.name}`}
                 </h1>
-                <p className="text-xs text-muted-foreground">
-                  AI Assistant • Multi-Context Chat
+                <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                  Online
                 </p>
               </div>
             </div>
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="rounded-full bg-muted/50 px-2.5 py-1 text-xs text-muted-foreground tabular-nums">
-              {currentMessages.length} messages
+            <span className="rounded-md bg-zinc-100 dark:bg-zinc-800 px-2 py-1 text-xs text-zinc-600 dark:text-zinc-400 tabular-nums">
+              {currentMessages.length}
             </span>
           </div>
         </header>

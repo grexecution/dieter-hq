@@ -5,152 +5,141 @@
 @import "@uppy/dashboard/css/style.css";
 
 /* ============================================
-   DieterHQ Design System
-   Inspired by Linear, Discord, Raycast
+   Design Tokens - iOS-inspired Design System
    ============================================ */
 
 :root {
-  /* ---- Base Colors ---- */
-  --background: 0 0% 99%;
-  --background-secondary: 240 5% 96%;
-  --background-tertiary: 240 5% 93%;
+  /* Surface Colors */
+  --background: 0 0% 100%;
+  --background-secondary: 210 40% 98%;
+  --background-tertiary: 210 40% 96.1%;
   --background-elevated: 0 0% 100%;
   
-  --foreground: 240 10% 4%;
-  --foreground-secondary: 240 4% 46%;
-  --foreground-tertiary: 240 4% 65%;
+  --foreground: 222.2 84% 4.9%;
+  --foreground-secondary: 215.4 16.3% 46.9%;
+  --foreground-tertiary: 215 20.2% 65.1%;
 
-  /* ---- Surfaces ---- */
+  /* Card & Surfaces */
   --card: 0 0% 100%;
-  --card-foreground: 240 10% 4%;
+  --card-foreground: 222.2 84% 4.9%;
   --popover: 0 0% 100%;
-  --popover-foreground: 240 10% 4%;
+  --popover-foreground: 222.2 84% 4.9%;
 
-  /* ---- Brand Colors ---- */
-  --primary: 245 82% 62%;
-  --primary-foreground: 0 0% 100%;
-  --secondary: 240 5% 96%;
-  --secondary-foreground: 240 10% 4%;
-  --accent: 245 82% 62%;
-  --accent-foreground: 0 0% 100%;
+  /* Brand & Interactive */
+  --primary: 211 100% 50%;
+  --primary-foreground: 210 40% 98%;
+  --secondary: 210 40% 96.1%;
+  --secondary-foreground: 222.2 47.4% 11.2%;
+  --muted: 210 40% 96.1%;
+  --muted-foreground: 215.4 16.3% 46.9%;
+  --accent: 211 100% 50%;
+  --accent-foreground: 210 40% 98%;
   
-  /* ---- Semantic Colors ---- */
-  --muted: 240 5% 96%;
-  --muted-foreground: 240 4% 46%;
-  --destructive: 0 72% 51%;
-  --destructive-foreground: 0 0% 100%;
+  /* Semantic Colors */
+  --destructive: 0 84.2% 60.2%;
+  --destructive-foreground: 210 40% 98%;
   --success: 142 71% 45%;
-  --success-foreground: 0 0% 100%;
-  --warning: 38 92% 50%;
-  --warning-foreground: 0 0% 100%;
-  --info: 217 91% 60%;
-  --info-foreground: 0 0% 100%;
-  --error: 0 72% 51%;
-  --error-foreground: 0 0% 100%;
+  --success-foreground: 210 40% 98%;
+  --warning: 28 100% 54%;
+  --warning-foreground: 222.2 84% 4.9%;
+  --info: 211 100% 50%;
+  --info-foreground: 210 40% 98%;
 
-  /* ---- Borders & Rings ---- */
-  --border: 240 6% 90%;
-  --input: 240 6% 90%;
-  --ring: 245 82% 62%;
-  --divider: 240 6% 90%;
+  /* Borders & Inputs */
+  --border: 214.3 31.8% 91.4%;
+  --input: 214.3 31.8% 91.4%;
+  --ring: 211 100% 50%;
+  --divider: 214.3 31.8% 91.4%;
 
-  /* ---- Radius ---- */
-  --radius: 0.5rem;
-  --radius-sm: 0.375rem;
-  --radius-lg: 0.75rem;
-  --radius-xl: 1rem;
-  --radius-2xl: 1.25rem;
+  /* Border Radius */
+  --radius: 0.75rem;
+  --radius-sm: 0.5rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.25rem;
 
-  /* ---- Shadows ---- */
-  --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.03);
-  --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.06), 0 1px 2px -1px rgb(0 0 0 / 0.06);
-  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.07), 0 2px 4px -2px rgb(0 0 0 / 0.05);
-  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.08), 0 4px 6px -4px rgb(0 0 0 / 0.04);
-  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.06);
-  --shadow-inset: inset 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-base: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  --shadow-glass: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
 
-  /* ---- Glass Effects ---- */
-  --glass-bg: rgba(255, 255, 255, 0.8);
-  --glass-border: rgba(255, 255, 255, 0.5);
-  --glass-shadow: 0 4px 30px rgba(0, 0, 0, 0.05);
+  /* Frosted Glass - Light Mode */
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-bg-medium: rgba(255, 255, 255, 0.6);
+  --glass-bg-strong: rgba(255, 255, 255, 0.5);
+  --glass-border: rgba(255, 255, 255, 0.3);
+  --glass-border-medium: rgba(255, 255, 255, 0.2);
+  --glass-border-strong: rgba(255, 255, 255, 0.1);
 
-  /* ---- Timing ---- */
-  --duration-fast: 100ms;
-  --duration-normal: 150ms;
-  --duration-medium: 200ms;
-  --duration-slow: 300ms;
-  --ease-out: cubic-bezier(0, 0, 0.2, 1);
-  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
-  --ease-spring: cubic-bezier(0.175, 0.885, 0.32, 1.275);
-
-  /* ---- Chat Specific ---- */
-  --chat-bubble-user: 245 82% 96%;
-  --chat-bubble-assistant: 0 0% 100%;
-  --chat-bubble-system: 240 5% 96%;
+  /* Animation */
+  --duration-fast: 150ms;
+  --duration-base: 200ms;
+  --duration-medium: 300ms;
+  --duration-slow: 400ms;
+  --easing-standard: cubic-bezier(0.4, 0.0, 0.2, 1);
+  --easing-spring: cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .dark {
-  /* ---- Base Colors ---- */
-  --background: 240 10% 6%;
-  --background-secondary: 240 10% 9%;
-  --background-tertiary: 240 10% 12%;
-  --background-elevated: 240 10% 10%;
+  /* Surface Colors - Elevated surfaces are lighter in dark mode (iOS style) */
+  --background: 240 10% 3.9%;
+  --background-secondary: 222.2 84% 4.9%;
+  --background-tertiary: 217.2 32.6% 17.5%;
+  --background-elevated: 240 5% 8%;
   
-  --foreground: 0 0% 98%;
-  --foreground-secondary: 240 5% 65%;
-  --foreground-tertiary: 240 5% 45%;
+  --foreground: 210 40% 98%;
+  --foreground-secondary: 215 20.2% 65.1%;
+  --foreground-tertiary: 215.4 16.3% 46.9%;
 
-  /* ---- Surfaces ---- */
-  --card: 240 10% 10%;
-  --card-foreground: 0 0% 98%;
-  --popover: 240 10% 10%;
-  --popover-foreground: 0 0% 98%;
+  /* Card & Surfaces */
+  --card: 240 5% 8%;
+  --card-foreground: 210 40% 98%;
+  --popover: 240 5% 8%;
+  --popover-foreground: 210 40% 98%;
 
-  /* ---- Brand Colors ---- */
-  --primary: 245 80% 67%;
-  --primary-foreground: 240 10% 4%;
-  --secondary: 240 10% 16%;
-  --secondary-foreground: 0 0% 98%;
-  --accent: 245 80% 67%;
-  --accent-foreground: 240 10% 4%;
-  
-  /* ---- Semantic Colors ---- */
-  --muted: 240 10% 16%;
-  --muted-foreground: 240 5% 55%;
-  --destructive: 0 72% 55%;
-  --destructive-foreground: 0 0% 100%;
+  /* Brand & Interactive */
+  --primary: 211 100% 55%;
+  --primary-foreground: 222.2 47.4% 11.2%;
+  --secondary: 217.2 32.6% 17.5%;
+  --secondary-foreground: 210 40% 98%;
+  --muted: 217.2 32.6% 17.5%;
+  --muted-foreground: 215 20.2% 65.1%;
+  --accent: 211 100% 55%;
+  --accent-foreground: 222.2 47.4% 11.2%;
+
+  /* Semantic Colors */
+  --destructive: 0 84.2% 65%;
+  --destructive-foreground: 210 40% 98%;
   --success: 142 71% 50%;
-  --success-foreground: 0 0% 100%;
-  --warning: 38 92% 55%;
-  --warning-foreground: 240 10% 4%;
-  --info: 217 91% 65%;
-  --info-foreground: 240 10% 4%;
-  --error: 0 72% 55%;
-  --error-foreground: 0 0% 100%;
+  --success-foreground: 210 40% 98%;
+  --warning: 28 100% 59%;
+  --warning-foreground: 222.2 84% 4.9%;
+  --info: 211 100% 55%;
+  --info-foreground: 222.2 47.4% 11.2%;
 
-  /* ---- Borders & Rings ---- */
-  --border: 240 10% 18%;
-  --input: 240 10% 18%;
-  --ring: 245 80% 67%;
-  --divider: 240 10% 18%;
+  /* Borders & Inputs */
+  --border: 217.2 32.6% 17.5%;
+  --input: 217.2 32.6% 17.5%;
+  --ring: 211 100% 55%;
+  --divider: 217.2 32.6% 17.5%;
 
-  /* ---- Shadows (stronger for dark mode) ---- */
-  --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.2);
-  --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.3), 0 1px 2px -1px rgb(0 0 0 / 0.2);
-  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.35), 0 2px 4px -2px rgb(0 0 0 / 0.25);
-  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.4), 0 4px 6px -4px rgb(0 0 0 / 0.3);
-  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.5), 0 8px 10px -6px rgb(0 0 0 / 0.4);
-  --shadow-inset: inset 0 1px 2px 0 rgb(0 0 0 / 0.2);
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
+  --shadow-base: 0 1px 3px 0 rgb(0 0 0 / 0.4), 0 1px 2px -1px rgb(0 0 0 / 0.3);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.4), 0 2px 4px -2px rgb(0 0 0 / 0.3);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.5), 0 4px 6px -4px rgb(0 0 0 / 0.4);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.6), 0 8px 10px -6px rgb(0 0 0 / 0.5);
+  --shadow-glass: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
 
-  /* ---- Glass Effects ---- */
-  --glass-bg: rgba(15, 15, 20, 0.85);
-  --glass-border: rgba(255, 255, 255, 0.08);
-  --glass-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
-
-  /* ---- Chat Specific ---- */
-  --chat-bubble-user: 245 65% 25%;
-  --chat-bubble-assistant: 240 10% 12%;
-  --chat-bubble-system: 240 10% 16%;
+  /* Frosted Glass - Dark Mode */
+  --glass-bg: rgba(20, 20, 30, 0.7);
+  --glass-bg-medium: rgba(20, 20, 30, 0.6);
+  --glass-bg-strong: rgba(20, 20, 30, 0.5);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-border-medium: rgba(255, 255, 255, 0.08);
+  --glass-border-strong: rgba(255, 255, 255, 0.05);
 }
 
 /* ============================================
@@ -162,8 +151,11 @@
 }
 
 html {
+  /* Smooth scrolling */
   scroll-behavior: smooth;
+  /* iOS-style momentum scrolling */
   -webkit-overflow-scrolling: touch;
+  /* Prevent text size adjustment on orientation change */
   -webkit-text-size-adjust: 100%;
 }
 
@@ -176,13 +168,14 @@ body {
 
 body {
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", 
-               "Segoe UI", system-ui, sans-serif;
+               system-ui, sans-serif;
   background-color: hsl(var(--background));
   color: hsl(var(--foreground));
+  /* Better font rendering */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* Prevent horizontal overflow */
   overflow-x: hidden;
-  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
 }
 
 /* ============================================
@@ -191,28 +184,121 @@ body {
 
 h1, h2, h3, h4, h5, h6 {
   font-weight: 600;
-  letter-spacing: -0.025em;
-  line-height: 1.25;
-  color: hsl(var(--foreground));
+  letter-spacing: -0.02em;
+  line-height: 1.2;
 }
 
-h1 { font-size: 1.875rem; }
-h2 { font-size: 1.5rem; }
-h3 { font-size: 1.25rem; }
-h4 { font-size: 1.125rem; }
+h1 {
+  font-size: clamp(2rem, 5vw, 3rem);
+}
+
+h2 {
+  font-size: clamp(1.5rem, 4vw, 2.25rem);
+}
+
+h3 {
+  font-size: clamp(1.25rem, 3vw, 1.875rem);
+}
 
 p {
-  line-height: 1.625;
-  color: hsl(var(--foreground-secondary));
+  line-height: 1.6;
 }
 
 /* ============================================
-   Scrollbar
+   Frosted Glass Utilities
+   ============================================ */
+
+@layer utilities {
+  .glass {
+    background: var(--glass-bg);
+    backdrop-filter: blur(8px) saturate(180%);
+    -webkit-backdrop-filter: blur(8px) saturate(180%);
+    border: 1px solid var(--glass-border);
+  }
+
+  .glass-medium {
+    background: var(--glass-bg-medium);
+    backdrop-filter: blur(12px) saturate(180%);
+    -webkit-backdrop-filter: blur(12px) saturate(180%);
+    border: 1px solid var(--glass-border-medium);
+  }
+
+  .glass-strong {
+    background: var(--glass-bg-strong);
+    backdrop-filter: blur(16px) saturate(200%);
+    -webkit-backdrop-filter: blur(16px) saturate(200%);
+    border: 1px solid var(--glass-border-strong);
+  }
+
+  .glass-elevated {
+    background: var(--glass-bg);
+    backdrop-filter: blur(8px) saturate(180%);
+    -webkit-backdrop-filter: blur(8px) saturate(180%);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--shadow-glass);
+  }
+
+  .glass-medium-elevated {
+    background: var(--glass-bg-medium);
+    backdrop-filter: blur(12px) saturate(180%);
+    -webkit-backdrop-filter: blur(12px) saturate(180%);
+    border: 1px solid var(--glass-border-medium);
+    box-shadow: var(--shadow-glass);
+  }
+
+  .glass-strong-elevated {
+    background: var(--glass-bg-strong);
+    backdrop-filter: blur(16px) saturate(200%);
+    -webkit-backdrop-filter: blur(16px) saturate(200%);
+    border: 1px solid var(--glass-border-strong);
+    box-shadow: var(--shadow-glass);
+  }
+}
+
+/* ============================================
+   Smooth Animations
+   ============================================ */
+
+@layer utilities {
+  /* iOS-style smooth transitions */
+  .transition-smooth {
+    transition: all var(--duration-base) var(--easing-standard);
+  }
+
+  .transition-spring {
+    transition: all var(--duration-medium) var(--easing-spring);
+  }
+
+  /* Hover scale effect (subtle iOS-like) */
+  .hover-lift {
+    transition: transform var(--duration-base) var(--easing-standard);
+  }
+
+  .hover-lift:hover {
+    transform: translateY(-2px);
+  }
+
+  .hover-lift:active {
+    transform: translateY(0);
+  }
+
+  /* Press effect (iOS-like) */
+  .hover-press {
+    transition: transform var(--duration-fast) var(--easing-standard);
+  }
+
+  .hover-press:active {
+    transform: scale(0.98);
+  }
+}
+
+/* ============================================
+   Scrollbar Styling (WebKit only)
    ============================================ */
 
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 8px;
+  height: 8px;
 }
 
 ::-webkit-scrollbar-track {
@@ -220,14 +306,23 @@ p {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: hsl(var(--border));
-  border-radius: 3px;
+  background: hsl(var(--muted-foreground) / 0.3);
+  border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
   background: hsl(var(--muted-foreground) / 0.5);
 }
 
+.dark ::-webkit-scrollbar-thumb {
+  background: hsl(var(--muted-foreground) / 0.2);
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground) / 0.4);
+}
+
+/* Hide scrollbar utility */
 .scrollbar-hide {
   -ms-overflow-style: none;
   scrollbar-width: none;
@@ -238,18 +333,24 @@ p {
 }
 
 /* ============================================
-   Focus & Selection
+   Focus Styles
    ============================================ */
 
+/* iOS-style focus rings */
 :focus-visible {
   outline: 2px solid hsl(var(--ring));
   outline-offset: 2px;
   border-radius: var(--radius-sm);
 }
 
+/* Remove default focus for mouse users, keep for keyboard */
 :focus:not(:focus-visible) {
   outline: none;
 }
+
+/* ============================================
+   Selection Styles
+   ============================================ */
 
 ::selection {
   background-color: hsl(var(--primary) / 0.2);
@@ -257,108 +358,10 @@ p {
 }
 
 /* ============================================
-   Glass Effects
+   Mobile Optimizations
    ============================================ */
 
-@layer utilities {
-  .glass {
-    background: var(--glass-bg);
-    backdrop-filter: blur(12px) saturate(180%);
-    -webkit-backdrop-filter: blur(12px) saturate(180%);
-    border: 1px solid var(--glass-border);
-    box-shadow: var(--glass-shadow);
-  }
-
-  .glass-subtle {
-    background: var(--glass-bg);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-  }
-}
-
-/* ============================================
-   Animation Utilities
-   ============================================ */
-
-@layer utilities {
-  .transition-base {
-    transition: all var(--duration-normal) var(--ease-out);
-  }
-
-  .transition-colors-fast {
-    transition: color var(--duration-fast) var(--ease-out),
-                background-color var(--duration-fast) var(--ease-out),
-                border-color var(--duration-fast) var(--ease-out);
-  }
-
-  .hover-lift {
-    transition: transform var(--duration-normal) var(--ease-out),
-                box-shadow var(--duration-normal) var(--ease-out);
-  }
-
-  .hover-lift:hover {
-    transform: translateY(-1px);
-    box-shadow: var(--shadow-md);
-  }
-
-  .hover-scale {
-    transition: transform var(--duration-fast) var(--ease-out);
-  }
-
-  .hover-scale:active {
-    transform: scale(0.98);
-  }
-}
-
-/* ============================================
-   Animation Keyframes
-   ============================================ */
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-@keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes slideIn {
-  from { transform: translateX(100%); }
-  to { transform: translateX(0); }
-}
-
-@keyframes scaleIn {
-  from { opacity: 0; transform: scale(0.96); }
-  to { opacity: 1; transform: scale(1); }
-}
-
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
-}
-
-@keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
-}
-
-.animate-fade-in { animation: fadeIn var(--duration-medium) var(--ease-out); }
-.animate-fade-in-up { animation: fadeInUp var(--duration-medium) var(--ease-out); }
-.animate-slide-in { animation: slideIn var(--duration-medium) var(--ease-out); }
-.animate-scale-in { animation: scaleIn var(--duration-medium) var(--ease-spring); }
-.animate-pulse { animation: pulse 2s var(--ease-in-out) infinite; }
-.animate-shimmer {
-  animation: shimmer 2s linear infinite;
-  background: linear-gradient(90deg, transparent, hsl(var(--muted) / 0.5), transparent);
-  background-size: 200% 100%;
-}
-
-/* ============================================
-   Safe Areas (Mobile)
-   ============================================ */
-
+/* Safe area for notched devices */
 @supports (padding: max(0px)) {
   body {
     padding-left: max(0px, env(safe-area-inset-left));
@@ -366,44 +369,7 @@ p {
   }
 }
 
-.pb-safe { padding-bottom: env(safe-area-inset-bottom, 0px); }
-.pt-safe { padding-top: env(safe-area-inset-top, 0px); }
-.pl-safe { padding-left: env(safe-area-inset-left, 0px); }
-.pr-safe { padding-right: env(safe-area-inset-right, 0px); }
-
-/* ============================================
-   Responsive Utilities
-   ============================================ */
-
-.desktop-only {
-  display: none;
-}
-
-@media (min-width: 768px) {
-  .desktop-only {
-    display: block;
-  }
-}
-
-.mobile-only {
-  display: block;
-}
-
-@media (min-width: 768px) {
-  .mobile-only {
-    display: none;
-  }
-}
-
-.vh-full-safe {
-  height: 100vh;
-  height: 100dvh;
-}
-
-/* ============================================
-   Touch Optimization
-   ============================================ */
-
+/* Touch-friendly tap targets */
 @media (pointer: coarse) {
   button,
   a,
@@ -415,6 +381,7 @@ p {
   }
 }
 
+/* Prevent iOS zoom on input focus */
 @media screen and (max-width: 768px) {
   input[type="text"],
   input[type="email"],
@@ -430,106 +397,202 @@ p {
 }
 
 /* ============================================
-   Chat-Specific Styles
+   Utility Classes
    ============================================ */
 
-.chat-bubble-user {
-  background-color: hsl(var(--chat-bubble-user));
+/* iOS-style card */
+.card-ios {
+  background: var(--glass-bg);
+  backdrop-filter: blur(8px) saturate(180%);
+  -webkit-backdrop-filter: blur(8px) saturate(180%);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow-glass);
+  border-radius: 0.75rem;
+  padding: 1rem;
 }
 
-.chat-bubble-assistant {
-  background-color: hsl(var(--chat-bubble-assistant));
-  border: 1px solid hsl(var(--border));
+@media (min-width: 768px) {
+  .card-ios {
+    padding: 1.5rem;
+  }
 }
 
-.chat-bubble-system {
-  background-color: hsl(var(--chat-bubble-system));
-}
-
-/* Message input styling */
-.chat-input {
-  background-color: hsl(var(--background-secondary));
-  border: 1px solid hsl(var(--border));
-  border-radius: var(--radius-lg);
-  transition: border-color var(--duration-normal) var(--ease-out),
-              box-shadow var(--duration-normal) var(--ease-out);
-}
-
-.chat-input:focus-within {
-  border-color: hsl(var(--primary) / 0.5);
-  box-shadow: 0 0 0 3px hsl(var(--primary) / 0.1);
-}
-
-/* ============================================
-   Card Styles
-   ============================================ */
-
-.card-elevated {
-  background-color: hsl(var(--card));
-  border: 1px solid hsl(var(--border));
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-sm);
-}
-
-.card-subtle {
-  background-color: hsl(var(--background-secondary));
-  border-radius: var(--radius-lg);
-}
-
-.card-interactive {
-  background-color: hsl(var(--card));
-  border: 1px solid hsl(var(--border));
-  border-radius: var(--radius-lg);
-  transition: border-color var(--duration-normal) var(--ease-out),
-              box-shadow var(--duration-normal) var(--ease-out);
-}
-
-.card-interactive:hover {
-  border-color: hsl(var(--primary) / 0.3);
-  box-shadow: var(--shadow-md);
-}
-
-/* ============================================
-   Button Base
-   ============================================ */
-
-.btn-primary {
-  background-color: hsl(var(--primary));
-  color: hsl(var(--primary-foreground));
-  border-radius: var(--radius);
+/* iOS-style button base */
+.btn-ios-base {
+  transition: all var(--duration-base) var(--easing-standard);
+  border-radius: 0.75rem;
+  padding: 0.625rem 1rem;
   font-weight: 500;
-  transition: background-color var(--duration-fast) var(--ease-out),
-              transform var(--duration-fast) var(--ease-out);
+  font-size: 0.875rem;
 }
 
-.btn-primary:hover {
-  background-color: hsl(var(--primary) / 0.9);
-}
-
-.btn-primary:active {
+.btn-ios-base:active {
   transform: scale(0.98);
 }
 
-.btn-secondary {
-  background-color: hsl(var(--secondary));
-  color: hsl(var(--secondary-foreground));
-  border-radius: var(--radius);
-  font-weight: 500;
-  transition: background-color var(--duration-fast) var(--ease-out);
+@media (min-width: 768px) {
+  .btn-ios-base {
+    font-size: 1rem;
+  }
 }
 
-.btn-secondary:hover {
-  background-color: hsl(var(--muted));
+/* iOS-style input */
+.input-ios {
+  background: var(--glass-bg);
+  backdrop-filter: blur(8px) saturate(180%);
+  -webkit-backdrop-filter: blur(8px) saturate(180%);
+  border: 1px solid var(--glass-border);
+  border-radius: 0.5rem;
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
 }
 
-.btn-ghost {
-  color: hsl(var(--foreground-secondary));
-  border-radius: var(--radius);
-  transition: background-color var(--duration-fast) var(--ease-out),
-              color var(--duration-fast) var(--ease-out);
+.input-ios::placeholder {
+  color: hsl(var(--muted-foreground));
 }
 
-.btn-ghost:hover {
-  background-color: hsl(var(--muted));
-  color: hsl(var(--foreground));
+/* Safe spacing for mobile */
+.safe-padding {
+  padding-left: max(1rem, env(safe-area-inset-left));
+  padding-right: max(1rem, env(safe-area-inset-right));
+}
+
+.safe-padding-bottom {
+  padding-bottom: max(1rem, env(safe-area-inset-bottom));
+}
+
+/* Safe area utilities for notched devices */
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.pt-safe {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+.pl-safe {
+  padding-left: env(safe-area-inset-left, 0px);
+}
+
+.pr-safe {
+  padding-right: env(safe-area-inset-right, 0px);
+}
+
+/* ============================================
+   Animation Keyframes
+   ============================================ */
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* Animation utilities */
+.animate-fade-in {
+  animation: fadeIn var(--duration-medium) var(--easing-standard);
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp var(--duration-medium) var(--easing-standard);
+}
+
+.animate-slide-in-right {
+  animation: slideInRight var(--duration-medium) var(--easing-standard);
+}
+
+.animate-slide-in-left {
+  animation: slideInLeft var(--duration-medium) var(--easing-standard);
+}
+
+.animate-scale-in {
+  animation: scaleIn var(--duration-medium) var(--easing-spring);
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* ============================================
+   Responsive Utilities
+   ============================================ */
+
+/* Hide on mobile, show on desktop */
+.desktop-only {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .desktop-only {
+    display: block;
+  }
+}
+
+/* Show on mobile, hide on desktop */
+.mobile-only {
+  display: block;
+}
+
+@media (min-width: 768px) {
+  .mobile-only {
+    display: none;
+  }
+}
+
+/* Full viewport height minus safe areas */
+.vh-full-safe {
+  height: 100vh;
+  height: 100dvh; /* Dynamic viewport height */
 }

@@ -24,13 +24,13 @@ type ConnectionState = "connecting" | "connected" | "disconnected";
 
 export function StatusBar() {
   const [status, setStatus] = useState<StatusData | null>(null);
-  const [connectionState, setConnectionState] =
-    useState<ConnectionState>("connecting");
+  const [connectionState, setConnectionState] = useState<ConnectionState>("connecting");
   const [expanded, setExpanded] = useState(false);
   const eventSourceRef = useRef<EventSource | null>(null);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const connect = useCallback(() => {
+    // Clean up existing connection
     if (eventSourceRef.current) {
       eventSourceRef.current.close();
     }
@@ -62,6 +62,7 @@ export function StatusBar() {
       es.close();
       eventSourceRef.current = null;
 
+      // Reconnect after 5 seconds
       reconnectTimeoutRef.current = setTimeout(() => {
         connect();
       }, 5000);
@@ -83,38 +84,41 @@ export function StatusBar() {
     };
   }, [connect]);
 
-  const isOnline =
-    status?.gateway.reachable && status?.agent.status === "online";
-  const isBusy =
-    status?.agent.status === "unknown" && status?.gateway.reachable;
+  // Determine display values
+  const isOnline = status?.gateway.reachable && status?.agent.status === "online";
+  const isBusy = status?.agent.status === "unknown" && status?.gateway.reachable;
   const latencyMs = status?.gateway.latencyMs;
   const agentId = status?.agent.id ?? "main";
   const gatewayUrl = status?.gateway.url ?? "";
 
+  // Status dot color
   const dotColor = isOnline
-    ? "bg-success"
+    ? "bg-emerald-500"
     : isBusy
-    ? "bg-warning"
-    : "bg-foreground-tertiary";
+    ? "bg-amber-500"
+    : "bg-zinc-400";
 
-  const statusText =
-    connectionState === "connecting"
-      ? "Connecting..."
-      : connectionState === "disconnected"
-      ? "Offline"
-      : isOnline
-      ? "Online"
-      : isBusy
-      ? "Busy"
-      : "Offline";
+  // Status text
+  const statusText = connectionState === "connecting"
+    ? "Verbinde..."
+    : connectionState === "disconnected"
+    ? "Offline"
+    : isOnline
+    ? "Online"
+    : isBusy
+    ? "Beschäftigt"
+    : "Offline";
 
   return (
-    <div className="border-b border-border bg-background-secondary/50">
+    <div className="border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900">
+      {/* Collapsed bar - minimal */}
       <button
         onClick={() => setExpanded(!expanded)}
-        className="flex h-6 w-full items-center justify-between px-4 transition-colors hover:bg-muted"
+        className="flex h-5 w-full items-center justify-between px-3 transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-800"
       >
-        <div className="flex items-center gap-2 text-[10px] text-foreground-tertiary">
+        {/* Left: Status indicator */}
+        <div className="flex items-center gap-1.5 text-[10px] text-zinc-500 dark:text-zinc-400">
+          {/* Status dot */}
           <span className="relative flex h-1.5 w-1.5">
             {isOnline && connectionState === "connected" && (
               <span
@@ -134,43 +138,39 @@ export function StatusBar() {
           <span>{statusText}</span>
           {connectionState === "connected" && latencyMs !== undefined && (
             <>
-              <span className="text-border">·</span>
+              <span className="text-zinc-300 dark:text-zinc-600">·</span>
               <span className="tabular-nums">{latencyMs}ms</span>
             </>
           )}
         </div>
 
+        {/* Right: Expand icon */}
         {expanded ? (
-          <ChevronUp className="h-3 w-3 text-foreground-tertiary" />
+          <ChevronUp className="h-3 w-3 text-zinc-400" />
         ) : (
-          <ChevronDown className="h-3 w-3 text-foreground-tertiary" />
+          <ChevronDown className="h-3 w-3 text-zinc-400" />
         )}
       </button>
 
+      {/* Expanded details */}
       {expanded && (
-        <div className="space-y-1 border-t border-border px-4 py-2 text-[10px] text-foreground-tertiary">
+        <div className="border-t border-zinc-200 dark:border-zinc-800 px-3 py-2 text-[10px] text-zinc-500 dark:text-zinc-400 space-y-1">
           <div className="flex justify-between">
             <span>Agent</span>
             <span className="font-mono">{agentId}</span>
           </div>
           <div className="flex justify-between">
             <span>Gateway</span>
-            <span className="max-w-[200px] truncate font-mono">
-              {gatewayUrl || "—"}
-            </span>
+            <span className="font-mono truncate max-w-[200px]">{gatewayUrl || "—"}</span>
           </div>
           <div className="flex justify-between">
-            <span>Latency</span>
-            <span className="font-mono">
-              {latencyMs !== undefined ? `${latencyMs}ms` : "—"}
-            </span>
+            <span>Latenz</span>
+            <span className="font-mono">{latencyMs !== undefined ? `${latencyMs}ms` : "—"}</span>
           </div>
           <div className="flex justify-between">
-            <span>Last check</span>
+            <span>Zuletzt geprüft</span>
             <span className="font-mono">
-              {status?.lastCheck
-                ? new Date(status.lastCheck).toLocaleTimeString("de-AT")
-                : "—"}
+              {status?.lastCheck ? new Date(status.lastCheck).toLocaleTimeString("de-AT") : "—"}
             </span>
           </div>
         </div>

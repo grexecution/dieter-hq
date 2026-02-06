@@ -299,15 +299,36 @@ interface ChatContentProps {
 
 function ChatContent({ activeTab, messages, artefactsById, isTranscribing, isSending, onSuggestionClick }: ChatContentProps) {
   const endRef = useRef<HTMLDivElement | null>(null);
+  const scrollAreaRef = useRef<HTMLDivElement | null>(null);
   const currentTab = CHAT_TABS.find(tab => tab.id === activeTab);
 
-  // Auto-scroll to bottom when messages change
+  // Scroll to bottom - instant on tab change, smooth on new messages
+  const scrollToBottom = useCallback((instant = false) => {
+    if (scrollAreaRef.current) {
+      const scrollContainer = scrollAreaRef.current.querySelector('[data-radix-scroll-area-viewport]');
+      if (scrollContainer) {
+        scrollContainer.scrollTo({
+          top: scrollContainer.scrollHeight,
+          behavior: instant ? "instant" : "smooth"
+        });
+      }
+    }
+  }, []);
+
+  // Scroll to bottom INSTANTLY when switching tabs or on initial load
   useEffect(() => {
-    endRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
-  }, [messages.length]);
+    // Small delay to ensure content is rendered
+    const timer = setTimeout(() => scrollToBottom(true), 50);
+    return () => clearTimeout(timer);
+  }, [activeTab, scrollToBottom]);
+
+  // Scroll to bottom smoothly when new messages arrive
+  useEffect(() => {
+    scrollToBottom(false);
+  }, [messages.length, scrollToBottom]);
 
   return (
-    <ScrollArea className="flex-1">
+    <ScrollArea className="flex-1" ref={scrollAreaRef}>
       <div className="mx-auto flex w-full max-w-3xl flex-col gap-3 px-3 py-4 md:px-6 md:py-6 lg:max-w-4xl">
         {messages.length > 0 ? (
             <div key={activeTab} className="space-y-3 md:space-y-4">

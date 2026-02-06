@@ -231,12 +231,12 @@ export function InboxView() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message }),
       });
+      const data = await res.json();
       if (res.ok) {
-        toast.success("Nachricht gesendet");
-        // Archive the item after successful reply
+        toast.success(`📤 Nachricht wird über Dieter gesendet an ${data.recipient || "Empfänger"}`);
+        // Mark as archived since reply is queued
         await handleStatusChange(id, "archived");
       } else {
-        const data = await res.json();
         toast.error(data.error || "Fehler beim Senden");
       }
     } catch (err) {

@@ -3,10 +3,6 @@ import { db } from "@/server/db";
 import { inboxItems } from "@/server/db/schema";
 import { eq } from "drizzle-orm";
 
-// Gateway URL for sending messages
-const GATEWAY_URL = process.env.OPENCLAW_GATEWAY_HTTP_URL || "http://localhost:3033";
-const GATEWAY_PASSWORD = process.env.OPENCLAW_GATEWAY_PASSWORD || "";
-
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -38,64 +34,73 @@ export async function POST(
 
     const item = items[0];
 
-    // Determine how to send based on source
-    if (item.source === "whatsapp") {
-      // Send via OpenClaw gateway using wacli
-      const response = await fetch(`${GATEWAY_URL}/api/sessions/main/message`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${GATEWAY_PASSWORD}`,
-        },
-        body: JSON.stringify({
-          message: `Sende diese WhatsApp Nachricht an ${item.sender}: "${message}"`,
-        }),
-      });
-
-      if (!response.ok) {
-        console.error("Gateway error:", await response.text());
-        return NextResponse.json(
-          { error: "Failed to send via gateway" },
-          { status: 500 }
-        );
-      }
-
-      return NextResponse.json({ success: true, method: "gateway" });
-    } 
+    // Store pending reply in the item's metadata
+    // OpenClaw/Dieter will poll for these and send them
+    const existingMetadata = (item.metadata as Record<string, unknown>) || {};
+    const pendingReplies = (existingMetadata.pendingReplies as Array<{message: string, createdAt: string}>) || [];
     
-    if (item.source === "email") {
-      // For email, create a draft via OpenClaw gateway
-      const response = await fetch(`${GATEWAY_URL}/api/sessions/main/message`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${GATEWAY_PASSWORD}`,
+    pendingReplies.push({
+      message: message.trim(),
+      createdAt: new Date().toISOString(),
+    });
+
+    await db
+      .update(inboxItems)
+      .set({
+        metadata: {
+          ...existingMetadata,
+          pendingReplies,
         },
-        body: JSON.stringify({
-          message: `Erstelle einen Email-Entwurf an ${item.sender} mit folgendem Inhalt: "${message}"`,
-        }),
-      });
+        updatedAt: new Date(),
+      })
+      .where(eq(inboxItems.id, id));
 
-      if (!response.ok) {
-        console.error("Gateway error:", await response.text());
-        return NextResponse.json(
-          { error: "Failed to create email draft via gateway" },
-          { status: 500 }
-        );
-      }
+    // Log for debugging
+    console.log(`[PENDING REPLY] ${item.source} to ${item.sender}: ${message}`);
 
-      return NextResponse.json({ success: true, method: "gateway-email-draft" });
-    }
-
-    // For other sources, just return success (TODO: implement)
     return NextResponse.json({ 
       success: true, 
-      method: "not-implemented",
-      message: `Reply to ${item.source} not yet implemented`
+      method: "queued",
+      message: "Reply queued for Dieter to send",
+      recipient: item.sender,
+      source: item.source,
     });
 
   } catch (error) {
-    console.error("Error sending reply:", error);
+    console.error("Error queuing reply:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
+
+// GET endpoint to fetch pending replies (for OpenClaw to poll)
+export async function GET() {
+  try {
+    const items = await db
+      .select()
+      .from(inboxItems)
+      .where(eq(inboxItems.status, "pending"));
+
+    // Filter items with pending replies
+    const itemsWithReplies = items.filter(item => {
+      const metadata = item.metadata as Record<string, unknown>;
+      const pendingReplies = metadata?.pendingReplies as Array<unknown>;
+      return pendingReplies && pendingReplies.length > 0;
+    });
+
+    return NextResponse.json({
+      items: itemsWithReplies.map(item => ({
+        id: item.id,
+        source: item.source,
+        sender: item.sender,
+        senderName: item.senderName,
+        pendingReplies: (item.metadata as Record<string, unknown>)?.pendingReplies,
+      })),
+    });
+  } catch (error) {
+    console.error("Error fetching pending replies:", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }

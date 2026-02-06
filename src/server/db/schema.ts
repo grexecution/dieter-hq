@@ -36,11 +36,12 @@ export const calendarEvents = pgTable("calendar_events", {
 // --- Artefacts ---
 export const artefacts = pgTable("artefacts", {
   id: text("id").primaryKey(),
-  threadId: text("thread_id").notNull(),
+  threadId: text("thread_id"),
   originalName: text("original_name").notNull(),
   mimeType: text("mime_type").notNull(),
   sizeBytes: integer("size_bytes").notNull(),
-  storagePath: text("storage_path").notNull(),
+  storagePath: text("storage_path"),  // For local storage (optional)
+  dataBase64: text("data_base64"),     // For DB storage (Vercel-compatible)
   createdAt: timestamp("created_at", { mode: "date", withTimezone: true }).notNull(),
 });
 

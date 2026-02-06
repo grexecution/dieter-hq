@@ -24,8 +24,20 @@ export async function GET(
   const a = row[0];
   if (!a) return NextResponse.json({ error: "not_found" }, { status: 404 });
 
-  const abs = path.join(artefactsBaseDir(), a.storagePath);
-  const buf = await fs.readFile(abs);
+  let buf: Buffer;
+
+  // Try dataBase64 first (Vercel-compatible)
+  if (a.dataBase64) {
+    buf = Buffer.from(a.dataBase64, "base64");
+  } 
+  // Fallback to file storage (local dev)
+  else if (a.storagePath) {
+    const abs = path.join(artefactsBaseDir(), a.storagePath);
+    buf = await fs.readFile(abs);
+  } 
+  else {
+    return NextResponse.json({ error: "no_data" }, { status: 404 });
+  }
 
   return new NextResponse(buf, {
     headers: {

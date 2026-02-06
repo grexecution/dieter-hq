@@ -561,16 +561,13 @@ export function MultiChatView({
     setDrafts(prev => ({ ...prev, [effectiveThreadId]: value }));
   };
 
-  // Send message handler for current thread
+  // Send message handler for current thread (reads SSE stream)
   const handleSend = async () => {
     const content = currentDraft.trim();
     if (!content || isSending) return;
 
     // Capture threadId at send time to avoid stale closure issues
     const sendThreadId = effectiveThreadId;
-    
-    // Store pending send info in ref for recovery
-    pendingSendRef.current = { threadId: sendThreadId, content };
 
     setSendingStates(prev => ({ ...prev, [sendThreadId]: true }));
     setDrafts(prev => ({ ...prev, [sendThreadId]: "" }));
@@ -581,29 +578,75 @@ export function MultiChatView({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ threadId: sendThreadId, content }),
       });
-      if (!r.ok) throw new Error("send_failed");
-      const data = (await r.json()) as { ok: boolean; item: MessageRow };
-      if (data?.ok && data.item?.id) {
-        setLiveMessages((prev) => ({
-          ...prev,
-          [sendThreadId]: [
-            ...(prev[sendThreadId] || []),
-            data.item
-          ].filter((m, i, arr) => arr.findIndex(msg => msg.id === m.id) === i) // dedup
-        }));
-        // Update timestamp ref for SSE
-        if (data.item.createdAt) {
-          lastMessageTimestampsRef.current[sendThreadId] = data.item.createdAt;
+
+      if (!r.ok) {
+        throw new Error(`send_failed: ${r.status}`);
+      }
+
+      // Handle SSE stream response
+      if (!r.body) {
+        throw new Error("No response body");
+      }
+
+      const reader = r.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+      let assistantContent = "";
+      let assistantMsgId = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split("\n");
+        buffer = lines.pop() || "";
+
+        for (const line of lines) {
+          if (!line.startsWith("data: ")) continue;
+          const payload = line.slice(6).trim();
+          if (!payload || payload === "[DONE]") continue;
+
+          try {
+            const event = JSON.parse(payload);
+
+            if (event.type === "user_confirmed" && event.item) {
+              // Add user message to chat
+              setLiveMessages((prev) => ({
+                ...prev,
+                [sendThreadId]: [
+                  ...(prev[sendThreadId] || []),
+                  event.item
+                ].filter((m, i, arr) => arr.findIndex(msg => msg.id === m.id) === i)
+              }));
+              if (event.item.createdAt) {
+                lastMessageTimestampsRef.current[sendThreadId] = event.item.createdAt;
+              }
+            } else if (event.type === "delta" && event.content) {
+              // Accumulate assistant response (could show streaming later)
+              assistantContent += event.content;
+            } else if (event.type === "done" && event.item) {
+              // Add complete assistant message
+              assistantMsgId = event.item.id;
+              setLiveMessages((prev) => ({
+                ...prev,
+                [sendThreadId]: [
+                  ...(prev[sendThreadId] || []),
+                  event.item
+                ].filter((m, i, arr) => arr.findIndex(msg => msg.id === m.id) === i)
+              }));
+              if (event.item.createdAt) {
+                lastMessageTimestampsRef.current[sendThreadId] = event.item.createdAt;
+              }
+            }
+          } catch {
+            // Ignore JSON parse errors
+          }
         }
       }
-      // Clear pending send on success
-      pendingSendRef.current = null;
-    } catch {
-      // Restore draft on failure only if this is still the pending send
-      if (pendingSendRef.current?.threadId === sendThreadId) {
-        setDrafts(prev => ({ ...prev, [sendThreadId]: pendingSendRef.current!.content }));
-        pendingSendRef.current = null;
-      }
+    } catch (err) {
+      console.error("Send failed:", err);
+      // Don't restore draft - message was likely sent, just response failed
     } finally {
       setSendingStates(prev => ({ ...prev, [sendThreadId]: false }));
     }

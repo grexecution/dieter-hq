@@ -1,19 +1,18 @@
 import { NextResponse } from "next/server";
-import path from "node:path";
-import fs from "node:fs/promises";
 
 import { db } from "@/server/db";
 import { messages } from "@/server/db/schema";
 import { logEvent } from "@/server/events/log";
-import { artefactRelPath, artefactsBaseDir, ensureDirForFile } from "@/server/artefacts/storage";
 
 export const runtime = "nodejs";
 
 /**
  * POST /api/chat/voice-message
  *
- * Receives audio blob, stores it, creates voice message in DB.
- * Triggers async transcription.
+ * Receives audio blob, stores it as base64 data URL, creates voice message in DB.
+ * Triggers async transcription via OpenAI Whisper API.
+ *
+ * Works on Vercel serverless - no filesystem access needed.
  *
  * Body: FormData with:
  * - audio: File (audio blob)
@@ -43,17 +42,11 @@ export async function POST(req: Request) {
     const id = crypto.randomUUID();
     const now = new Date();
 
-    // Store audio file
-    const ext = "webm";
-    const rel = artefactRelPath({ date: now, id, ext });
-    const abs = path.join(artefactsBaseDir(), rel);
-    await ensureDirForFile(abs);
-
+    // Store audio as base64 data URL (works on Vercel serverless)
     const buf = Buffer.from(await audioFile.arrayBuffer());
-    await fs.writeFile(abs, buf);
-
-    // Create message with audio URL
-    const audioUrl = `/api/artefacts/audio/${encodeURIComponent(id)}.${ext}`;
+    const base64 = buf.toString("base64");
+    const mimeType = audioFile.type || "audio/webm";
+    const audioUrl = `data:${mimeType};base64,${base64}`;
 
     await db.insert(messages).values({
       id,
@@ -69,14 +62,14 @@ export async function POST(req: Request) {
     await logEvent({
       threadId,
       type: "voice.message",
-      payload: { id, durationMs, audioUrl },
+      payload: { id, durationMs },
     });
 
-    // Fire-and-forget transcription
+    // Fire-and-forget transcription via OpenAI Whisper API
     void (async () => {
       try {
-        const { transcribeLocalWhisper } = await import("@/server/whisper/transcribe");
-        const text = await transcribeLocalWhisper(abs, { language: "auto" });
+        const { transcribeOpenAIWhisper } = await import("@/server/whisper/transcribe-openai");
+        const text = await transcribeOpenAIWhisper(buf, mimeType, { language: "auto" });
         if (!text) return;
 
         // Update the message with transcription

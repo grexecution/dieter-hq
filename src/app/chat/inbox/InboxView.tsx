@@ -41,7 +41,7 @@ export function InboxView() {
   
   const [filters, setFilters] = useState<FiltersType>({
     source: "all",
-    status: "all",
+    status: "pending",  // Default: show open items only
     priority: "all",
   });
 

@@ -1,8 +1,8 @@
 /**
- * Messaging utilities for sending WhatsApp messages
+ * Messaging utilities - sends via OpenClaw Gateway /tools/invoke
  * 
- * On Vercel: Uses WhatsApp Relay service running on Mac Mini
- * Locally: Uses wacli directly (if available)
+ * This uses the Gateway's HTTP API to invoke the message tool directly.
+ * Works from anywhere (Vercel, local, etc.) as long as Gateway is reachable.
  */
 
 export type MessageChannel = 'whatsapp' | 'telegram' | 'email' | 'slack';
@@ -13,61 +13,66 @@ interface SendMessageResult {
   error?: string;
 }
 
-// Relay configuration
-const WHATSAPP_RELAY_URL = process.env.WHATSAPP_RELAY_URL; // e.g., https://your-tunnel.ngrok.io
-const WHATSAPP_RELAY_SECRET = process.env.WHATSAPP_RELAY_SECRET;
+// Gateway configuration
+const OPENCLAW_GATEWAY_URL = process.env.OPENCLAW_GATEWAY_URL || 'http://127.0.0.1:18789';
+const OPENCLAW_GATEWAY_TOKEN = process.env.OPENCLAW_GATEWAY_TOKEN;
 
 /**
- * Send WhatsApp message via relay service (for Vercel deployment)
+ * Send a message via OpenClaw Gateway's /tools/invoke endpoint
  */
-async function sendViaRelay(to: string, message: string): Promise<SendMessageResult> {
-  if (!WHATSAPP_RELAY_URL || !WHATSAPP_RELAY_SECRET) {
-    return {
-      ok: false,
-      error: "WHATSAPP_RELAY_URL and WHATSAPP_RELAY_SECRET must be configured",
-    };
-  }
+async function sendViaGateway(
+  channel: MessageChannel,
+  to: string,
+  message: string
+): Promise<SendMessageResult> {
+  const url = `${OPENCLAW_GATEWAY_URL}/tools/invoke`;
+  
+  console.log(`[messaging] Sending ${channel} to ${to} via Gateway: ${message.slice(0, 50)}...`);
 
   try {
-    console.log(`[messaging] Sending via relay to ${to}: ${message.slice(0, 50)}...`);
-    
-    const response = await fetch(`${WHATSAPP_RELAY_URL}/send`, {
+    const response = await fetch(url, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        ...(OPENCLAW_GATEWAY_TOKEN && { "Authorization": `Bearer ${OPENCLAW_GATEWAY_TOKEN}` }),
+      },
       body: JSON.stringify({
-        to,
-        message,
-        secret: WHATSAPP_RELAY_SECRET,
+        tool: "message",
+        args: {
+          action: "send",
+          channel,
+          to,
+          message,
+        },
       }),
     });
 
     const result = await response.json();
     
-    if (!response.ok) {
-      console.error("[messaging] Relay error:", result);
+    if (!response.ok || result.ok === false) {
+      console.error("[messaging] Gateway error:", result);
       return {
         ok: false,
-        error: result.error || `Relay returned ${response.status}`,
+        error: result.error?.message || result.error || `Gateway returned ${response.status}`,
       };
     }
 
-    console.log("[messaging] Relay success:", result);
+    console.log("[messaging] Gateway success:", result);
     return {
       ok: true,
-      messageId: result.messageId,
+      messageId: result.result?.messageId,
     };
   } catch (error) {
-    console.error("[messaging] Relay request failed:", error);
+    console.error("[messaging] Gateway request failed:", error);
     return {
       ok: false,
-      error: error instanceof Error ? error.message : "Relay request failed",
+      error: error instanceof Error ? error.message : "Gateway request failed",
     };
   }
 }
 
 /**
- * Send a WhatsApp message
- * Uses relay service when WHATSAPP_RELAY_URL is configured (Vercel)
+ * Send a WhatsApp message via OpenClaw Gateway
  */
 export async function sendWhatsAppMessage(
   to: string, 
@@ -77,8 +82,7 @@ export async function sendWhatsAppMessage(
   // Ensure proper WhatsApp JID format
   const jid = to.includes('@') ? to : `${to}@s.whatsapp.net`;
   
-  // Always use relay (Vercel doesn't have wacli)
-  return sendViaRelay(jid, message);
+  return sendViaGateway('whatsapp', jid, message);
 }
 
 /**

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/server/db";
-import { inboxItems, pendingReplies } from "@/server/db/schema";
+import { inboxItems, inboxActionLog } from "@/server/db/schema";
 import { eq } from "drizzle-orm";
 
 export async function POST(
@@ -36,15 +36,21 @@ export async function POST(
     const trimmedMessage = message.trim();
     const now = new Date();
 
-    // Store pending reply in DB - OpenClaw cron will send it
-    await db.insert(pendingReplies).values({
+    // Store pending reply in inboxActionLog (no schema change needed)
+    await db.insert(inboxActionLog).values({
       id: crypto.randomUUID(),
+      recommendationId: null,
       inboxItemId: id,
-      channel: item.source,
-      recipient: item.sender,
-      recipientName: item.senderName,
-      message: trimmedMessage,
-      status: "pending",
+      action: "pending_reply",
+      executedBy: "user",
+      result: null, // Will be filled when sent
+      metadata: JSON.stringify({
+        channel: item.source,
+        recipient: item.sender,
+        recipientName: item.senderName,
+        message: trimmedMessage,
+        status: "pending",
+      }),
       createdAt: now,
     });
 

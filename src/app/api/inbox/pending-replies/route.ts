@@ -1,27 +1,37 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/server/db";
-import { pendingReplies, inboxItems, inboxActionLog } from "@/server/db/schema";
-import { eq } from "drizzle-orm";
+import { inboxItems, inboxActionLog } from "@/server/db/schema";
+import { eq, and, isNull } from "drizzle-orm";
 
 // GET - fetch pending replies for OpenClaw to process
 export async function GET() {
   try {
+    // Get pending_reply entries that haven't been processed (result is null)
     const pending = await db
       .select()
-      .from(pendingReplies)
-      .where(eq(pendingReplies.status, "pending"))
+      .from(inboxActionLog)
+      .where(
+        and(
+          eq(inboxActionLog.action, "pending_reply"),
+          isNull(inboxActionLog.result)
+        )
+      )
       .limit(10);
 
     return NextResponse.json({
       ok: true,
-      replies: pending.map(r => ({
-        id: r.id,
-        channel: r.channel,
-        recipient: r.recipient,
-        recipientName: r.recipientName,
-        message: r.message,
-        createdAt: r.createdAt?.toISOString(),
-      })),
+      replies: pending.map(r => {
+        const meta = r.metadata ? JSON.parse(r.metadata) : {};
+        return {
+          id: r.id,
+          inboxItemId: r.inboxItemId,
+          channel: meta.channel,
+          recipient: meta.recipient,
+          recipientName: meta.recipientName,
+          message: meta.message,
+          createdAt: r.createdAt?.toISOString(),
+        };
+      }),
     });
   } catch (error) {
     console.error("Error fetching pending replies:", error);
@@ -35,7 +45,7 @@ export async function GET() {
 // POST - mark reply as sent (called by OpenClaw after sending)
 export async function POST(request: NextRequest) {
   try {
-    const { id, success, error } = await request.json();
+    const { id, success, error: errorMsg } = await request.json();
 
     if (!id) {
       return NextResponse.json(
@@ -46,66 +56,55 @@ export async function POST(request: NextRequest) {
 
     const now = new Date();
 
-    // Get the pending reply
-    const replies = await db
+    // Get the pending reply entry
+    const entries = await db
       .select()
-      .from(pendingReplies)
-      .where(eq(pendingReplies.id, id))
+      .from(inboxActionLog)
+      .where(eq(inboxActionLog.id, id))
       .limit(1);
 
-    if (replies.length === 0) {
+    if (entries.length === 0) {
       return NextResponse.json(
         { ok: false, error: "Reply not found" },
         { status: 404 }
       );
     }
 
-    const reply = replies[0];
+    const entry = entries[0];
+    const meta = entry.metadata ? JSON.parse(entry.metadata) : {};
 
     if (success) {
-      // Mark as sent
+      // Update the entry to mark as sent
       await db
-        .update(pendingReplies)
+        .update(inboxActionLog)
         .set({
-          status: "sent",
-          sentAt: now,
+          action: `reply:${meta.channel}`,
+          executedBy: "dieter",
+          result: `Sent to ${meta.recipientName || meta.recipient}: "${meta.message?.slice(0, 100)}${meta.message?.length > 100 ? '...' : ''}"`,
+          metadata: JSON.stringify({ ...meta, status: "sent", sentAt: now.toISOString() }),
         })
-        .where(eq(pendingReplies.id, id));
-
-      // Log the action
-      await db.insert(inboxActionLog).values({
-        id: crypto.randomUUID(),
-        recommendationId: null,
-        inboxItemId: reply.inboxItemId,
-        action: `reply:${reply.channel}`,
-        executedBy: "dieter",
-        result: `Sent to ${reply.recipientName || reply.recipient}: "${reply.message.slice(0, 100)}${reply.message.length > 100 ? '...' : ''}"`,
-        metadata: JSON.stringify({
-          message: reply.message,
-          recipient: reply.recipient,
-        }),
-        createdAt: now,
-      });
+        .where(eq(inboxActionLog.id, id));
 
       // Mark inbox item as actioned
-      if (reply.inboxItemId) {
+      if (entry.inboxItemId) {
         await db
           .update(inboxItems)
           .set({
             status: "actioned",
             updatedAt: now,
           })
-          .where(eq(inboxItems.id, reply.inboxItemId));
+          .where(eq(inboxItems.id, entry.inboxItemId));
       }
     } else {
       // Mark as failed
       await db
-        .update(pendingReplies)
+        .update(inboxActionLog)
         .set({
-          status: "failed",
-          error: error || "Unknown error",
+          action: `reply_failed:${meta.channel}`,
+          result: `Failed: ${errorMsg || "Unknown error"}`,
+          metadata: JSON.stringify({ ...meta, status: "failed", error: errorMsg }),
         })
-        .where(eq(pendingReplies.id, id));
+        .where(eq(inboxActionLog.id, id));
     }
 
     return NextResponse.json({ ok: true });

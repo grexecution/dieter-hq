@@ -170,6 +170,7 @@ function MessageBubble({ message, artefact, url }: MessageBubbleProps) {
 
   // Voice messages (Telegram-style)
   if (message.audioUrl) {
+    console.log("[MessageBubble] Rendering voice message:", { id: message.id, audioUrl: message.audioUrl?.slice(0, 50), transcription: message.transcription?.slice(0, 30) });
     return (
       <div
         className={cn(

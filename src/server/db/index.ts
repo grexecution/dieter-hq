@@ -3,8 +3,7 @@ import { drizzle } from "drizzle-orm/neon-http";
 
 import * as schema from "./schema";
 
-// Configure Neon for Vercel Edge/Serverless
-neonConfig.fetchConnectionCache = true;
+// Note: fetchConnectionCache is now always true by default in @neondatabase/serverless
 
 const sql = neon(process.env.DATABASE_URL!, {
   fetchOptions: {

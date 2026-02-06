@@ -8,8 +8,22 @@ import { cn } from "@/lib/utils";
 // Types
 // ============================================
 
+export interface VoiceMessageData {
+  id: string;
+  threadId: string;
+  role: "user";
+  content: string;
+  audioUrl: string;
+  audioDurationMs: number;
+  transcription: string | null;
+  createdAt: number;
+  createdAtLabel: string;
+}
+
 interface VoiceRecorderProps {
-  onTranscript: (transcript: string) => void;
+  onTranscript?: (transcript: string) => void;
+  onVoiceMessage?: (message: VoiceMessageData) => void;
+  threadId: string;
   disabled?: boolean;
 }
 
@@ -111,7 +125,7 @@ function RecordingTimer({ startTime }: { startTime: number }) {
 // Main VoiceRecorder Component
 // ============================================
 
-export function VoiceRecorder({ onTranscript, disabled }: VoiceRecorderProps) {
+export function VoiceRecorder({ onTranscript, onVoiceMessage, threadId, disabled }: VoiceRecorderProps) {
   const [state, setState] = useState<RecordingState>("idle");
   const [startTime, setStartTime] = useState<number>(0);
   const [analyser, setAnalyser] = useState<AnalyserNode | null>(null);
@@ -219,16 +233,33 @@ export function VoiceRecorder({ onTranscript, disabled }: VoiceRecorderProps) {
           const blob = new Blob(chunksRef.current, { type: recorder.mimeType });
           const formData = new FormData();
           formData.append("audio", blob, `voice-${Date.now()}.webm`);
+          formData.append("threadId", threadId);
+          formData.append("durationMs", String(duration));
 
-          const response = await fetch("/api/chat/voice", {
+          // Send as voice message (Telegram-style)
+          const response = await fetch("/api/chat/voice-message", {
             method: "POST",
             body: formData,
           });
 
           if (response.ok) {
             const data = await response.json();
-            if (data.transcript) {
-              onTranscript(data.transcript);
+            if (data.ok && data.message && onVoiceMessage) {
+              onVoiceMessage(data.message);
+            }
+          } else {
+            // Fallback: Try old transcript API
+            const fallbackForm = new FormData();
+            fallbackForm.append("audio", blob, `voice-${Date.now()}.webm`);
+            const fallbackRes = await fetch("/api/chat/voice", {
+              method: "POST",
+              body: fallbackForm,
+            });
+            if (fallbackRes.ok) {
+              const fallbackData = await fallbackRes.json();
+              if (fallbackData.transcript && onTranscript) {
+                onTranscript(fallbackData.transcript);
+              }
             }
           }
         } catch (err) {
@@ -242,7 +273,7 @@ export function VoiceRecorder({ onTranscript, disabled }: VoiceRecorderProps) {
 
       recorder.stop();
     });
-  }, [state, startTime, onTranscript, cleanup]);
+  }, [state, startTime, threadId, onTranscript, onVoiceMessage, cleanup]);
 
   // Handle swipe up to cancel
   const handleMove = useCallback((clientY: number) => {

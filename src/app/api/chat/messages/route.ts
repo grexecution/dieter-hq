@@ -28,6 +28,10 @@ export async function GET(req: NextRequest) {
       content: m.content,
       createdAt: new Date(m.createdAt).getTime(),
       createdAtLabel: fmt.format(new Date(m.createdAt)),
+      // Voice message fields (Telegram-style)
+      audioUrl: m.audioUrl ?? null,
+      audioDurationMs: m.audioDurationMs ?? null,
+      transcription: m.transcription ?? null,
     }))
     .filter((m) => (sinceMs ? m.createdAt > sinceMs : true));
 

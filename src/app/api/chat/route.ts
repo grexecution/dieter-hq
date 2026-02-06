@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/server/db';
 import { messages } from '@/server/db/schema';
 import { eq, asc } from 'drizzle-orm';
+import { notifyAgentResponse } from '@/lib/push';
 
 const GATEWAY_HTTP_URL = process.env.OPENCLAW_GATEWAY_HTTP_URL || 'http://127.0.0.1:18789';
 const GATEWAY_PASSWORD = process.env.OPENCLAW_GATEWAY_PASSWORD;
@@ -68,6 +69,11 @@ export async function POST(request: NextRequest) {
       role: 'assistant',
       content: assistantContent,
       createdAt: new Date(),
+    });
+
+    // Send push notification (fire and forget)
+    notifyAgentResponse(assistantContent).catch((err) => {
+      console.error('[Chat] Push notification failed:', err);
     });
 
     return NextResponse.json({

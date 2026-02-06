@@ -6,6 +6,10 @@ export const messages = pgTable("messages", {
   threadId: text("thread_id").notNull(),
   role: text("role", { enum: ["user", "assistant", "system"] }).notNull(),
   content: text("content").notNull(),
+  // Voice message fields (Telegram-style)
+  audioUrl: text("audio_url"),
+  audioDurationMs: integer("audio_duration_ms"),
+  transcription: text("transcription"),
   createdAt: timestamp("created_at", { mode: "date", withTimezone: true }).notNull(),
 });
 
@@ -61,4 +65,14 @@ export const chatQueue = pgTable("chat_queue", {
   status: text("status", { enum: ["pending", "processing", "done", "error"] }).notNull().default("pending"),
   createdAt: timestamp("created_at", { mode: "date", withTimezone: true }).notNull(),
   processedAt: timestamp("processed_at", { mode: "date", withTimezone: true }),
+});
+
+// --- Push Subscriptions (Web Push Notifications) ---
+export const pushSubscriptions = pgTable("push_subscriptions", {
+  id: text("id").primaryKey(),
+  endpoint: text("endpoint").notNull().unique(),
+  p256dh: text("p256dh").notNull(),
+  auth: text("auth").notNull(),
+  userId: text("user_id"),
+  createdAt: timestamp("created_at", { mode: "date", withTimezone: true }).notNull(),
 });

@@ -19,6 +19,11 @@ const VoiceRecorder = dynamic(
   { ssr: false }
 );
 
+const VoiceMessageBubble = dynamic(
+  () => import("./_components/VoiceMessageBubble").then((m) => m.VoiceMessageBubble),
+  { ssr: false }
+);
+
 // ============================================
 // Types
 // ============================================
@@ -36,6 +41,10 @@ export type MessageRow = {
   content: string;
   createdAt: number;
   createdAtLabel: string;
+  // Voice message fields (Telegram-style)
+  audioUrl?: string | null;
+  audioDurationMs?: number | null;
+  transcription?: string | null;
 };
 
 export type ArtefactRow = {
@@ -102,6 +111,42 @@ function MessageBubble({ message, artefact, url }: MessageBubbleProps) {
           {meta.text.slice(0, 100)}
           {meta.text.length > 100 && "..."}
         </span>
+      </div>
+    );
+  }
+
+  // Voice messages (Telegram-style)
+  if (message.audioUrl) {
+    return (
+      <div
+        className={cn(
+          "flex items-end gap-3",
+          isUser ? "flex-row-reverse" : "flex-row"
+        )}
+      >
+        {/* Avatar */}
+        <Avatar className="h-8 w-8 shrink-0">
+          {isUser ? (
+            <AvatarFallback className="bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 text-xs font-medium">
+              <User className="h-4 w-4" />
+            </AvatarFallback>
+          ) : (
+            <>
+              <AvatarImage src="/dieter-avatar.png" alt={author} />
+              <AvatarFallback className="bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 text-xs font-medium">
+                <Bot className="h-4 w-4" />
+              </AvatarFallback>
+            </>
+          )}
+        </Avatar>
+
+        <VoiceMessageBubble
+          audioUrl={message.audioUrl}
+          durationMs={message.audioDurationMs || 0}
+          transcription={message.transcription}
+          isUser={isUser}
+          timestamp={message.createdAtLabel}
+        />
       </div>
     );
   }
@@ -195,10 +240,11 @@ interface ComposerProps {
   isSending: boolean;
   onSubmit: () => void;
   onVoiceTranscript: (transcript: string) => void;
+  onVoiceMessage: (message: MessageRow) => void;
   threadId: string;
 }
 
-function Composer({ draft, setDraft, isSending, onSubmit, onVoiceTranscript, threadId }: ComposerProps) {
+function Composer({ draft, setDraft, isSending, onSubmit, onVoiceTranscript, onVoiceMessage, threadId }: ComposerProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Auto-resize textarea
@@ -250,7 +296,12 @@ function Composer({ draft, setDraft, isSending, onSubmit, onVoiceTranscript, thr
           {/* Action Buttons */}
           <div className="flex items-center gap-2">
             <ChatComposer threadId={threadId} disabled={isSending} />
-            <VoiceRecorder onTranscript={onVoiceTranscript} disabled={isSending} />
+            <VoiceRecorder
+              threadId={threadId}
+              onTranscript={onVoiceTranscript}
+              onVoiceMessage={onVoiceMessage}
+              disabled={isSending}
+            />
             <Button
               type="submit"
               size="icon"
@@ -642,8 +693,15 @@ export function ChatView({
           isSending={isSending}
           onSubmit={handleSend}
           onVoiceTranscript={(transcript) => {
-            // Set transcript as draft and auto-submit
+            // Set transcript as draft (fallback for old API)
             setDraft(transcript);
+          }}
+          onVoiceMessage={(message) => {
+            // Add voice message to chat immediately
+            setLiveMessages((prev) => {
+              if (prev.some((m) => m.id === message.id)) return prev;
+              return [...prev, message];
+            });
           }}
           threadId={activeThreadId}
         />

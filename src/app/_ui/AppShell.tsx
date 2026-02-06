@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 
 import { ThemeToggle } from "@/components/theme-toggle";
+import { NotificationPermission } from "@/components/NotificationPermission";
 import { cn } from "@/lib/utils";
 
 // Navigation items configuration
@@ -71,6 +72,7 @@ function DesktopHeader({ active }: { active?: string }) {
 
           {/* Actions */}
           <div className="flex items-center gap-2">
+            <NotificationPermission />
             <ThemeToggle />
           </div>
         </nav>

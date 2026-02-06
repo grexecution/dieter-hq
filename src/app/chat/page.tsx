@@ -52,6 +52,10 @@ export default async function ChatPage() {
         content: m.content,
         createdAt: ts,
         createdAtLabel: label,
+        // Voice message fields (Telegram-style)
+        audioUrl: m.audioUrl ?? null,
+        audioDurationMs: m.audioDurationMs ?? null,
+        transcription: m.transcription ?? null,
       };
     });
   }

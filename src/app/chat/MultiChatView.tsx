@@ -374,6 +374,7 @@ interface ComposerProps {
   draft: string;
   setDraft: (value: string) => void;
   isSending: boolean;
+  queueCount: number;
   onSubmit: () => void;
   onVoiceTranscript: (transcript: string) => void;
   onVoiceMessage: (message: MessageRow) => void | Promise<void>;
@@ -383,7 +384,7 @@ interface ComposerProps {
   activeTab: string;
 }
 
-function Composer({ draft, setDraft, isSending, onSubmit, onVoiceTranscript, onVoiceMessage, onTranscriptionStart, onTranscriptionEnd, threadId, activeTab }: ComposerProps) {
+function Composer({ draft, setDraft, isSending, queueCount, onSubmit, onVoiceTranscript, onVoiceMessage, onTranscriptionStart, onTranscriptionEnd, threadId, activeTab }: ComposerProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const currentTab = CHAT_TABS.find(tab => tab.id === activeTab);
 
@@ -449,11 +450,17 @@ function Composer({ draft, setDraft, isSending, onSubmit, onVoiceTranscript, onV
           />
         </form>
 
-        {/* Context indicator - Hidden on mobile */}
-        <div className="mt-1.5 hidden items-center justify-center md:flex">
-          <p className="text-[9px] text-zinc-400 dark:text-zinc-500">
+        {/* Context indicator & Queue status */}
+        <div className="mt-1.5 flex items-center justify-center gap-2">
+          <p className="hidden md:block text-[9px] text-zinc-400 dark:text-zinc-500">
             {currentTab?.emoji} {currentTab?.name} · Enter zum Senden
           </p>
+          {queueCount > 0 && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-indigo-100 dark:bg-indigo-900/50 px-2 py-0.5 text-[9px] font-medium text-indigo-700 dark:text-indigo-300">
+              <span className="h-1.5 w-1.5 rounded-full bg-indigo-500 animate-pulse" />
+              {queueCount} in Warteschlange
+            </span>
+          )}
         </div>
       </div>
     </div>
@@ -482,6 +489,7 @@ export function MultiChatView({
   const [mobileHudOpen, setMobileHudOpen] = useState(false);
   const [drafts, setDrafts] = useState<Record<string, string>>({});
   const [sendingStates, setSendingStates] = useState<Record<string, boolean>>({});
+  const [messageQueue, setMessageQueue] = useState<Record<string, string[]>>({});
   const [subagentPanelCollapsed, setSubagentPanelCollapsed] = useState(true);
   
   // Voice transcription status per thread
@@ -636,10 +644,20 @@ export function MultiChatView({
   // Send message handler for current thread (reads SSE stream)
   const handleSend = async () => {
     const content = currentDraft.trim();
-    if (!content || isSending) return;
+    if (!content) return;
 
     // Capture threadId at send time to avoid stale closure issues
     const sendThreadId = effectiveThreadId;
+
+    // If currently sending, queue the message instead
+    if (sendingStates[sendThreadId]) {
+      setMessageQueue(prev => ({
+        ...prev,
+        [sendThreadId]: [...(prev[sendThreadId] || []), content]
+      }));
+      setDrafts(prev => ({ ...prev, [sendThreadId]: "" }));
+      return;
+    }
 
     setSendingStates(prev => ({ ...prev, [sendThreadId]: true }));
     setDrafts(prev => ({ ...prev, [sendThreadId]: "" }));
@@ -720,9 +738,28 @@ export function MultiChatView({
       console.error("Send failed:", err);
       // Don't restore draft - message was likely sent, just response failed
     } finally {
+      // Mark sending as done
       setSendingStates(prev => ({ ...prev, [sendThreadId]: false }));
     }
   };
+
+  // Process queued messages when sending completes
+  useEffect(() => {
+    const threadId = effectiveThreadId;
+    const queue = messageQueue[threadId] || [];
+    const isSendingNow = sendingStates[threadId];
+    
+    // If not sending and there are queued messages, process the next one
+    if (!isSendingNow && queue.length > 0) {
+      const [nextMessage, ...remaining] = queue;
+      setMessageQueue(prev => ({ ...prev, [threadId]: remaining }));
+      setDrafts(prev => ({ ...prev, [threadId]: nextMessage }));
+      // Trigger send after draft is set
+      setTimeout(() => {
+        handleSend();
+      }, 50);
+    }
+  }, [sendingStates, messageQueue, effectiveThreadId]);
 
   // Handle suggestion clicks (quick actions after assistant messages)
   const handleSuggestionClick = useCallback((suggestion: ChatSuggestion) => {
@@ -1027,6 +1064,7 @@ export function MultiChatView({
               draft={currentDraft}
               setDraft={setDraft}
               isSending={isSending}
+              queueCount={(messageQueue[effectiveThreadId] || []).length}
               onSubmit={handleSend}
               onVoiceTranscript={(transcript) => setDraft(transcript)}
               onVoiceMessage={async (message) => {

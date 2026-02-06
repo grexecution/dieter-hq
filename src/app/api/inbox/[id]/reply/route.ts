@@ -36,6 +36,17 @@ export async function POST(
     const trimmedMessage = message.trim();
     const now = new Date();
 
+    // Determine recipient identifier based on source
+    // - WhatsApp: use threadId (ChatJID) for proper delivery
+    // - Email: use sender (email address)
+    // - Slack: use threadId (channel ID)
+    let recipientId = item.sender;
+    if (item.source === "whatsapp" && item.threadId) {
+      recipientId = item.threadId;
+    } else if (item.source === "slack" && item.threadId) {
+      recipientId = item.threadId;
+    }
+
     // Store pending reply in inboxActionLog (no schema change needed)
     await db.insert(inboxActionLog).values({
       id: crypto.randomUUID(),
@@ -46,21 +57,22 @@ export async function POST(
       result: null, // Will be filled when sent
       metadata: JSON.stringify({
         channel: item.source,
-        recipient: item.sender,
-        recipientName: item.senderName,
+        recipient: recipientId,
+        recipientName: item.senderName || item.sender,
         message: trimmedMessage,
         status: "pending",
       }),
       createdAt: now,
     });
 
-    console.log(`[REPLY] Queued ${item.source} reply to ${item.sender}: ${trimmedMessage.slice(0, 50)}...`);
+    console.log(`[REPLY] Queued ${item.source} reply to ${item.senderName || recipientId}: ${trimmedMessage.slice(0, 50)}...`);
 
     return NextResponse.json({ 
       success: true, 
       method: "queued",
       message: "Reply queued - will be sent shortly",
-      recipient: item.sender,
+      recipient: recipientId,
+      recipientName: item.senderName || item.sender,
       source: item.source,
     });
 

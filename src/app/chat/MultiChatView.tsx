@@ -15,6 +15,7 @@ import { OpenClawStatusSidebar } from "./OpenClawStatusSidebar";
 import { StatusBar } from "./_components/StatusBar";
 import { SubagentPanel } from "./_components/SubagentPanel";
 import { WorkspaceManager, type WorkspaceProject } from "./_components/WorkspaceManager";
+import { ChatSuggestions, type ChatSuggestion } from "./_components/ChatSuggestions";
 import { InboxView } from "./inbox";
 import { CHAT_TABS, type ChatTab } from "./chat-config";
 
@@ -295,9 +296,10 @@ interface ChatContentProps {
   artefactsById: Record<string, ArtefactRow>;
   isTranscribing?: boolean;
   isSending?: boolean;
+  onSuggestionClick?: (suggestion: ChatSuggestion) => void;
 }
 
-function ChatContent({ activeTab, messages, artefactsById, isTranscribing, isSending }: ChatContentProps) {
+function ChatContent({ activeTab, messages, artefactsById, isTranscribing, isSending, onSuggestionClick }: ChatContentProps) {
   const endRef = useRef<HTMLDivElement | null>(null);
   const currentTab = CHAT_TABS.find(tab => tab.id === activeTab);
 
@@ -348,6 +350,21 @@ function ChatContent({ activeTab, messages, artefactsById, isTranscribing, isSen
             </div>
           )}
         
+        {/* Quick action suggestions after assistant messages */}
+        {messages.length > 0 && !isTranscribing && !isSending && onSuggestionClick && (() => {
+          // Find last assistant message
+          const lastAssistant = [...messages].reverse().find(m => m.role === "assistant");
+          if (!lastAssistant) return null;
+          return (
+            <ChatSuggestions
+              lastAssistantMessage={lastAssistant.content}
+              currentTab={activeTab}
+              onSuggestionClick={onSuggestionClick}
+              className="mt-2"
+            />
+          );
+        })()}
+
         {/* Transcription/Sending status indicator */}
         {(isTranscribing || isSending) && (
           <div className="flex items-center gap-2 rounded-lg bg-indigo-50 dark:bg-indigo-950/30 px-3 py-2 text-sm text-indigo-600 dark:text-indigo-400">
@@ -717,6 +734,38 @@ export function MultiChatView({
     }
   };
 
+  // Handle suggestion clicks (quick actions after assistant messages)
+  const handleSuggestionClick = useCallback((suggestion: ChatSuggestion) => {
+    if (suggestion.action === "workspace" && suggestion.payload) {
+      // Switch to Dev tab and create a new workspace project
+      setActiveTab("dev");
+      const newProject: WorkspaceProject = {
+        id: `project-${Date.now()}`,
+        name: suggestion.payload,
+        description: `Workspace für: ${suggestion.payload}`,
+        createdAt: Date.now(),
+        lastActiveAt: Date.now(),
+      };
+      setWorkspaceProjects(prev => [...prev, newProject]);
+      setActiveProject(newProject);
+      // Set initial message for context
+      setDrafts(prev => ({
+        ...prev,
+        [newProject.id]: `Lass uns an "${suggestion.payload}" arbeiten. Was ist der Plan?`
+      }));
+    } else if (suggestion.action === "send" && suggestion.payload) {
+      // Send the suggested message
+      const threadId = activeProject?.id || activeTab;
+      setDrafts(prev => ({ ...prev, [threadId]: suggestion.payload! }));
+      // Trigger send after state update
+      setTimeout(() => handleSend(), 50);
+    } else if (suggestion.action === "custom") {
+      // Focus the input for custom response
+      const textarea = document.querySelector('textarea[placeholder="Nachricht..."]') as HTMLTextAreaElement;
+      textarea?.focus();
+    }
+  }, [activeTab, activeProject, handleSend]);
+
   // SSE subscription for real-time messages per tab + workspace projects
   // Initialize timestamp refs from initial messages (runs once)
   useEffect(() => {
@@ -980,6 +1029,7 @@ export function MultiChatView({
               artefactsById={artefactsById}
               isTranscribing={transcribingStates[effectiveThreadId]}
               isSending={isSending}
+              onSuggestionClick={handleSuggestionClick}
             />
 
             {/* Composer */}

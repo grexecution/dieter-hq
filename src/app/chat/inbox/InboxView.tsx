@@ -64,13 +64,21 @@ export function InboxView() {
 
       const res = await fetch(`/api/inbox/items?${params.toString()}`);
       if (res.ok) {
-        const data = await res.json();
-        setItems(reset ? data.items : (prev: InboxItem[]) => [...prev, ...data.items]);
+        const json = await res.json();
+        // API returns { ok, data: { items, pagination } }
+        const data = json.data || json;
+        const items = data.items || [];
+        const pag = data.pagination || { total: 0, hasMore: false, offset: 0 };
+        
+        setItems(reset ? items : (prev: InboxItem[]) => [...prev, ...items]);
         setPagination({
-          total: data.pagination.total,
-          hasMore: data.pagination.hasMore,
-          offset: data.pagination.offset + data.items.length,
+          total: pag.total ?? 0,
+          hasMore: pag.hasMore ?? false,
+          offset: (pag.offset ?? 0) + items.length,
         });
+      } else {
+        console.error("Inbox API error:", res.status);
+        toast.error("Fehler beim Laden der Inbox");
       }
     } catch (err) {
       console.error("Error loading inbox:", err);

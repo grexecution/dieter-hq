@@ -25,12 +25,12 @@ function ChatHeader() {
             <span className="hidden sm:inline">Home</span>
           </Link>
 
-          {/* Title - tiny on mobile, small on desktop */}
+          {/* Title - tiny */}
           <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-            <h1 className="flex items-center gap-1 text-[10px] md:text-[10px] font-medium text-zinc-500 dark:text-zinc-400">
+            <span className="flex items-center gap-1 text-[10px] font-medium text-zinc-500 dark:text-zinc-400">
               <span className="text-[10px]">💬</span>
               <span>Chat</span>
-            </h1>
+            </span>
           </div>
 
           {/* Actions - fixed width to prevent layout shift */}

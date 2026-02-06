@@ -296,27 +296,25 @@ export function ChatComposer({ threadId, disabled }: { threadId: string; disable
   }, [uppy]);
 
   return (
-    <>
-      {/* File previews - rendered above the composer row via portal or absolute positioning */}
+    <div className="relative flex-shrink-0">
+      {/* File previews - rendered above the composer */}
       {files.length > 0 && (
-        <div className="absolute bottom-full left-0 right-0 mb-2 px-3">
-          <div className="mx-auto max-w-3xl">
-            <div className="flex flex-wrap gap-1.5 pb-1">
-              {files.map((file) => (
-                <FilePreviewItem key={file.id} file={file} onRemove={handleRemoveFile} />
-              ))}
-            </div>
+        <div className="absolute bottom-full left-0 mb-2 min-w-[200px] max-w-[300px]">
+          <div className="flex flex-wrap gap-1.5 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 p-2 shadow-lg">
+            {files.map((file) => (
+              <FilePreviewItem key={file.id} file={file} onRemove={handleRemoveFile} />
+            ))}
           </div>
         </div>
       )}
       
-      {/* Attachment button - single element, no wrapper */}
+      {/* Attachment button - aligned with input height */}
       <button
         type="button"
         onClick={() => fileInputRef.current?.click()}
         disabled={disabled}
         className={cn(
-          "flex h-9 w-9 items-center justify-center rounded-xl transition-all flex-shrink-0",
+          "flex h-9 w-9 items-center justify-center rounded-xl transition-all",
           "bg-zinc-100 text-zinc-500 hover:bg-zinc-200 hover:text-zinc-700",
           "dark:bg-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-700 dark:hover:text-zinc-200",
           disabled && "opacity-50 pointer-events-none"
@@ -335,6 +333,6 @@ export function ChatComposer({ threadId, disabled }: { threadId: string; disable
         onChange={handleFileSelect}
         className="hidden"
       />
-    </>
+    </div>
   );
 }

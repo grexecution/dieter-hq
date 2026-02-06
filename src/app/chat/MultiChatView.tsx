@@ -404,19 +404,20 @@ function Composer({ draft, setDraft, isSending, onSubmit, onVoiceTranscript, onV
   };
 
   return (
-    <div className="sticky bottom-0 border-t border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 px-3 py-2 md:px-4 md:py-3 pb-safe">
-      <div className="mx-auto w-full max-w-3xl" style={{ paddingBottom: "max(0.5rem, env(safe-area-inset-bottom))" }}>
+    <div 
+      className="sticky bottom-0 border-t border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 px-3 py-2 md:px-4 md:py-3"
+      style={{ paddingBottom: "max(0.75rem, calc(env(safe-area-inset-bottom, 0px) + 0.5rem))" }}
+    >
+      <div className="mx-auto w-full max-w-3xl relative">
         <form
-          className="flex items-center gap-2"
+          className="flex items-end gap-2"
           onSubmit={(e) => {
             e.preventDefault();
             onSubmit();
           }}
         >
-          {/* Attachment - Left side - aligned with input */}
-          <div className="flex-shrink-0 self-end pb-0.5">
-            <ChatComposer threadId={threadId} disabled={isSending} />
-          </div>
+          {/* Attachment - Left side - aligned with bottom of input */}
+          <ChatComposer threadId={threadId} disabled={isSending} />
 
           {/* Text Input */}
           <div className="relative flex-1 min-w-0">
@@ -430,24 +431,22 @@ function Composer({ draft, setDraft, isSending, onSubmit, onVoiceTranscript, onV
               disabled={isSending}
               className={cn(
                 "w-full resize-none rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 px-3 py-2",
-                "text-sm placeholder:text-zinc-400 dark:placeholder:text-zinc-500",
+                "text-sm placeholder:text-zinc-400 dark:placeholder:text-zinc-500 text-zinc-900 dark:text-zinc-100",
                 "transition-colors focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 focus:bg-white dark:focus:bg-zinc-800",
                 "disabled:opacity-50"
               )}
             />
           </div>
 
-          {/* Voice Recorder - Right side - aligned with input */}
-          <div className="flex-shrink-0 self-end pb-0.5">
-            <VoiceRecorder
-              threadId={threadId}
-              onTranscript={onVoiceTranscript}
-              onVoiceMessage={onVoiceMessage}
-              onTranscriptionStart={onTranscriptionStart}
-              onTranscriptionEnd={onTranscriptionEnd}
-              disabled={isSending}
-            />
-          </div>
+          {/* Voice Recorder - Right side - aligned with bottom of input */}
+          <VoiceRecorder
+            threadId={threadId}
+            onTranscript={onVoiceTranscript}
+            onVoiceMessage={onVoiceMessage}
+            onTranscriptionStart={onTranscriptionStart}
+            onTranscriptionEnd={onTranscriptionEnd}
+            disabled={isSending}
+          />
         </form>
 
         {/* Context indicator - Hidden on mobile */}

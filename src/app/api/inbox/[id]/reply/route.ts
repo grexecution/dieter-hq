@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/server/db";
-import { inboxItems } from "@/server/db/schema";
+import { inboxItems, inboxActionLog } from "@/server/db/schema";
 import { eq } from "drizzle-orm";
+import { sendWhatsAppMessage } from "@/lib/messaging";
 
 export async function POST(
   request: NextRequest,
@@ -33,77 +34,75 @@ export async function POST(
     }
 
     const item = items[0];
+    const trimmedMessage = message.trim();
+    const now = new Date();
 
-    // Store pending reply in the item's metadata
-    // OpenClaw/Dieter will poll for these and send them
-    const existingMetadata = (item.metadata as Record<string, unknown>) || {};
-    const pendingReplies = (existingMetadata.pendingReplies as Array<{message: string, createdAt: string}>) || [];
-    
-    pendingReplies.push({
-      message: message.trim(),
-      createdAt: new Date().toISOString(),
-    });
+    // Send based on source
+    if (item.source === "whatsapp") {
+      console.log(`[REPLY] Sending WhatsApp to ${item.sender}: ${trimmedMessage.slice(0, 50)}...`);
+      
+      const result = await sendWhatsAppMessage(item.sender, trimmedMessage);
+      
+      if (!result.ok) {
+        console.error(`[REPLY] WhatsApp send failed:`, result.error);
+        return NextResponse.json(
+          { error: `Failed to send: ${result.error}` },
+          { status: 500 }
+        );
+      }
 
-    await db
-      .update(inboxItems)
-      .set({
-        metadata: {
-          ...existingMetadata,
-          pendingReplies,
-        },
-        updatedAt: new Date(),
-      })
-      .where(eq(inboxItems.id, id));
+      // Log the successful send
+      await db.insert(inboxActionLog).values({
+        id: crypto.randomUUID(),
+        recommendationId: null,
+        inboxItemId: id,
+        action: "reply:whatsapp",
+        executedBy: "user",
+        result: `Sent to ${item.senderName || item.sender}: "${trimmedMessage.slice(0, 100)}${trimmedMessage.length > 100 ? '...' : ''}"`,
+        metadata: JSON.stringify({
+          message: trimmedMessage,
+          recipient: item.sender,
+          messageId: result.messageId,
+        }),
+        createdAt: now,
+      });
 
-    // Log for debugging
-    console.log(`[PENDING REPLY] ${item.source} to ${item.sender}: ${message}`);
+      // Mark item as actioned
+      await db
+        .update(inboxItems)
+        .set({
+          status: "actioned",
+          updatedAt: now,
+        })
+        .where(eq(inboxItems.id, id));
 
-    return NextResponse.json({ 
-      success: true, 
-      method: "queued",
-      message: "Reply queued for Dieter to send",
-      recipient: item.sender,
-      source: item.source,
-    });
+      console.log(`[REPLY] WhatsApp sent successfully to ${item.sender}`);
 
-  } catch (error) {
-    console.error("Error queuing reply:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
-  }
-}
-
-// GET endpoint to fetch pending replies (for OpenClaw to poll)
-export async function GET() {
-  try {
-    const items = await db
-      .select()
-      .from(inboxItems)
-      .where(eq(inboxItems.status, "pending"));
-
-    // Filter items with pending replies
-    const itemsWithReplies = items.filter(item => {
-      const metadata = item.metadata as Record<string, unknown>;
-      const pendingReplies = metadata?.pendingReplies as Array<unknown>;
-      return pendingReplies && pendingReplies.length > 0;
-    });
-
-    return NextResponse.json({
-      items: itemsWithReplies.map(item => ({
-        id: item.id,
+      return NextResponse.json({ 
+        success: true, 
+        method: "sent",
+        message: "Reply sent via WhatsApp",
+        recipient: item.sender,
         source: item.source,
-        sender: item.sender,
-        senderName: item.senderName,
-        pendingReplies: (item.metadata as Record<string, unknown>)?.pendingReplies,
-      })),
-    });
+        messageId: result.messageId,
+      });
+    } else {
+      // For non-WhatsApp sources, still queue for now
+      console.log(`[REPLY] Queuing reply for ${item.source} (not yet implemented)`);
+      
+      return NextResponse.json({ 
+        success: false, 
+        error: `Sending to ${item.source} not yet implemented`,
+      }, { status: 501 });
+    }
+
   } catch (error) {
-    console.error("Error fetching pending replies:", error);
+    console.error("Error sending reply:", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }
     );
   }
 }
+
+// Note: GET endpoint removed - replies are now sent directly, not queued

@@ -246,18 +246,12 @@ export function RecommendationCard({ recommendation, onExecute, compact = false 
             <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
               <Button
                 size="sm"
-                onClick={() => handleExecute(true)}
+                onClick={() => setShowDetails(true)}
                 disabled={isExecuting}
-                className="h-8 px-3 bg-green-600 hover:bg-green-700 text-white transition-colors"
+                className="h-8 px-3 bg-indigo-600 hover:bg-indigo-700 text-white transition-colors"
               >
-                {isExecuting ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <>
-                    <Check className="h-4 w-4 mr-1" />
-                    OK
-                  </>
-                )}
+                <Edit2 className="h-4 w-4 mr-1" />
+                Ansehen
               </Button>
             </motion.div>
           </div>
@@ -320,14 +314,80 @@ export function RecommendationCard({ recommendation, onExecute, compact = false 
             className="overflow-hidden"
           >
             <div className="border-t border-indigo-200 dark:border-indigo-800 px-3 py-2 space-y-2">
+              {/* Draft Preview */}
+              {recommendation.actionPayload && (
+                <motion.div 
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="space-y-1"
+                >
+                  <span className="text-xs font-medium text-amber-600 dark:text-amber-400 flex items-center gap-1">
+                    📝 ENTWURF (wird NICHT automatisch gesendet)
+                  </span>
+                  <div className="rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 p-3">
+                    <p className="text-sm text-zinc-700 dark:text-zinc-300 whitespace-pre-wrap">
+                      {(() => {
+                        try {
+                          const payload = JSON.parse(recommendation.actionPayload);
+                          return payload.draft || recommendation.actionPayload;
+                        } catch {
+                          return recommendation.actionPayload;
+                        }
+                      })()}
+                    </p>
+                  </div>
+                </motion.div>
+              )}
+
               {recommendation.reasoning && (
                 <motion.div 
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.05 }}
                   className="text-xs"
                 >
-                  <span className="font-medium text-zinc-700 dark:text-zinc-300">Begründung: </span>
+                  <span className="font-medium text-zinc-700 dark:text-zinc-300">Kontext: </span>
                   <span className="text-zinc-500 dark:text-zinc-400">{recommendation.reasoning}</span>
+                </motion.div>
+              )}
+              
+              {/* Send button - ONLY here after viewing draft */}
+              {!isEditing && (
+                <motion.div 
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 }}
+                  className="flex items-center gap-2 pt-2 border-t border-amber-200 dark:border-amber-800"
+                >
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setIsEditing(true)}
+                    className="text-xs"
+                  >
+                    <Edit2 className="h-3.5 w-3.5 mr-1" />
+                    Bearbeiten
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={() => {
+                      if (confirm("Wirklich senden? Diese Aktion kann nicht rückgängig gemacht werden.")) {
+                        handleExecute(true);
+                      }
+                    }}
+                    disabled={isExecuting}
+                    className="text-xs bg-green-600 hover:bg-green-700"
+                  >
+                    {isExecuting ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" />
+                    ) : (
+                      <Check className="h-3.5 w-3.5 mr-1" />
+                    )}
+                    Senden
+                  </Button>
+                  <span className="text-[10px] text-zinc-400 ml-auto">
+                    ⚠️ Klick auf Senden führt die Aktion aus
+                  </span>
                 </motion.div>
               )}
               

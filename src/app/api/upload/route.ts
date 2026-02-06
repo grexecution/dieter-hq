@@ -84,12 +84,11 @@ export async function POST(req: Request) {
 
   const isAudio = mimeType.startsWith("audio/") || mimeType === "video/webm";
   if (isAudio) {
-    // Fire-and-forget transcription. In production, consider moving this to
-    // a durable background job.
+    // Fire-and-forget transcription via Gateway's whisper-http-server
     void (async () => {
       try {
-        const { transcribeLocalWhisper } = await import("@/server/whisper/transcribe");
-        const text = await transcribeLocalWhisper(abs, { language: "de" });
+        const { transcribeViaGateway } = await import("@/server/whisper/transcribe-gateway");
+        const text = await transcribeViaGateway(buf, mimeType, { language: "de" });
         if (!text) return;
 
         await db.insert(messages).values({

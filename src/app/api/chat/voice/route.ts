@@ -5,8 +5,8 @@ export const runtime = "nodejs";
 /**
  * POST /api/chat/voice
  *
- * Receives audio blob, transcribes via OpenAI Whisper API.
- * Works on Vercel serverless - no local services needed.
+ * Receives audio blob, transcribes via OpenClaw Gateway's local whisper-cpp.
+ * Works on Vercel serverless - calls the Mac Mini's whisper HTTP server.
  *
  * Returns: { transcript: string }
  */
@@ -22,60 +22,23 @@ export async function POST(req: Request) {
       );
     }
 
-    const apiKey = process.env.OPENAI_API_KEY;
-    
-    if (!apiKey) {
-      console.error("OPENAI_API_KEY not set - cannot transcribe");
-      return NextResponse.json(
-        { error: "openai_key_missing", transcript: null },
-        { status: 500 }
-      );
-    }
-
     // Read audio as buffer
     const audioBuffer = Buffer.from(await audioFile.arrayBuffer());
     const mimeType = audioFile.type || "audio/webm";
 
-    // Determine file extension from mime type
-    const extMap: Record<string, string> = {
-      "audio/webm": "webm",
-      "audio/mp3": "mp3",
-      "audio/mpeg": "mp3",
-      "audio/wav": "wav",
-      "audio/ogg": "ogg",
-      "audio/m4a": "m4a",
-      "audio/mp4": "m4a",
-    };
-    const ext = extMap[mimeType] ?? "webm";
-    const filename = `audio.${ext}`;
+    // Use Gateway transcription
+    const { transcribeViaGateway } = await import("@/server/whisper/transcribe-gateway");
+    const text = await transcribeViaGateway(audioBuffer, mimeType, { language: "de" });
 
-    // Build multipart form data for OpenAI
-    const openaiForm = new FormData();
-    const uint8Array = new Uint8Array(audioBuffer);
-    openaiForm.append("file", new Blob([uint8Array], { type: mimeType }), filename);
-    openaiForm.append("model", "whisper-1");
-
-    const response = await fetch("https://api.openai.com/v1/audio/transcriptions", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${apiKey}`,
-      },
-      body: openaiForm,
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("OpenAI Whisper API error:", response.status, errorText);
+    if (!text) {
       return NextResponse.json(
         { error: "transcription_failed", transcript: null },
         { status: 500 }
       );
     }
 
-    const data = await response.json();
-
     return NextResponse.json({
-      transcript: data.text || "",
+      transcript: text,
     });
   } catch (error) {
     console.error("Voice transcription error:", error);

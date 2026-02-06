@@ -10,9 +10,9 @@ export const runtime = "nodejs";
  * POST /api/chat/voice-message
  *
  * Receives audio blob, stores it as base64 data URL, creates voice message in DB.
- * Triggers async transcription via OpenAI Whisper API.
+ * Triggers transcription via OpenClaw Gateway's local whisper-cpp.
  *
- * Works on Vercel serverless - no filesystem access needed.
+ * Works on Vercel serverless - calls Gateway's whisper HTTP server.
  *
  * Body: FormData with:
  * - audio: File (audio blob)
@@ -65,11 +65,11 @@ export async function POST(req: Request) {
       payload: { id, durationMs },
     });
 
-    // Synchronous transcription via OpenAI Whisper API (wait for result)
+    // Synchronous transcription via OpenClaw Gateway's local whisper-cpp
     let transcription: string | null = null;
     try {
-      const { transcribeOpenAIWhisper } = await import("@/server/whisper/transcribe-openai");
-      const text = await transcribeOpenAIWhisper(buf, mimeType, { language: "auto" });
+      const { transcribeViaGateway } = await import("@/server/whisper/transcribe-gateway");
+      const text = await transcribeViaGateway(buf, mimeType, { language: "de" });
       if (text) {
         transcription = text;
         

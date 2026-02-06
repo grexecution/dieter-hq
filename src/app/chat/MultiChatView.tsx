@@ -291,9 +291,11 @@ interface ChatContentProps {
   activeTab: string;
   messages: MessageRow[];
   artefactsById: Record<string, ArtefactRow>;
+  isTranscribing?: boolean;
+  isSending?: boolean;
 }
 
-function ChatContent({ activeTab, messages, artefactsById }: ChatContentProps) {
+function ChatContent({ activeTab, messages, artefactsById, isTranscribing, isSending }: ChatContentProps) {
   const endRef = useRef<HTMLDivElement | null>(null);
   const currentTab = CHAT_TABS.find(tab => tab.id === activeTab);
 
@@ -343,6 +345,15 @@ function ChatContent({ activeTab, messages, artefactsById }: ChatContentProps) {
               </p>
             </div>
           )}
+        
+        {/* Transcription/Sending status indicator */}
+        {(isTranscribing || isSending) && (
+          <div className="flex items-center gap-2 rounded-lg bg-indigo-50 dark:bg-indigo-950/30 px-3 py-2 text-sm text-indigo-600 dark:text-indigo-400">
+            <div className="h-4 w-4 animate-spin rounded-full border-2 border-indigo-400 border-t-transparent" />
+            <span>{isTranscribing ? "Transkribiere..." : "Dieter schreibt..."}</span>
+          </div>
+        )}
+        
         <div ref={endRef} />
       </div>
     </ScrollArea>
@@ -359,12 +370,14 @@ interface ComposerProps {
   isSending: boolean;
   onSubmit: () => void;
   onVoiceTranscript: (transcript: string) => void;
-  onVoiceMessage: (message: MessageRow) => void;
+  onVoiceMessage: (message: MessageRow) => void | Promise<void>;
+  onTranscriptionStart: () => void;
+  onTranscriptionEnd: () => void;
   threadId: string;
   activeTab: string;
 }
 
-function Composer({ draft, setDraft, isSending, onSubmit, onVoiceTranscript, onVoiceMessage, threadId, activeTab }: ComposerProps) {
+function Composer({ draft, setDraft, isSending, onSubmit, onVoiceTranscript, onVoiceMessage, onTranscriptionStart, onTranscriptionEnd, threadId, activeTab }: ComposerProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const currentTab = CHAT_TABS.find(tab => tab.id === activeTab);
 
@@ -421,6 +434,8 @@ function Composer({ draft, setDraft, isSending, onSubmit, onVoiceTranscript, onV
             threadId={threadId}
             onTranscript={onVoiceTranscript}
             onVoiceMessage={onVoiceMessage}
+            onTranscriptionStart={onTranscriptionStart}
+            onTranscriptionEnd={onTranscriptionEnd}
             disabled={isSending}
           />
         </form>
@@ -459,6 +474,9 @@ export function MultiChatView({
   const [drafts, setDrafts] = useState<Record<string, string>>({});
   const [sendingStates, setSendingStates] = useState<Record<string, boolean>>({});
   const [subagentPanelCollapsed, setSubagentPanelCollapsed] = useState(true);
+  
+  // Voice transcription status per thread
+  const [transcribingStates, setTranscribingStates] = useState<Record<string, boolean>>({});
   
   // Workspace state (for Dev tab)
   const [activeProject, setActiveProject] = useState<WorkspaceProject | null>(null);
@@ -937,6 +955,8 @@ export function MultiChatView({
               activeTab={effectiveThreadId}
               messages={currentMessages}
               artefactsById={artefactsById}
+              isTranscribing={transcribingStates[effectiveThreadId]}
+              isSending={isSending}
             />
 
             {/* Composer */}
@@ -947,6 +967,8 @@ export function MultiChatView({
               onSubmit={handleSend}
               onVoiceTranscript={(transcript) => setDraft(transcript)}
               onVoiceMessage={async (message) => {
+                console.log("[Voice] onVoiceMessage called:", { id: message.id, transcription: message.transcription?.slice(0, 50), threadId: effectiveThreadId });
+                
                 // Add voice message to chat immediately
                 const threadIdAtSend = effectiveThreadId;
                 setLiveMessages((prev) => ({
@@ -959,9 +981,11 @@ export function MultiChatView({
                 
                 // If transcription exists, send it to get assistant response
                 if (message.transcription) {
+                  console.log("[Voice] Transcription found, sending to assistant...");
                   setSendingStates(prev => ({ ...prev, [threadIdAtSend]: true }));
                   
                   try {
+                    console.log("[Voice] Calling /api/chat/send...");
                     const r = await fetch("/api/chat/send", {
                       method: "POST",
                       headers: { "Content-Type": "application/json" },
@@ -972,6 +996,8 @@ export function MultiChatView({
                       }),
                     });
 
+                    console.log("[Voice] /api/chat/send response:", r.status, r.ok);
+
                     if (r.ok && r.body) {
                       const reader = r.body.getReader();
                       const decoder = new TextDecoder();
@@ -979,7 +1005,10 @@ export function MultiChatView({
 
                       while (true) {
                         const { done, value } = await reader.read();
-                        if (done) break;
+                        if (done) {
+                          console.log("[Voice] SSE stream done");
+                          break;
+                        }
 
                         buffer += decoder.decode(value, { stream: true });
                         const lines = buffer.split("\n");
@@ -992,7 +1021,9 @@ export function MultiChatView({
 
                           try {
                             const event = JSON.parse(payload);
+                            console.log("[Voice] SSE event:", event.type);
                             if (event.type === "done" && event.item) {
+                              console.log("[Voice] Got assistant response:", event.item.content?.slice(0, 50));
                               setLiveMessages((prev) => ({
                                 ...prev,
                                 [threadIdAtSend]: [
@@ -1009,13 +1040,26 @@ export function MultiChatView({
                           }
                         }
                       }
+                    } else {
+                      console.error("[Voice] Response not ok:", r.status);
                     }
                   } catch (err) {
-                    console.error("Voice message assistant response failed:", err);
+                    console.error("[Voice] Voice message assistant response failed:", err);
                   } finally {
+                    console.log("[Voice] Done, resetting sending state");
                     setSendingStates(prev => ({ ...prev, [threadIdAtSend]: false }));
                   }
+                } else {
+                  console.log("[Voice] No transcription, skipping assistant call");
                 }
+              }}
+              onTranscriptionStart={() => {
+                console.log("[Voice] Transcription started");
+                setTranscribingStates(prev => ({ ...prev, [effectiveThreadId]: true }));
+              }}
+              onTranscriptionEnd={() => {
+                console.log("[Voice] Transcription ended");
+                setTranscribingStates(prev => ({ ...prev, [effectiveThreadId]: false }));
               }}
               threadId={effectiveThreadId}
               activeTab={activeTab}

@@ -22,7 +22,9 @@ export interface VoiceMessageData {
 
 interface VoiceRecorderProps {
   onTranscript?: (transcript: string) => void;
-  onVoiceMessage?: (message: VoiceMessageData) => void;
+  onVoiceMessage?: (message: VoiceMessageData) => void | Promise<void>;
+  onTranscriptionStart?: () => void;
+  onTranscriptionEnd?: () => void;
   threadId: string;
   disabled?: boolean;
 }
@@ -124,7 +126,7 @@ function RecordingTimer({ startTime }: { startTime: number }) {
 // Main VoiceRecorder Component (Tap to Record)
 // ============================================
 
-export function VoiceRecorder({ onTranscript, onVoiceMessage, threadId, disabled }: VoiceRecorderProps) {
+export function VoiceRecorder({ onTranscript, onVoiceMessage, onTranscriptionStart, onTranscriptionEnd, threadId, disabled }: VoiceRecorderProps) {
   const [state, setState] = useState<RecordingState>("idle");
   const [startTime, setStartTime] = useState<number>(0);
   const [analyser, setAnalyser] = useState<AnalyserNode | null>(null);
@@ -222,6 +224,7 @@ export function VoiceRecorder({ onTranscript, onVoiceMessage, threadId, disabled
 
     recorder.onstop = async () => {
       setState("transcribing");
+      onTranscriptionStart?.();
 
       try {
         const blob = new Blob(chunksRef.current, { type: recorder.mimeType });
@@ -231,15 +234,21 @@ export function VoiceRecorder({ onTranscript, onVoiceMessage, threadId, disabled
         formData.append("durationMs", String(duration));
 
         // Send as voice message (includes synchronous transcription)
+        console.log("[VoiceRecorder] Sending to /api/chat/voice-message...");
         const response = await fetch("/api/chat/voice-message", {
           method: "POST",
           body: formData,
         });
 
+        console.log("[VoiceRecorder] Response:", response.status, response.ok);
+
         if (response.ok) {
           const data = await response.json();
+          console.log("[VoiceRecorder] Data:", { ok: data.ok, hasMessage: !!data.message, transcription: data.message?.transcription?.slice(0, 50) });
           if (data.ok && data.message && onVoiceMessage) {
-            onVoiceMessage(data.message);
+            console.log("[VoiceRecorder] Calling onVoiceMessage (await)...");
+            await onVoiceMessage(data.message);
+            console.log("[VoiceRecorder] onVoiceMessage completed");
           }
         } else {
           // Fallback: Try old transcript API
@@ -259,13 +268,14 @@ export function VoiceRecorder({ onTranscript, onVoiceMessage, threadId, disabled
       } catch (err) {
         console.error("Failed to upload voice:", err);
       } finally {
+        onTranscriptionEnd?.();
         cleanup();
         setState("idle");
       }
     };
 
     recorder.stop();
-  }, [state, startTime, threadId, onTranscript, onVoiceMessage, cleanup, cancelRecording]);
+  }, [state, startTime, threadId, onTranscript, onVoiceMessage, onTranscriptionStart, onTranscriptionEnd, cleanup, cancelRecording]);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -310,15 +320,20 @@ export function VoiceRecorder({ onTranscript, onVoiceMessage, threadId, disabled
     );
   }
 
-  // Transcribing state - show status indicator
+  // Transcribing state - show disabled mic (status is shown in chat area via callback)
   if (isTranscribing) {
     return (
-      <div className="flex items-center gap-1.5 rounded-xl bg-indigo-50 px-2.5 py-1 dark:bg-indigo-950/30">
-        <div className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-indigo-400 border-t-transparent" />
-        <span className="text-xs text-indigo-600 dark:text-indigo-400">
-          Transkribiere...
-        </span>
-      </div>
+      <button
+        type="button"
+        className={cn(
+          "relative flex h-9 w-9 items-center justify-center rounded-xl transition-all",
+          "bg-indigo-100 text-indigo-500 dark:bg-indigo-900/30 dark:text-indigo-400"
+        )}
+        disabled
+        title="Transkribiere..."
+      >
+        <div className="h-4 w-4 animate-spin rounded-full border-2 border-indigo-400 border-t-transparent" />
+      </button>
     );
   }
 

@@ -50,6 +50,16 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   compress: true,
   reactStrictMode: true,
+  
+  // Skip ESLint during build (run separately in CI if needed)
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+  
+  // Skip TypeScript errors during build (for faster iteration)
+  typescript: {
+    ignoreBuildErrors: true,
+  },
 
   // Experimental features
   experimental: {

@@ -67,8 +67,23 @@ export function InboxView() {
         const json = await res.json();
         // API returns { ok, data: { items, pagination } }
         const data = json.data || json;
-        const items = data.items || [];
+        let items = data.items || [];
         const pag = data.pagination || { total: 0, hasMore: false, offset: 0 };
+        
+        // Sort by source priority (WhatsApp > ClickUp > Email), then by receivedAt
+        const sourcePriority: Record<string, number> = {
+          whatsapp: 0,
+          clickup: 1,
+          slack: 2,
+          email: 3,
+        };
+        items = items.sort((a: InboxItem, b: InboxItem) => {
+          const aPriority = sourcePriority[a.source] ?? 99;
+          const bPriority = sourcePriority[b.source] ?? 99;
+          if (aPriority !== bPriority) return aPriority - bPriority;
+          // Within same source, sort by receivedAt (newest first)
+          return new Date(b.receivedAt).getTime() - new Date(a.receivedAt).getTime();
+        });
         
         setItems(reset ? items : (prev: InboxItem[]) => [...prev, ...items]);
         setPagination({

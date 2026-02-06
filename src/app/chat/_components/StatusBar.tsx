@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef, useCallback } from "react";
+import { ChevronDown, ChevronUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type StatusData = {
@@ -24,6 +25,7 @@ type ConnectionState = "connecting" | "connected" | "disconnected";
 export function StatusBar() {
   const [status, setStatus] = useState<StatusData | null>(null);
   const [connectionState, setConnectionState] = useState<ConnectionState>("connecting");
+  const [expanded, setExpanded] = useState(false);
   const eventSourceRef = useRef<EventSource | null>(null);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -87,6 +89,7 @@ export function StatusBar() {
   const isBusy = status?.agent.status === "unknown" && status?.gateway.reachable;
   const latencyMs = status?.gateway.latencyMs;
   const agentId = status?.agent.id ?? "main";
+  const gatewayUrl = status?.gateway.url ?? "";
 
   // Status dot color
   const dotColor = isOnline
@@ -97,61 +100,79 @@ export function StatusBar() {
 
   // Status text
   const statusText = connectionState === "connecting"
-    ? "Connecting..."
+    ? "Verbinde..."
     : connectionState === "disconnected"
     ? "Offline"
     : isOnline
     ? "Online"
     : isBusy
-    ? "Busy"
+    ? "Beschäftigt"
     : "Offline";
 
   return (
-    <div className="flex h-8 items-center justify-between border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 px-3">
-      {/* Left: Status indicator */}
-      <div className="flex items-center gap-2 text-xs text-zinc-600 dark:text-zinc-400">
-        {/* Status dot */}
-        <span className="relative flex h-2 w-2">
-          {isOnline && connectionState === "connected" && (
+    <div className="border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900">
+      {/* Collapsed bar - minimal */}
+      <button
+        onClick={() => setExpanded(!expanded)}
+        className="flex h-5 w-full items-center justify-between px-3 transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-800"
+      >
+        {/* Left: Status indicator */}
+        <div className="flex items-center gap-1.5 text-[10px] text-zinc-500 dark:text-zinc-400">
+          {/* Status dot */}
+          <span className="relative flex h-1.5 w-1.5">
+            {isOnline && connectionState === "connected" && (
+              <span
+                className={cn(
+                  "absolute inline-flex h-full w-full animate-ping rounded-full opacity-75",
+                  dotColor
+                )}
+              />
+            )}
             <span
               className={cn(
-                "absolute inline-flex h-full w-full animate-ping rounded-full opacity-75",
+                "relative inline-flex h-1.5 w-1.5 rounded-full",
                 dotColor
               )}
             />
+          </span>
+          <span>{statusText}</span>
+          {connectionState === "connected" && latencyMs !== undefined && (
+            <>
+              <span className="text-zinc-300 dark:text-zinc-600">·</span>
+              <span className="tabular-nums">{latencyMs}ms</span>
+            </>
           )}
-          <span
-            className={cn(
-              "relative inline-flex h-2 w-2 rounded-full",
-              dotColor
-            )}
-          />
-        </span>
+        </div>
 
-        {/* Status text */}
-        <span className="font-medium">{statusText}</span>
-
-        {/* Agent ID */}
-        {connectionState === "connected" && (
-          <>
-            <span className="text-zinc-300 dark:text-zinc-600">·</span>
-            <span>{agentId}</span>
-          </>
+        {/* Right: Expand icon */}
+        {expanded ? (
+          <ChevronUp className="h-3 w-3 text-zinc-400" />
+        ) : (
+          <ChevronDown className="h-3 w-3 text-zinc-400" />
         )}
+      </button>
 
-        {/* Latency */}
-        {connectionState === "connected" && latencyMs !== undefined && (
-          <>
-            <span className="text-zinc-300 dark:text-zinc-600">·</span>
-            <span className="tabular-nums">{latencyMs}ms</span>
-          </>
-        )}
-      </div>
-
-      {/* Right: Agent count placeholder */}
-      {connectionState === "connected" && (
-        <div className="text-xs text-zinc-500 dark:text-zinc-500">
-          1 agent
+      {/* Expanded details */}
+      {expanded && (
+        <div className="border-t border-zinc-200 dark:border-zinc-800 px-3 py-2 text-[10px] text-zinc-500 dark:text-zinc-400 space-y-1">
+          <div className="flex justify-between">
+            <span>Agent</span>
+            <span className="font-mono">{agentId}</span>
+          </div>
+          <div className="flex justify-between">
+            <span>Gateway</span>
+            <span className="font-mono truncate max-w-[200px]">{gatewayUrl || "—"}</span>
+          </div>
+          <div className="flex justify-between">
+            <span>Latenz</span>
+            <span className="font-mono">{latencyMs !== undefined ? `${latencyMs}ms` : "—"}</span>
+          </div>
+          <div className="flex justify-between">
+            <span>Zuletzt geprüft</span>
+            <span className="font-mono">
+              {status?.lastCheck ? new Date(status.lastCheck).toLocaleTimeString("de-AT") : "—"}
+            </span>
+          </div>
         </div>
       )}
     </div>

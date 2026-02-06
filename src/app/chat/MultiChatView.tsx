@@ -153,16 +153,16 @@ function MessageBubble({ message, artefact, url }: MessageBubbleProps) {
   const isUser = message.role === "user";
   const isSystem = message.role === "system";
   const meta = displayContent(message.content);
-  const author = isUser ? "You" : meta.author ?? "Dieter";
+  const author = isUser ? "Du" : meta.author ?? "Dieter";
 
   // System messages (hidden or minimal)
   if (isSystem) {
     return (
-      <div className="mx-auto max-w-md py-2 text-center">
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-zinc-100 dark:bg-zinc-800 px-3 py-1 text-xs text-muted-foreground">
-          <Sparkles className="h-3 w-3" />
-          {meta.text.slice(0, 100)}
-          {meta.text.length > 100 && "..."}
+      <div className="mx-auto max-w-md py-1 text-center">
+        <span className="inline-flex items-center gap-1 rounded-full bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 text-[10px] text-muted-foreground">
+          <Sparkles className="h-2.5 w-2.5" />
+          {meta.text.slice(0, 80)}
+          {meta.text.length > 80 && "..."}
         </span>
       </div>
     );
@@ -173,21 +173,21 @@ function MessageBubble({ message, artefact, url }: MessageBubbleProps) {
     return (
       <div
         className={cn(
-          "flex items-end gap-3",
+          "flex items-end gap-2",
           isUser ? "flex-row-reverse" : "flex-row"
         )}
       >
         {/* Avatar */}
-        <Avatar className="h-8 w-8 shrink-0">
+        <Avatar className="h-6 w-6 shrink-0">
           {isUser ? (
-            <AvatarFallback className="bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 text-xs font-medium">
-              <User className="h-4 w-4" />
+            <AvatarFallback className="bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 text-[10px] font-medium">
+              <User className="h-3 w-3" />
             </AvatarFallback>
           ) : (
             <>
               <AvatarImage src="/dieter-avatar.png" alt={author} />
-              <AvatarFallback className="bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 text-xs font-medium">
-                <Bot className="h-4 w-4" />
+              <AvatarFallback className="bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 text-[10px] font-medium">
+                <Bot className="h-3 w-3" />
               </AvatarFallback>
             </>
           )}
@@ -207,21 +207,21 @@ function MessageBubble({ message, artefact, url }: MessageBubbleProps) {
   return (
     <div
       className={cn(
-        "flex items-end gap-3",
+        "flex items-end gap-2",
         isUser ? "flex-row-reverse" : "flex-row"
       )}
     >
       {/* Avatar */}
-      <Avatar className="h-8 w-8 shrink-0">
+      <Avatar className="h-6 w-6 shrink-0">
         {isUser ? (
-          <AvatarFallback className="bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 text-xs font-medium">
-            <User className="h-4 w-4" />
+          <AvatarFallback className="bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 text-[10px] font-medium">
+            <User className="h-3 w-3" />
           </AvatarFallback>
         ) : (
           <>
             <AvatarImage src="/dieter-avatar.png" alt={author} />
-            <AvatarFallback className="bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 text-xs font-medium">
-              <Bot className="h-4 w-4" />
+            <AvatarFallback className="bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 text-[10px] font-medium">
+              <Bot className="h-3 w-3" />
             </AvatarFallback>
           </>
         )}
@@ -230,26 +230,26 @@ function MessageBubble({ message, artefact, url }: MessageBubbleProps) {
       {/* Bubble */}
       <div
         className={cn(
-          "group relative max-w-[80%] rounded-lg px-4 py-3",
+          "group relative max-w-[80%] rounded-xl px-3 py-2",
           isUser
             ? "bg-indigo-50 dark:bg-zinc-700 text-zinc-900 dark:text-zinc-100"
             : "bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800"
         )}
       >
         {/* Author & Time */}
-        <div className="mb-1 flex items-center justify-between gap-4">
-          <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
+        <div className="mb-0.5 flex items-center justify-between gap-3">
+          <span className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400">
             {author}
           </span>
-          <span className="text-[10px] text-zinc-400 dark:text-zinc-500">
+          <span className="text-[9px] text-zinc-400 dark:text-zinc-500">
             {message.createdAtLabel}
           </span>
         </div>
 
         {/* Content */}
         {artefact && url ? (
-          <div className="space-y-2">
-            <div className="flex items-center gap-2 text-sm font-medium">
+          <div className="space-y-1.5">
+            <div className="flex items-center gap-1.5 text-xs font-medium">
               <span>📎</span>
               <span className="truncate">{artefact.originalName}</span>
             </div>
@@ -258,14 +258,14 @@ function MessageBubble({ message, artefact, url }: MessageBubbleProps) {
               <img
                 src={url}
                 alt={artefact.originalName}
-                className="max-h-[360px] w-auto rounded-lg border border-zinc-200 dark:border-zinc-700"
+                className="max-h-[280px] w-auto rounded-lg border border-zinc-200 dark:border-zinc-700"
               />
             ) : isAudioMime(artefact.mimeType) ? (
-              <audio controls src={url} className="w-full max-w-xs" />
+              <audio controls src={url} className="w-full max-w-xs h-8" />
             ) : (
               <a
                 href={url}
-                className="inline-flex items-center gap-2 rounded-lg bg-zinc-100 dark:bg-zinc-800 px-3 py-2 text-sm hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
+                className="inline-flex items-center gap-1.5 rounded-lg bg-zinc-100 dark:bg-zinc-800 px-2 py-1.5 text-xs hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
                 target="_blank"
                 rel="noreferrer"
               >
@@ -274,7 +274,7 @@ function MessageBubble({ message, artefact, url }: MessageBubbleProps) {
             )}
           </div>
         ) : (
-          <div className="whitespace-pre-wrap text-sm leading-relaxed">
+          <div className="whitespace-pre-wrap text-[13px] leading-relaxed">
             {meta.text}
           </div>
         )}
@@ -304,9 +304,9 @@ function ChatContent({ activeTab, messages, artefactsById }: ChatContentProps) {
 
   return (
     <ScrollArea className="flex-1">
-      <div className="mx-auto flex w-full max-w-3xl flex-col gap-4 px-4 py-6">
+      <div className="mx-auto flex w-full max-w-3xl flex-col gap-3 px-4 py-4">
         {messages.length > 0 ? (
-            <div key={activeTab} className="space-y-4">
+            <div key={activeTab} className="space-y-2.5">
               {messages.map((m) => {
                 const artefactId = extractArtefactIdFromContent(m.content);
                 const artefact = artefactId ? artefactsById[artefactId] : null;
@@ -327,19 +327,19 @@ function ChatContent({ activeTab, messages, artefactsById }: ChatContentProps) {
           ) : (
             <div
               key={`${activeTab}-empty`}
-              className="flex flex-col items-center justify-center py-20 text-center"
+              className="flex flex-col items-center justify-center py-16 text-center"
             >
-              <div className="mb-4 rounded-lg bg-zinc-100 dark:bg-zinc-800 p-4">
-                {currentTab && <currentTab.icon className="h-8 w-8 text-zinc-600 dark:text-zinc-400" />}
+              <div className="mb-3 rounded-lg bg-zinc-100 dark:bg-zinc-800 p-3">
+                {currentTab && <currentTab.icon className="h-6 w-6 text-zinc-600 dark:text-zinc-400" />}
               </div>
-              <h2 className="mb-2 text-base font-medium text-zinc-900 dark:text-zinc-100">
+              <h2 className="mb-1 text-sm font-medium text-zinc-900 dark:text-zinc-100">
                 {currentTab?.emoji} {currentTab?.name}
               </h2>
-              <p className="max-w-sm text-sm text-zinc-500 dark:text-zinc-400 mb-1">
+              <p className="max-w-xs text-xs text-zinc-500 dark:text-zinc-400 mb-0.5">
                 {currentTab?.description}
               </p>
-              <p className="max-w-sm text-xs text-zinc-400 dark:text-zinc-500">
-                Start a conversation below
+              <p className="max-w-xs text-[10px] text-zinc-400 dark:text-zinc-500">
+                Starte eine Konversation
               </p>
             </div>
           )}
@@ -385,7 +385,7 @@ function Composer({ draft, setDraft, isSending, onSubmit, onVoiceTranscript, onV
   };
 
   return (
-    <div className="sticky bottom-0 border-t border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 px-3 py-3 md:px-4 md:py-4">
+    <div className="sticky bottom-0 border-t border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 px-3 py-2 md:px-4 md:py-3">
       <div className="mx-auto w-full max-w-3xl pb-safe">
         <form
           className="flex items-end gap-2"
@@ -394,16 +394,8 @@ function Composer({ draft, setDraft, isSending, onSubmit, onVoiceTranscript, onV
             onSubmit();
           }}
         >
-          {/* Attachment & Voice - Left side */}
-          <div className="flex items-center gap-1">
-            <ChatComposer threadId={threadId} disabled={isSending} />
-            <VoiceRecorder
-              threadId={threadId}
-              onTranscript={onVoiceTranscript}
-              onVoiceMessage={onVoiceMessage}
-              disabled={isSending}
-            />
-          </div>
+          {/* Attachment - Left side */}
+          <ChatComposer threadId={threadId} disabled={isSending} />
 
           {/* Text Input */}
           <div className="relative flex-1">
@@ -412,11 +404,11 @@ function Composer({ draft, setDraft, isSending, onSubmit, onVoiceTranscript, onV
               value={draft}
               onChange={(e) => setDraft(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="Message..."
+              placeholder="Nachricht..."
               rows={1}
               disabled={isSending}
               className={cn(
-                "w-full resize-none rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 px-4 py-2.5",
+                "w-full resize-none rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 px-3 py-2",
                 "text-sm placeholder:text-zinc-400 dark:placeholder:text-zinc-500",
                 "transition-colors focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 focus:bg-white dark:focus:bg-zinc-800",
                 "disabled:opacity-50"
@@ -424,25 +416,19 @@ function Composer({ draft, setDraft, isSending, onSubmit, onVoiceTranscript, onV
             />
           </div>
 
-          {/* Send Button */}
-          <button
-            type="submit"
-            disabled={isSending || !draft.trim()}
-            className={cn(
-              "flex h-10 w-10 shrink-0 items-center justify-center rounded-lg transition-colors",
-              draft.trim()
-                ? "bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 hover:bg-zinc-800 dark:hover:bg-zinc-200"
-                : "bg-zinc-100 dark:bg-zinc-800 text-zinc-400 dark:text-zinc-500"
-            )}
-          >
-            <Send className={cn("h-4 w-4", isSending && "opacity-50")} />
-          </button>
+          {/* Voice Recorder - Right side */}
+          <VoiceRecorder
+            threadId={threadId}
+            onTranscript={onVoiceTranscript}
+            onVoiceMessage={onVoiceMessage}
+            disabled={isSending}
+          />
         </form>
 
         {/* Context indicator - Hidden on mobile */}
-        <div className="mt-2 hidden items-center justify-center md:flex">
-          <p className="text-[10px] text-zinc-400 dark:text-zinc-500">
-            {currentTab?.emoji} {currentTab?.name} · Press Enter to send
+        <div className="mt-1.5 hidden items-center justify-center md:flex">
+          <p className="text-[9px] text-zinc-400 dark:text-zinc-500">
+            {currentTab?.emoji} {currentTab?.name} · Enter zum Senden
           </p>
         </div>
       </div>

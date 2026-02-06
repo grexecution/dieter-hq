@@ -114,7 +114,7 @@ function RecordingTimer({ startTime }: { startTime: number }) {
   const displaySeconds = seconds % 60;
 
   return (
-    <span className="font-mono text-sm tabular-nums text-red-500">
+    <span className="font-mono text-xs tabular-nums text-red-500">
       {minutes}:{displaySeconds.toString().padStart(2, "0")}
     </span>
   );
@@ -280,7 +280,7 @@ export function VoiceRecorder({ onTranscript, onVoiceMessage, threadId, disabled
   // Recording UI - inline bar instead of fullscreen overlay
   if (isRecording) {
     return (
-      <div className="flex items-center gap-2 rounded-full bg-red-50 px-3 py-1.5 dark:bg-red-950/30">
+      <div className="flex items-center gap-1.5 rounded-xl bg-red-50 px-2 py-1 dark:bg-red-950/30">
         {/* Waveform */}
         <WaveformBars analyser={analyser} />
         
@@ -291,20 +291,20 @@ export function VoiceRecorder({ onTranscript, onVoiceMessage, threadId, disabled
         <button
           type="button"
           onClick={cancelRecording}
-          className="flex h-8 w-8 items-center justify-center rounded-full bg-zinc-200 text-zinc-600 transition-colors hover:bg-zinc-300 dark:bg-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-600"
-          title="Cancel"
+          className="flex h-7 w-7 items-center justify-center rounded-lg bg-zinc-200 text-zinc-600 transition-colors hover:bg-zinc-300 dark:bg-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-600"
+          title="Abbrechen"
         >
-          <X className="h-4 w-4" />
+          <X className="h-3.5 w-3.5" />
         </button>
         
         {/* Send button */}
         <button
           type="button"
           onClick={sendRecording}
-          className="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-500 text-white transition-colors hover:bg-indigo-600"
-          title="Send"
+          className="flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-500 text-white transition-colors hover:bg-indigo-600"
+          title="Senden"
         >
-          <Send className="h-4 w-4" />
+          <Send className="h-3.5 w-3.5" />
         </button>
       </div>
     );
@@ -313,9 +313,9 @@ export function VoiceRecorder({ onTranscript, onVoiceMessage, threadId, disabled
   // Transcribing state - show status indicator
   if (isTranscribing) {
     return (
-      <div className="flex items-center gap-2 rounded-full bg-indigo-50 px-3 py-1.5 dark:bg-indigo-950/30">
-        <div className="h-4 w-4 animate-spin rounded-full border-2 border-indigo-400 border-t-transparent" />
-        <span className="text-sm text-indigo-600 dark:text-indigo-400">
+      <div className="flex items-center gap-1.5 rounded-xl bg-indigo-50 px-2.5 py-1 dark:bg-indigo-950/30">
+        <div className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-indigo-400 border-t-transparent" />
+        <span className="text-xs text-indigo-600 dark:text-indigo-400">
           Transkribiere...
         </span>
       </div>
@@ -328,13 +328,13 @@ export function VoiceRecorder({ onTranscript, onVoiceMessage, threadId, disabled
       type="button"
       onClick={startRecording}
       className={cn(
-        "relative flex h-11 w-11 items-center justify-center rounded-full transition-all",
-        "bg-zinc-100 text-zinc-600 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-700"
+        "relative flex h-9 w-9 items-center justify-center rounded-xl transition-all",
+        "bg-zinc-100 text-zinc-500 hover:bg-zinc-200 hover:text-zinc-700 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-700 dark:hover:text-zinc-200"
       )}
       disabled={disabled}
-      title="Tap to record"
+      title="Sprachaufnahme"
     >
-      <Mic className="h-5 w-5" />
+      <Mic className="h-4 w-4" />
     </button>
   );
 }

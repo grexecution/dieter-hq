@@ -38,9 +38,9 @@ export function ThemeToggle() {
       <button
         type="button"
         aria-label="Toggle theme"
-        className="relative flex h-8 w-8 items-center justify-center rounded-md text-zinc-500 dark:text-zinc-400"
+        className="relative flex h-9 w-9 items-center justify-center rounded-xl text-zinc-500 dark:text-zinc-400"
       >
-        <Sun className="h-4 w-4" />
+        <Sun className="h-[18px] w-[18px]" strokeWidth={1.75} />
       </button>
     );
   }
@@ -50,10 +50,10 @@ export function ThemeToggle() {
       type="button"
       aria-label="Toggle theme"
       onClick={toggleTheme}
-      className="relative flex h-8 w-8 items-center justify-center rounded-md text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
+      className="relative flex h-9 w-9 items-center justify-center rounded-xl text-zinc-500 transition-all duration-150 hover:bg-zinc-100/80 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800/60 dark:hover:text-zinc-100"
     >
-      <Sun className="h-4 w-4 rotate-0 scale-100 transition-all duration-200 dark:-rotate-90 dark:scale-0" />
-      <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all duration-200 dark:rotate-0 dark:scale-100" />
+      <Sun className="h-[18px] w-[18px] rotate-0 scale-100 transition-all duration-200 dark:-rotate-90 dark:scale-0" strokeWidth={1.75} />
+      <Moon className="absolute h-[18px] w-[18px] rotate-90 scale-0 transition-all duration-200 dark:rotate-0 dark:scale-100" strokeWidth={1.75} />
       <span className="sr-only">Toggle theme</span>
     </button>
   );

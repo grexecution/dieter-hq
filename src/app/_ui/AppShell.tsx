@@ -1,16 +1,12 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
 import {
   Home,
   MessageCircle,
   Calendar,
   LayoutGrid,
-  Settings,
-  X,
 } from "lucide-react";
 
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -21,18 +17,11 @@ import { cn } from "@/lib/utils";
 const NAV_ITEMS = [
   { href: "/", icon: Home, label: "Home", id: "home" },
   { href: "/chat", icon: MessageCircle, label: "Chat", id: "chat" },
-  { href: "/calendar", icon: Calendar, label: "Kalender", id: "calendar" },
+  { href: "/calendar", icon: Calendar, label: "Calendar", id: "calendar" },
   { href: "/kanban", icon: LayoutGrid, label: "Tasks", id: "kanban" },
 ] as const;
 
-const MENU_ITEMS = [
-  { href: "/", icon: Home, label: "Home", id: "home" },
-  { href: "/chat", icon: MessageCircle, label: "Chat", id: "chat" },
-  { href: "/calendar", icon: Calendar, label: "Kalender", id: "calendar" },
-  { href: "/kanban", icon: LayoutGrid, label: "Tasks", id: "kanban" },
-  { type: "divider" as const },
-  { href: "/settings", icon: Settings, label: "Settings", id: "settings" },
-] as const;
+type NavId = (typeof NAV_ITEMS)[number]["id"];
 
 interface AppShellProps {
   children: React.ReactNode;
@@ -40,224 +29,43 @@ interface AppShellProps {
 }
 
 // ============================================
-// Animated Burger Icon
-// ============================================
-
-function BurgerIcon({ isOpen }: { isOpen: boolean }) {
-  return (
-    <div className="relative h-5 w-6">
-      <motion.span
-        className="absolute left-0 top-0 h-0.5 w-full rounded-full bg-current"
-        animate={{
-          rotate: isOpen ? 45 : 0,
-          y: isOpen ? 9 : 0,
-        }}
-        transition={{ duration: 0.25, ease: "easeInOut" }}
-      />
-      <motion.span
-        className="absolute left-0 top-[9px] h-0.5 w-full rounded-full bg-current"
-        animate={{
-          opacity: isOpen ? 0 : 1,
-          scaleX: isOpen ? 0 : 1,
-        }}
-        transition={{ duration: 0.2, ease: "easeInOut" }}
-      />
-      <motion.span
-        className="absolute bottom-0 left-0 h-0.5 w-full rounded-full bg-current"
-        animate={{
-          rotate: isOpen ? -45 : 0,
-          y: isOpen ? -9 : 0,
-        }}
-        transition={{ duration: 0.25, ease: "easeInOut" }}
-      />
-    </div>
-  );
-}
-
-// ============================================
-// Slide-out Menu Panel
-// ============================================
-
-function MobileMenu({
-  isOpen,
-  onClose,
-  active,
-}: {
-  isOpen: boolean;
-  onClose: () => void;
-  active?: string;
-}) {
-  // Close on escape key
-  useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-    };
-    if (isOpen) {
-      document.addEventListener("keydown", handleEscape);
-      // Prevent body scroll when menu is open
-      document.body.style.overflow = "hidden";
-    }
-    return () => {
-      document.removeEventListener("keydown", handleEscape);
-      document.body.style.overflow = "";
-    };
-  }, [isOpen, onClose]);
-
-  return (
-    <AnimatePresence>
-      {isOpen && (
-        <>
-          {/* Backdrop with blur */}
-          <motion.div
-            className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.25 }}
-            onClick={onClose}
-            aria-hidden="true"
-          />
-
-          {/* Menu Panel */}
-          <motion.nav
-            className={cn(
-              "fixed right-0 top-0 z-50 h-full w-72",
-              // Futuristic glass effect
-              "border-l border-white/10 bg-zinc-900/95 backdrop-blur-xl",
-              // Subtle glow on the edge
-              "shadow-[-8px_0_32px_rgba(99,102,241,0.15)]"
-            )}
-            initial={{ x: "100%" }}
-            animate={{ x: 0 }}
-            exit={{ x: "100%" }}
-            transition={{ type: "spring", damping: 30, stiffness: 300 }}
-            aria-label="Mobile navigation menu"
-          >
-            {/* Menu Header */}
-            <div className="flex h-14 items-center justify-between border-b border-white/5 px-5 pt-safe">
-              <span className="text-sm font-medium text-zinc-400">Menu</span>
-              <button
-                onClick={onClose}
-                className="flex h-10 w-10 items-center justify-center rounded-lg text-zinc-400 transition-colors hover:bg-white/5 hover:text-white"
-                aria-label="Close menu"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-
-            {/* Menu Items */}
-            <div className="flex flex-col gap-1 p-4">
-              {MENU_ITEMS.map((item, index) => {
-                if ("type" in item && item.type === "divider") {
-                  return (
-                    <div
-                      key={`divider-${index}`}
-                      className="my-2 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent"
-                    />
-                  );
-                }
-
-                if (!("href" in item)) return null;
-
-                const isActive = active === item.id;
-                const Icon = item.icon;
-
-                return (
-                  <Link
-                    key={item.id}
-                    href={item.href}
-                    onClick={onClose}
-                    className={cn(
-                      // Base styles
-                      "group relative flex items-center gap-3 rounded-xl px-4 py-3.5 text-sm font-medium transition-all duration-200",
-                      // Active state - futuristic glow
-                      isActive
-                        ? "bg-indigo-500/15 text-indigo-400"
-                        : "text-zinc-300 hover:bg-white/5 hover:text-white active:scale-[0.98]"
-                    )}
-                  >
-                    {/* Active indicator glow */}
-                    {isActive && (
-                      <motion.div
-                        className="absolute inset-0 rounded-xl bg-indigo-500/10"
-                        layoutId="activeMenuItem"
-                        transition={{ type: "spring", damping: 25, stiffness: 300 }}
-                      />
-                    )}
-                    
-                    {/* Icon with subtle glow when active */}
-                    <span
-                      className={cn(
-                        "relative z-10 transition-all",
-                        isActive && "drop-shadow-[0_0_8px_rgba(99,102,241,0.5)]"
-                      )}
-                    >
-                      <Icon className="h-5 w-5" strokeWidth={isActive ? 2.25 : 1.75} />
-                    </span>
-                    
-                    <span className="relative z-10">{item.label}</span>
-
-                    {/* Active line indicator */}
-                    {isActive && (
-                      <motion.div
-                        className="absolute left-0 top-1/2 h-6 w-0.5 -translate-y-1/2 rounded-full bg-indigo-400 shadow-[0_0_12px_rgba(99,102,241,0.8)]"
-                        layoutId="activeIndicator"
-                      />
-                    )}
-                  </Link>
-                );
-              })}
-            </div>
-
-            {/* Footer with Theme Toggle */}
-            <div className="absolute bottom-0 left-0 right-0 border-t border-white/5 p-4 pb-safe">
-              <div className="flex items-center justify-between rounded-xl bg-white/5 px-4 py-3">
-                <span className="text-sm text-zinc-400">Erscheinungsbild</span>
-                <ThemeToggle />
-              </div>
-            </div>
-          </motion.nav>
-        </>
-      )}
-    </AnimatePresence>
-  );
-}
-
-// ============================================
-// Desktop Header - Clean navbar
+// Desktop Header - Premium 2026 Design
 // ============================================
 
 function DesktopHeader({ active }: { active?: string }) {
   return (
     <header className="fixed left-0 right-0 top-0 z-50 hidden md:block">
-      <div className="mx-auto max-w-6xl px-6 pt-4">
-        <nav className="flex h-14 items-center justify-between rounded-xl border border-zinc-200 bg-white/80 px-4 backdrop-blur-lg dark:border-zinc-800 dark:bg-zinc-900/80">
-          {/* Logo - Simple, no gradient */}
+      <div className="mx-auto max-w-6xl px-6 pt-5">
+        <nav className="flex h-[52px] items-center justify-between rounded-2xl border border-zinc-200/80 bg-white/90 px-2 shadow-sm backdrop-blur-xl dark:border-zinc-800/80 dark:bg-zinc-900/90 dark:shadow-lg dark:shadow-black/10">
+          {/* Logo - Refined */}
           <Link
             href="/"
-            className="flex items-center gap-2 font-semibold tracking-tight transition-opacity hover:opacity-80"
+            className="group flex items-center gap-2.5 rounded-xl px-3 py-2 transition-all duration-150 hover:bg-zinc-100/80 dark:hover:bg-zinc-800/60"
           >
-            <span className="text-lg">🐕</span>
-            <span className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
+            <span className="text-base transition-transform duration-200 group-hover:scale-110">🐕</span>
+            <span className="text-sm font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
               Dieter HQ
             </span>
           </Link>
 
-          {/* Nav Links */}
-          <div className="flex items-center gap-1">
+          {/* Nav Links - Refined spacing and states */}
+          <div className="flex items-center gap-0.5">
             {NAV_ITEMS.slice(1).map((item) => {
               const isActive = active === item.id;
               return (
                 <Link key={item.id} href={item.href}>
                   <button
                     className={cn(
-                      "inline-flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors",
+                      "inline-flex items-center gap-2 rounded-xl px-3.5 py-2 text-[13px] font-medium transition-all duration-150",
                       isActive
-                        ? "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400"
-                        : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
+                        ? "bg-indigo-50 text-indigo-600 shadow-sm shadow-indigo-100 dark:bg-indigo-950/50 dark:text-indigo-400 dark:shadow-none"
+                        : "text-zinc-500 hover:bg-zinc-100/80 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800/60 dark:hover:text-zinc-100"
                     )}
                   >
-                    <item.icon className="h-4 w-4" />
+                    <item.icon className={cn(
+                      "h-[18px] w-[18px] transition-colors",
+                      isActive ? "text-indigo-500 dark:text-indigo-400" : ""
+                    )} strokeWidth={isActive ? 2 : 1.75} />
                     {item.label}
                   </button>
                 </Link>
@@ -265,8 +73,8 @@ function DesktopHeader({ active }: { active?: string }) {
             })}
           </div>
 
-          {/* Actions */}
-          <div className="flex items-center gap-2">
+          {/* Actions - Subtle styling */}
+          <div className="flex items-center gap-1">
             <NotificationPermission />
             <ThemeToggle />
           </div>
@@ -277,101 +85,88 @@ function DesktopHeader({ active }: { active?: string }) {
 }
 
 // ============================================
-// Mobile Header - Futuristic with Burger Menu
+// Mobile Bottom Tab Bar - Modern Floating Design
 // ============================================
 
-export function MobileHeader({ active }: { active?: string }) {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const pathname = usePathname();
-
-  const toggleMenu = useCallback(() => {
-    setIsMenuOpen((prev) => !prev);
-  }, []);
-
-  const closeMenu = useCallback(() => {
-    setIsMenuOpen(false);
-  }, []);
-
-  // Close menu on route change
-  useEffect(() => {
-    setIsMenuOpen(false);
-  }, [pathname]);
-
+function MobileTabBar({ active }: { active?: string }) {
   return (
-    <>
-      <header className="fixed left-0 right-0 top-0 z-50 md:hidden">
-        {/* Safe area + header container with futuristic styling */}
-        <div
-          className={cn(
-            "pt-safe",
-            // Futuristic glass morphism
-            "border-b border-white/10 bg-zinc-950/80 backdrop-blur-xl",
-            // Subtle bottom glow
-            "shadow-[0_1px_0_rgba(99,102,241,0.1),0_4px_20px_rgba(0,0,0,0.3)]"
-          )}
-        >
-          <nav className="flex h-14 items-center justify-between px-4">
-            {/* Logo + Brand - Left Side */}
-            <Link
-              href="/"
-              className="group flex items-center gap-2.5 transition-all active:scale-95"
-            >
-              {/* Logo with subtle glow */}
-              <span
-                className={cn(
-                  "text-xl transition-all",
-                  "drop-shadow-[0_0_8px_rgba(99,102,241,0.4)]",
-                  "group-hover:drop-shadow-[0_0_12px_rgba(99,102,241,0.6)]"
-                )}
-              >
-                🐕
-              </span>
-              {/* Brand text with gradient */}
-              <span
-                className={cn(
-                  "text-base font-bold tracking-tight",
-                  // Futuristic gradient text
-                  "bg-gradient-to-r from-white via-zinc-200 to-zinc-400 bg-clip-text text-transparent",
-                  // Subtle text glow
-                  "drop-shadow-[0_0_12px_rgba(255,255,255,0.15)]"
-                )}
-              >
-                Dieter HQ
-              </span>
-            </Link>
+    <nav className="fixed bottom-0 left-0 right-0 z-50 pb-safe md:hidden">
+      <div className="px-4 pb-4">
+        {/* Floating Pill Container */}
+        <div className="relative mx-auto max-w-sm overflow-hidden rounded-2xl border border-white/20 bg-zinc-900/80 shadow-2xl shadow-black/40 backdrop-blur-2xl dark:border-white/10 dark:bg-zinc-950/90">
+          {/* Subtle gradient overlay */}
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-white/[0.02] to-white/[0.08]" />
+          
+          <div className="relative flex items-center justify-around px-2 py-3">
+            {NAV_ITEMS.map((item) => {
+              const isActive =
+                active === item.id || (item.id === "home" && !active);
 
-            {/* Burger Menu Button - Right Side */}
-            <button
-              onClick={toggleMenu}
-              className={cn(
-                "relative flex h-11 w-11 items-center justify-center rounded-xl transition-all",
-                // Futuristic button style
-                isMenuOpen
-                  ? "bg-indigo-500/20 text-indigo-400"
-                  : "text-zinc-400 hover:bg-white/5 hover:text-white active:scale-95"
-              )}
-              aria-label={isMenuOpen ? "Close menu" : "Open menu"}
-              aria-expanded={isMenuOpen}
-              aria-controls="mobile-menu"
-            >
-              {/* Subtle glow ring when active */}
-              {isMenuOpen && (
-                <motion.div
-                  className="absolute inset-0 rounded-xl ring-1 ring-indigo-500/30"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                />
-              )}
-              <BurgerIcon isOpen={isMenuOpen} />
-            </button>
-          </nav>
+              return (
+                <Link
+                  key={item.id}
+                  href={item.href}
+                  className="group relative flex flex-col items-center"
+                >
+                  {/* Active Glow Background */}
+                  <div
+                    className={cn(
+                      "absolute -inset-2 rounded-xl transition-all duration-300",
+                      isActive
+                        ? "bg-indigo-500/20 blur-md"
+                        : "bg-transparent"
+                    )}
+                  />
+                  
+                  {/* Active Background Pill */}
+                  <div
+                    className={cn(
+                      "relative flex flex-col items-center gap-1 rounded-xl px-4 py-2 transition-all duration-300",
+                      isActive
+                        ? "bg-indigo-500/20"
+                        : "hover:bg-white/5"
+                    )}
+                  >
+                    {/* Icon */}
+                    <item.icon
+                      className={cn(
+                        "h-5 w-5 transition-all duration-300",
+                        isActive
+                          ? "text-indigo-400 drop-shadow-[0_0_8px_rgba(129,140,248,0.5)]"
+                          : "text-zinc-400 group-hover:text-zinc-200"
+                      )}
+                      strokeWidth={isActive ? 2.5 : 2}
+                    />
+                    
+                    {/* Label */}
+                    <span
+                      className={cn(
+                        "text-[10px] font-medium transition-all duration-300",
+                        isActive
+                          ? "text-indigo-300"
+                          : "text-zinc-500 group-hover:text-zinc-300"
+                      )}
+                    >
+                      {item.label}
+                    </span>
+                    
+                    {/* Active Indicator Dot */}
+                    <div
+                      className={cn(
+                        "absolute -bottom-0.5 h-1 w-1 rounded-full bg-indigo-400 transition-all duration-300",
+                        isActive
+                          ? "scale-100 opacity-100"
+                          : "scale-0 opacity-0"
+                      )}
+                    />
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
         </div>
-      </header>
-
-      {/* Mobile Menu */}
-      <MobileMenu isOpen={isMenuOpen} onClose={closeMenu} active={active} />
-    </>
+      </div>
+    </nav>
   );
 }
 
@@ -388,25 +183,28 @@ export function AppShell({ children, active }: AppShellProps) {
     (pathname === "/" ? "home" : NAV_ITEMS.find((n) => pathname.startsWith(n.href) && n.href !== "/")?.id);
 
   return (
-    <div className="relative min-h-dvh bg-zinc-50 dark:bg-zinc-950">
+    <div className="relative min-h-dvh bg-[#fafafa] dark:bg-[#0c0d10]">
+      {/* Subtle background pattern/gradient for depth */}
+      <div className="pointer-events-none fixed inset-0 bg-gradient-to-br from-indigo-50/30 via-transparent to-violet-50/20 dark:from-indigo-950/10 dark:via-transparent dark:to-violet-950/10" />
+
       {/* Desktop Header */}
       <DesktopHeader active={resolvedActive} />
-
-      {/* Mobile Header */}
-      <MobileHeader active={resolvedActive} />
 
       {/* Main Content */}
       <main
         className={cn(
-          "mx-auto w-full max-w-6xl px-4 md:px-6",
-          // Mobile: top padding for mobile header (h-14 + safe-area)
-          "pt-[calc(3.5rem+env(safe-area-inset-top))] pb-6",
-          // Desktop: top padding for desktop header
-          "md:pb-8 md:pt-24"
+          "relative mx-auto w-full max-w-6xl px-4 md:px-6",
+          // Mobile: bottom padding for floating tab bar
+          "pb-28 pt-6",
+          // Desktop: top padding for header (increased for breathing room)
+          "md:pb-12 md:pt-28"
         )}
       >
         {children}
       </main>
+
+      {/* Mobile Tab Bar */}
+      <MobileTabBar active={resolvedActive} />
     </div>
   );
 }

@@ -350,15 +350,15 @@ export function InboxView() {
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-200 dark:border-zinc-800">
+      <div className="flex items-center justify-between px-4 py-3.5 border-b border-zinc-200/80 dark:border-zinc-800/80">
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 rounded-lg bg-zinc-100 dark:bg-zinc-800 p-1">
+          <div className="flex items-center gap-1 rounded-xl bg-zinc-100/80 dark:bg-zinc-800/60 p-1">
             <button
               onClick={() => setViewMode("inbox")}
               className={cn(
-                "flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-all duration-200",
+                "flex items-center gap-1.5 rounded-lg px-3.5 py-2 text-[12px] font-medium transition-all duration-150",
                 viewMode === "inbox"
-                  ? "bg-white dark:bg-zinc-700 text-zinc-900 dark:text-zinc-100 shadow-sm"
+                  ? "bg-white dark:bg-zinc-700/80 text-zinc-900 dark:text-zinc-100 shadow-sm"
                   : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300"
               )}
             >
@@ -367,7 +367,7 @@ export function InboxView() {
               {unreadCount > 0 && (
                 <Badge 
                   variant="default" 
-                  className="ml-1 h-4 min-w-[16px] px-1 text-[10px] bg-indigo-600 hover:bg-indigo-600"
+                  className="ml-1 h-[18px] min-w-[18px] px-1.5 text-[10px] font-semibold bg-indigo-600 hover:bg-indigo-600 rounded-full"
                 >
                   {unreadCount}
                 </Badge>
@@ -376,9 +376,9 @@ export function InboxView() {
             <button
               onClick={() => setViewMode("history")}
               className={cn(
-                "flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-all duration-200",
+                "flex items-center gap-1.5 rounded-lg px-3.5 py-2 text-[12px] font-medium transition-all duration-150",
                 viewMode === "history"
-                  ? "bg-white dark:bg-zinc-700 text-zinc-900 dark:text-zinc-100 shadow-sm"
+                  ? "bg-white dark:bg-zinc-700/80 text-zinc-900 dark:text-zinc-100 shadow-sm"
                   : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300"
               )}
             >
@@ -388,18 +388,18 @@ export function InboxView() {
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5">
           {/* Keyboard shortcuts hint */}
           <button
             onClick={() => setShowKeyboardHints(!showKeyboardHints)}
             className={cn(
-              "hidden sm:flex items-center gap-1 px-2 py-1 text-xs rounded-md transition-colors",
+              "hidden sm:flex items-center gap-1 h-9 w-9 justify-center rounded-xl transition-all duration-150",
               showKeyboardHints 
-                ? "bg-zinc-200 dark:bg-zinc-700 text-zinc-900 dark:text-zinc-100"
-                : "text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
+                ? "bg-zinc-200/80 dark:bg-zinc-700/80 text-zinc-900 dark:text-zinc-100"
+                : "text-zinc-400 hover:text-zinc-600 hover:bg-zinc-100/80 dark:hover:text-zinc-300 dark:hover:bg-zinc-800/60"
             )}
           >
-            <Keyboard className="h-3.5 w-3.5" />
+            <Keyboard className="h-4 w-4" />
           </button>
 
           <Button
@@ -407,7 +407,7 @@ export function InboxView() {
             variant="outline"
             onClick={handleSync}
             disabled={isSyncing}
-            className="transition-all duration-200"
+            className="h-9 rounded-xl border-zinc-200/80 transition-all duration-150 hover:bg-zinc-50 dark:border-zinc-700/80 dark:hover:bg-zinc-800/60"
           >
             <RefreshCw className={cn("h-3.5 w-3.5 mr-1.5", isSyncing && "animate-spin")} />
             {isSyncing ? "Sync..." : "Sync"}
@@ -422,14 +422,14 @@ export function InboxView() {
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            className="overflow-hidden border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900"
+            className="overflow-hidden border-b border-zinc-200/80 dark:border-zinc-800/80 bg-zinc-50/80 dark:bg-zinc-900/60"
           >
-            <div className="px-4 py-2 flex flex-wrap gap-x-6 gap-y-1 text-xs text-zinc-500 dark:text-zinc-400">
-              <span><kbd className="px-1.5 py-0.5 rounded bg-zinc-200 dark:bg-zinc-700 font-mono">j</kbd> / <kbd className="px-1.5 py-0.5 rounded bg-zinc-200 dark:bg-zinc-700 font-mono">k</kbd> Navigieren</span>
-              <span><kbd className="px-1.5 py-0.5 rounded bg-zinc-200 dark:bg-zinc-700 font-mono">Enter</kbd> Öffnen</span>
-              <span><kbd className="px-1.5 py-0.5 rounded bg-zinc-200 dark:bg-zinc-700 font-mono">e</kbd> Archivieren</span>
-              <span><kbd className="px-1.5 py-0.5 rounded bg-zinc-200 dark:bg-zinc-700 font-mono">s</kbd> Zurückstellen</span>
-              <span><kbd className="px-1.5 py-0.5 rounded bg-zinc-200 dark:bg-zinc-700 font-mono">Esc</kbd> Schließen</span>
+            <div className="px-4 py-2.5 flex flex-wrap gap-x-5 gap-y-1.5 text-[11px] font-medium text-zinc-500 dark:text-zinc-400">
+              <span><kbd className="px-1.5 py-0.5 rounded-md bg-white dark:bg-zinc-800 border border-zinc-200/80 dark:border-zinc-700/80 font-mono text-[10px] shadow-sm">j</kbd> / <kbd className="px-1.5 py-0.5 rounded-md bg-white dark:bg-zinc-800 border border-zinc-200/80 dark:border-zinc-700/80 font-mono text-[10px] shadow-sm">k</kbd> Navigieren</span>
+              <span><kbd className="px-1.5 py-0.5 rounded-md bg-white dark:bg-zinc-800 border border-zinc-200/80 dark:border-zinc-700/80 font-mono text-[10px] shadow-sm">Enter</kbd> Öffnen</span>
+              <span><kbd className="px-1.5 py-0.5 rounded-md bg-white dark:bg-zinc-800 border border-zinc-200/80 dark:border-zinc-700/80 font-mono text-[10px] shadow-sm">e</kbd> Archivieren</span>
+              <span><kbd className="px-1.5 py-0.5 rounded-md bg-white dark:bg-zinc-800 border border-zinc-200/80 dark:border-zinc-700/80 font-mono text-[10px] shadow-sm">s</kbd> Zurückstellen</span>
+              <span><kbd className="px-1.5 py-0.5 rounded-md bg-white dark:bg-zinc-800 border border-zinc-200/80 dark:border-zinc-700/80 font-mono text-[10px] shadow-sm">Esc</kbd> Schließen</span>
             </div>
           </motion.div>
         )}
@@ -465,17 +465,17 @@ export function InboxView() {
               <InboxListSkeleton count={6} />
             ) : items.length === 0 ? (
               <motion.div 
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="flex flex-col items-center justify-center py-12 text-center px-4"
+                className="flex flex-col items-center justify-center py-16 text-center px-4"
               >
-                <div className="mb-3 rounded-lg bg-zinc-100 dark:bg-zinc-800 p-4">
-                  <Inbox className="h-8 w-8 text-zinc-400" />
+                <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-zinc-100/80 dark:bg-zinc-800/60">
+                  <Inbox className="h-7 w-7 text-zinc-400 dark:text-zinc-500" strokeWidth={1.5} />
                 </div>
-                <h3 className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                <h3 className="text-[14px] font-semibold text-zinc-800 dark:text-zinc-200">
                   Inbox leer
                 </h3>
-                <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1 max-w-xs">
+                <p className="text-[13px] text-zinc-500 dark:text-zinc-400 mt-1.5 max-w-xs leading-relaxed">
                   {filters.source === "all" && filters.status === "all" && filters.priority === "all"
                     ? "Keine Nachrichten vorhanden. Klicke auf Sync um neue Nachrichten abzurufen."
                     : "Keine Nachrichten mit diesen Filtern gefunden."
@@ -484,7 +484,7 @@ export function InboxView() {
                 {(filters.source !== "all" || filters.status !== "all" || filters.priority !== "all") && (
                   <button
                     onClick={() => setFilters({ source: "all", status: "all", priority: "all" })}
-                    className="mt-3 text-xs text-indigo-600 dark:text-indigo-400 hover:underline"
+                    className="mt-4 text-[13px] font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors"
                   >
                     Filter zurücksetzen
                   </button>

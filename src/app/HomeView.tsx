@@ -116,15 +116,15 @@ function Greeting() {
 
   return (
     <motion.div 
-      className="mb-8"
-      initial={{ opacity: 0, y: -20 }}
+      className="mb-10"
+      initial={{ opacity: 0, y: -10 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, ease: "easeOut" }}
+      transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
     >
-      <h1 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-100 md:text-3xl">
-        {greeting.text} <span className="inline-block animate-[wave_2s_ease-in-out_infinite]">{greeting.emoji}</span>
+      <h1 className="text-[1.75rem] font-semibold tracking-tight text-zinc-900 dark:text-zinc-50 md:text-[2rem]">
+        {greeting.text} <span className="inline-block animate-[wave_2.5s_ease-in-out_infinite]">{greeting.emoji}</span>
       </h1>
-      <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+      <p className="mt-1.5 text-sm font-medium text-zinc-500 dark:text-zinc-400">
         {dateStr}
       </p>
     </motion.div>
@@ -147,24 +147,24 @@ interface StatCardProps {
 
 const colorClasses = {
   indigo: {
-    bg: "bg-indigo-50 dark:bg-indigo-950/30",
+    bg: "bg-indigo-50/80 dark:bg-indigo-950/40",
     icon: "text-indigo-600 dark:text-indigo-400",
-    ring: "ring-indigo-100 dark:ring-indigo-900/50",
+    border: "border-indigo-100 dark:border-indigo-900/50",
   },
   emerald: {
-    bg: "bg-emerald-50 dark:bg-emerald-950/30",
+    bg: "bg-emerald-50/80 dark:bg-emerald-950/40",
     icon: "text-emerald-600 dark:text-emerald-400",
-    ring: "ring-emerald-100 dark:ring-emerald-900/50",
+    border: "border-emerald-100 dark:border-emerald-900/50",
   },
   amber: {
-    bg: "bg-amber-50 dark:bg-amber-950/30",
+    bg: "bg-amber-50/80 dark:bg-amber-950/40",
     icon: "text-amber-600 dark:text-amber-400",
-    ring: "ring-amber-100 dark:ring-amber-900/50",
+    border: "border-amber-100 dark:border-amber-900/50",
   },
   rose: {
-    bg: "bg-rose-50 dark:bg-rose-950/30",
+    bg: "bg-rose-50/80 dark:bg-rose-950/40",
     icon: "text-rose-600 dark:text-rose-400",
-    ring: "ring-rose-100 dark:ring-rose-900/50",
+    border: "border-rose-100 dark:border-rose-900/50",
   },
 };
 
@@ -175,31 +175,31 @@ function StatCard({ icon: Icon, label, value, subtext, href, color, loading }: S
     <motion.div variants={itemVariants}>
       <Link href={href} className="block group">
         <div className={cn(
-          "relative overflow-hidden rounded-xl border border-zinc-200 bg-white p-4 transition-all duration-200",
-          "hover:border-zinc-300 hover:shadow-md",
-          "dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-700"
+          "relative overflow-hidden rounded-2xl border border-zinc-200/80 bg-white p-5 transition-all duration-200",
+          "hover:border-zinc-300/80 hover:shadow-lg hover:shadow-zinc-900/[0.04]",
+          "dark:border-zinc-800/80 dark:bg-zinc-900/80 dark:hover:border-zinc-700/80 dark:hover:shadow-black/20"
         )}>
           <div className="flex items-start justify-between">
-            <div className={cn("rounded-lg p-2 ring-1", colors.bg, colors.ring)}>
-              <Icon className={cn("h-5 w-5", colors.icon)} />
+            <div className={cn("rounded-xl border p-2.5", colors.bg, colors.border)}>
+              <Icon className={cn("h-5 w-5", colors.icon)} strokeWidth={1.75} />
             </div>
-            <ChevronRight className="h-4 w-4 text-zinc-300 transition-transform group-hover:translate-x-0.5 group-hover:text-zinc-400 dark:text-zinc-600 dark:group-hover:text-zinc-500" />
+            <ChevronRight className="h-4 w-4 text-zinc-300 transition-all duration-200 group-hover:translate-x-0.5 group-hover:text-zinc-400 dark:text-zinc-600 dark:group-hover:text-zinc-500" />
           </div>
           
-          <div className="mt-3">
-            <div className="flex items-baseline gap-1">
+          <div className="mt-4">
+            <div className="flex items-baseline gap-1.5">
               {loading ? (
-                <div className="h-8 w-12 animate-pulse rounded bg-zinc-200 dark:bg-zinc-700" />
+                <div className="h-9 w-14 animate-pulse rounded-lg bg-zinc-100 dark:bg-zinc-800" />
               ) : (
-                <span className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">
+                <span className="text-[1.75rem] font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
                   {value}
                 </span>
               )}
               {subtext && (
-                <span className="text-sm text-zinc-500 dark:text-zinc-400">{subtext}</span>
+                <span className="text-[13px] font-medium text-zinc-400 dark:text-zinc-500">{subtext}</span>
               )}
             </div>
-            <p className="text-sm text-zinc-500 dark:text-zinc-400">{label}</p>
+            <p className="mt-0.5 text-[13px] font-medium text-zinc-500 dark:text-zinc-400">{label}</p>
           </div>
         </div>
       </Link>
@@ -325,23 +325,23 @@ function QuickActionCard({ href, icon: Icon, label, description, shortcut }: Qui
     <motion.div variants={itemVariants}>
       <Link href={href} className="block group">
         <div className={cn(
-          "flex items-center gap-4 rounded-xl border border-zinc-200 bg-white p-4",
-          "transition-all duration-200 hover:border-indigo-200 hover:bg-indigo-50/50",
-          "dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-indigo-900 dark:hover:bg-indigo-950/20"
+          "flex items-center gap-4 rounded-2xl border border-zinc-200/80 bg-white p-4",
+          "transition-all duration-200 hover:border-indigo-200/80 hover:bg-indigo-50/30 hover:shadow-md hover:shadow-indigo-500/[0.04]",
+          "dark:border-zinc-800/80 dark:bg-zinc-900/80 dark:hover:border-indigo-800/50 dark:hover:bg-indigo-950/20"
         )}>
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-zinc-100 transition-colors group-hover:bg-indigo-100 dark:bg-zinc-800 dark:group-hover:bg-indigo-900/50">
-            <Icon className="h-5 w-5 text-zinc-600 transition-colors group-hover:text-indigo-600 dark:text-zinc-400 dark:group-hover:text-indigo-400" />
+          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-zinc-100/80 transition-all duration-200 group-hover:bg-indigo-100/80 group-hover:shadow-sm dark:bg-zinc-800/80 dark:group-hover:bg-indigo-900/40">
+            <Icon className="h-5 w-5 text-zinc-600 transition-colors duration-200 group-hover:text-indigo-600 dark:text-zinc-400 dark:group-hover:text-indigo-400" strokeWidth={1.75} />
           </div>
           <div className="flex-1 min-w-0">
-            <h3 className="font-medium text-zinc-900 dark:text-zinc-100">{label}</h3>
-            <p className="text-sm text-zinc-500 dark:text-zinc-400">{description}</p>
+            <h3 className="text-[15px] font-medium text-zinc-900 dark:text-zinc-100">{label}</h3>
+            <p className="text-[13px] text-zinc-500 dark:text-zinc-400">{description}</p>
           </div>
           {shortcut && (
-            <span className="hidden text-xs text-zinc-400 dark:text-zinc-500 sm:block">
+            <span className="hidden rounded-md bg-zinc-100 px-2 py-1 text-[11px] font-medium text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400 sm:block">
               {shortcut}
             </span>
           )}
-          <ArrowRight className="h-4 w-4 text-zinc-300 transition-transform group-hover:translate-x-1 group-hover:text-indigo-500 dark:text-zinc-600" />
+          <ArrowRight className="h-4 w-4 text-zinc-300 transition-all duration-200 group-hover:translate-x-1 group-hover:text-indigo-500 dark:text-zinc-600 dark:group-hover:text-indigo-400" />
         </div>
       </Link>
     </motion.div>
@@ -351,12 +351,12 @@ function QuickActionCard({ href, icon: Icon, label, description, shortcut }: Qui
 function QuickActions() {
   return (
     <motion.section 
-      className="mb-8"
+      className="mb-10"
       variants={containerVariants}
       initial="hidden"
       animate="show"
     >
-      <h2 className="mb-4 text-sm font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+      <h2 className="mb-4 text-xs font-semibold uppercase tracking-wide text-zinc-400 dark:text-zinc-500">
         Quick Actions
       </h2>
       <div className="grid gap-3 md:grid-cols-3">
@@ -381,18 +381,18 @@ function UpcomingEvents() {
 
   return (
     <motion.section 
-      className="mb-8"
-      initial={{ opacity: 0, y: 20 }}
+      className="mb-10"
+      initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.3 }}
+      transition={{ delay: 0.3, duration: 0.3 }}
     >
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-sm font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+        <h2 className="text-xs font-semibold uppercase tracking-wide text-zinc-400 dark:text-zinc-500">
           Upcoming
         </h2>
         <Link 
           href="/calendar" 
-          className="text-sm text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
+          className="text-[13px] font-medium text-indigo-600 transition-colors hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
         >
           View all
         </Link>
@@ -406,29 +406,29 @@ function UpcomingEvents() {
           return (
             <motion.div
               key={event.id}
-              initial={{ opacity: 0, x: -20 }}
+              initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.4 + index * 0.1 }}
+              transition={{ delay: 0.35 + index * 0.08, duration: 0.25 }}
               className={cn(
-                "flex items-center gap-4 rounded-lg border border-zinc-200 bg-white p-3",
-                "transition-colors hover:bg-zinc-50",
-                "dark:border-zinc-800 dark:bg-zinc-900 dark:hover:bg-zinc-800/50"
+                "flex items-center gap-3.5 rounded-xl border border-zinc-200/80 bg-white p-3",
+                "transition-all duration-150 hover:bg-zinc-50/80 hover:shadow-sm",
+                "dark:border-zinc-800/80 dark:bg-zinc-900/80 dark:hover:bg-zinc-800/60"
               )}
             >
               <div className={cn(
-                "flex h-12 w-12 flex-shrink-0 flex-col items-center justify-center rounded-lg text-center",
+                "flex h-11 w-11 flex-shrink-0 flex-col items-center justify-center rounded-xl text-center",
                 isToday 
-                  ? "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300"
-                  : "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400"
+                  ? "bg-indigo-100/80 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300"
+                  : "bg-zinc-100/80 text-zinc-600 dark:bg-zinc-800/80 dark:text-zinc-400"
               )}>
-                <span className="text-[10px] font-medium uppercase">
+                <span className="text-[9px] font-semibold uppercase tracking-wide">
                   {isToday ? "Today" : isTomorrow ? "Tmr" : eventDate.toLocaleDateString("de-AT", { weekday: "short" })}
                 </span>
-                <span className="text-lg font-bold leading-none">{eventDate.getDate()}</span>
+                <span className="text-base font-semibold leading-none">{eventDate.getDate()}</span>
               </div>
               <div className="flex-1 min-w-0">
-                <h4 className="font-medium text-zinc-900 dark:text-zinc-100 truncate">{event.title}</h4>
-                <div className="flex items-center gap-2 text-sm text-zinc-500 dark:text-zinc-400">
+                <h4 className="text-[14px] font-medium text-zinc-900 dark:text-zinc-100 truncate">{event.title}</h4>
+                <div className="flex items-center gap-1.5 text-[12px] text-zinc-500 dark:text-zinc-400">
                   <Clock className="h-3 w-3" />
                   <span>{event.allDay ? "All day" : formatTime(event.startAt)}</span>
                 </div>
@@ -478,14 +478,14 @@ function OpenClawStatus() {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.5 }}
+      transition={{ delay: 0.4, duration: 0.3 }}
       className={cn(
-        "rounded-xl border p-4",
+        "rounded-2xl border p-4",
         isOnline
-          ? "border-emerald-200 bg-emerald-50/50 dark:border-emerald-900 dark:bg-emerald-950/20"
-          : "border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900"
+          ? "border-emerald-200/80 bg-emerald-50/50 dark:border-emerald-800/50 dark:bg-emerald-950/30"
+          : "border-zinc-200/80 bg-zinc-50/50 dark:border-zinc-800/80 dark:bg-zinc-900/50"
       )}
     >
       <div className="flex items-center justify-between">
@@ -495,7 +495,7 @@ function OpenClawStatus() {
               variants={isOnline ? pulseVariants : {}}
               animate={isOnline ? "pulse" : ""}
               className={cn(
-                "h-3 w-3 rounded-full",
+                "h-2.5 w-2.5 rounded-full",
                 isOnline 
                   ? "bg-emerald-500" 
                   : error 
@@ -506,19 +506,19 @@ function OpenClawStatus() {
             {isOnline && (
               <motion.div
                 className="absolute inset-0 rounded-full bg-emerald-400"
-                initial={{ scale: 1, opacity: 0.5 }}
-                animate={{ scale: 2, opacity: 0 }}
-                transition={{ duration: 1.5, repeat: Infinity }}
+                initial={{ scale: 1, opacity: 0.4 }}
+                animate={{ scale: 2.5, opacity: 0 }}
+                transition={{ duration: 1.8, repeat: Infinity }}
               />
             )}
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="font-medium text-zinc-900 dark:text-zinc-100">
+              <span className="text-[14px] font-medium text-zinc-900 dark:text-zinc-100">
                 OpenClaw
               </span>
               <span className={cn(
-                "text-sm",
+                "text-[13px] font-medium",
                 isOnline 
                   ? "text-emerald-600 dark:text-emerald-400"
                   : "text-zinc-500 dark:text-zinc-400"
@@ -527,7 +527,7 @@ function OpenClawStatus() {
               </span>
             </div>
             {status?.latencyMs && (
-              <span className="text-xs text-zinc-500 dark:text-zinc-400">
+              <span className="text-[12px] text-zinc-500 dark:text-zinc-400">
                 {status.latencyMs}ms latency
               </span>
             )}
@@ -538,9 +538,9 @@ function OpenClawStatus() {
           <Link
             href="/chat"
             className={cn(
-              "inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium",
-              "bg-emerald-100 text-emerald-700 transition-colors hover:bg-emerald-200",
-              "dark:bg-emerald-900/50 dark:text-emerald-300 dark:hover:bg-emerald-900"
+              "inline-flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-[13px] font-medium",
+              "bg-emerald-100/80 text-emerald-700 transition-all duration-150 hover:bg-emerald-200/80 hover:shadow-sm",
+              "dark:bg-emerald-900/40 dark:text-emerald-300 dark:hover:bg-emerald-900/60"
             )}
           >
             <Zap className="h-3.5 w-3.5" />
@@ -604,39 +604,39 @@ function RecentActivity() {
 
   return (
     <motion.section 
-      className="mb-8"
-      initial={{ opacity: 0, y: 20 }}
+      className="mb-10"
+      initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.4 }}
+      transition={{ delay: 0.35, duration: 0.3 }}
     >
-      <h2 className="mb-4 text-sm font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+      <h2 className="mb-4 text-xs font-semibold uppercase tracking-wide text-zinc-400 dark:text-zinc-500">
         Recent Activity
       </h2>
-      <div className="space-y-1">
+      <div className="space-y-0.5">
         {activities.map((activity, index) => {
           const Icon = getActivityIcon(activity.type);
           return (
             <motion.div
               key={activity.id}
-              initial={{ opacity: 0, x: -10 }}
+              initial={{ opacity: 0, x: -8 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.5 + index * 0.1 }}
-              className="flex items-center gap-3 rounded-lg p-2 transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-800/50"
+              transition={{ delay: 0.4 + index * 0.08, duration: 0.25 }}
+              className="flex items-center gap-3 rounded-xl p-2.5 transition-all duration-150 hover:bg-zinc-100/70 dark:hover:bg-zinc-800/40"
             >
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-800">
-                <Icon className="h-4 w-4 text-zinc-500 dark:text-zinc-400" />
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-zinc-100/80 dark:bg-zinc-800/80">
+                <Icon className="h-4 w-4 text-zinc-500 dark:text-zinc-400" strokeWidth={1.75} />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100 truncate">
+                <p className="text-[13px] font-medium text-zinc-900 dark:text-zinc-100 truncate">
                   {activity.title}
                 </p>
                 {activity.description && (
-                  <p className="text-xs text-zinc-500 dark:text-zinc-400 truncate">
+                  <p className="text-[12px] text-zinc-500 dark:text-zinc-400 truncate">
                     {activity.description}
                   </p>
                 )}
               </div>
-              <span className="text-xs text-zinc-400 dark:text-zinc-500">
+              <span className="text-[11px] font-medium text-zinc-400 dark:text-zinc-500">
                 {formatActivityTime(activity.timestamp)}
               </span>
             </motion.div>
@@ -659,12 +659,12 @@ export function HomeView() {
         <Greeting />
 
         {/* Stats Grid */}
-        <section className="mb-8">
+        <section className="mb-10">
           <StatsGrid />
         </section>
 
         {/* Two column layout on larger screens */}
-        <div className="grid gap-8 lg:grid-cols-5">
+        <div className="grid gap-10 lg:grid-cols-5">
           {/* Main content */}
           <div className="lg:col-span-3">
             {/* Quick Actions */}
@@ -677,8 +677,8 @@ export function HomeView() {
           {/* Sidebar */}
           <div className="lg:col-span-2">
             {/* OpenClaw Status */}
-            <section className="mb-8">
-              <h2 className="mb-4 text-sm font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+            <section className="mb-10">
+              <h2 className="mb-4 text-xs font-semibold uppercase tracking-wide text-zinc-400 dark:text-zinc-500">
                 Assistant Status
               </h2>
               <OpenClawStatus />
@@ -691,10 +691,10 @@ export function HomeView() {
 
         {/* Footer */}
         <motion.p 
-          className="mt-12 text-center text-xs text-zinc-400"
+          className="mt-16 text-center text-[11px] font-medium text-zinc-400 dark:text-zinc-600"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.8 }}
+          transition={{ delay: 0.6 }}
         >
           Dieter HQ • Built with ❤️
         </motion.p>

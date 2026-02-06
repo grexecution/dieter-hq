@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, Settings } from "lucide-react";
 
 import { ThemeToggle } from "@/components/theme-toggle";
 
@@ -36,6 +36,12 @@ function ChatHeader() {
           {/* Actions */}
           <div className="flex items-center gap-1">
             <ThemeToggle />
+            <Link
+              href="/settings"
+              className="rounded-lg p-2 text-zinc-600 transition-colors hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
+            >
+              <Settings className="h-4 w-4" />
+            </Link>
           </div>
         </div>
       </div>

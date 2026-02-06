@@ -29,40 +29,43 @@ interface AppShellProps {
 }
 
 // ============================================
-// Desktop Header - Clean navbar
+// Desktop Header - Premium 2026 Design
 // ============================================
 
 function DesktopHeader({ active }: { active?: string }) {
   return (
     <header className="fixed left-0 right-0 top-0 z-50 hidden md:block">
-      <div className="mx-auto max-w-6xl px-6 pt-4">
-        <nav className="flex h-14 items-center justify-between rounded-xl border border-zinc-200 bg-white/80 px-4 backdrop-blur-lg dark:border-zinc-800 dark:bg-zinc-900/80">
-          {/* Logo - Simple, no gradient */}
+      <div className="mx-auto max-w-6xl px-6 pt-5">
+        <nav className="flex h-[52px] items-center justify-between rounded-2xl border border-zinc-200/80 bg-white/90 px-2 shadow-sm backdrop-blur-xl dark:border-zinc-800/80 dark:bg-zinc-900/90 dark:shadow-lg dark:shadow-black/10">
+          {/* Logo - Refined */}
           <Link
             href="/"
-            className="flex items-center gap-2 font-semibold tracking-tight transition-opacity hover:opacity-80"
+            className="group flex items-center gap-2.5 rounded-xl px-3 py-2 transition-all duration-150 hover:bg-zinc-100/80 dark:hover:bg-zinc-800/60"
           >
-            <span className="text-lg">🐕</span>
-            <span className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
+            <span className="text-base transition-transform duration-200 group-hover:scale-110">🐕</span>
+            <span className="text-sm font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
               Dieter HQ
             </span>
           </Link>
 
-          {/* Nav Links */}
-          <div className="flex items-center gap-1">
+          {/* Nav Links - Refined spacing and states */}
+          <div className="flex items-center gap-0.5">
             {NAV_ITEMS.slice(1).map((item) => {
               const isActive = active === item.id;
               return (
                 <Link key={item.id} href={item.href}>
                   <button
                     className={cn(
-                      "inline-flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors",
+                      "inline-flex items-center gap-2 rounded-xl px-3.5 py-2 text-[13px] font-medium transition-all duration-150",
                       isActive
-                        ? "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400"
-                        : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
+                        ? "bg-indigo-50 text-indigo-600 shadow-sm shadow-indigo-100 dark:bg-indigo-950/50 dark:text-indigo-400 dark:shadow-none"
+                        : "text-zinc-500 hover:bg-zinc-100/80 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800/60 dark:hover:text-zinc-100"
                     )}
                   >
-                    <item.icon className="h-4 w-4" />
+                    <item.icon className={cn(
+                      "h-[18px] w-[18px] transition-colors",
+                      isActive ? "text-indigo-500 dark:text-indigo-400" : ""
+                    )} strokeWidth={isActive ? 2 : 1.75} />
                     {item.label}
                   </button>
                 </Link>
@@ -70,8 +73,8 @@ function DesktopHeader({ active }: { active?: string }) {
             })}
           </div>
 
-          {/* Actions */}
-          <div className="flex items-center gap-2">
+          {/* Actions - Subtle styling */}
+          <div className="flex items-center gap-1">
             <NotificationPermission />
             <ThemeToggle />
           </div>
@@ -180,18 +183,21 @@ export function AppShell({ children, active }: AppShellProps) {
     (pathname === "/" ? "home" : NAV_ITEMS.find((n) => pathname.startsWith(n.href) && n.href !== "/")?.id);
 
   return (
-    <div className="relative min-h-dvh bg-zinc-50 dark:bg-zinc-950">
+    <div className="relative min-h-dvh bg-[#fafafa] dark:bg-[#0c0d10]">
+      {/* Subtle background pattern/gradient for depth */}
+      <div className="pointer-events-none fixed inset-0 bg-gradient-to-br from-indigo-50/30 via-transparent to-violet-50/20 dark:from-indigo-950/10 dark:via-transparent dark:to-violet-950/10" />
+
       {/* Desktop Header */}
       <DesktopHeader active={resolvedActive} />
 
       {/* Main Content */}
       <main
         className={cn(
-          "mx-auto w-full max-w-6xl px-4 md:px-6",
+          "relative mx-auto w-full max-w-6xl px-4 md:px-6",
           // Mobile: bottom padding for floating tab bar
           "pb-28 pt-6",
-          // Desktop: top padding for header
-          "md:pb-8 md:pt-24"
+          // Desktop: top padding for header (increased for breathing room)
+          "md:pb-12 md:pt-28"
         )}
       >
         {children}

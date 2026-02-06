@@ -65,8 +65,8 @@ const DropdownMenuContent = React.forwardRef<
       ref={ref}
       sideOffset={sideOffset}
       className={cn(
-        "z-50 min-w-[8rem] overflow-hidden rounded-lg border border-zinc-200 bg-white p-1 text-zinc-950 shadow-lg",
-        "dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-50",
+        "z-50 min-w-[8rem] overflow-hidden rounded-xl border border-zinc-200/80 bg-white p-1.5 text-zinc-900 shadow-lg shadow-zinc-900/[0.08]",
+        "dark:border-zinc-700/80 dark:bg-zinc-900 dark:text-zinc-100 dark:shadow-black/30",
         "data-[state=open]:animate-in data-[state=closed]:animate-out",
         "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
         "data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
@@ -89,10 +89,10 @@ const DropdownMenuItem = React.forwardRef<
   <DropdownMenuPrimitive.Item
     ref={ref}
     className={cn(
-      "relative flex cursor-default select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none transition-colors",
-      "focus:bg-zinc-100 focus:text-zinc-900 dark:focus:bg-zinc-800 dark:focus:text-zinc-50",
+      "relative flex cursor-default select-none items-center gap-2 rounded-lg px-2.5 py-2 text-[13px] outline-none transition-colors",
+      "focus:bg-zinc-100/80 focus:text-zinc-900 dark:focus:bg-zinc-800/60 dark:focus:text-zinc-100",
       "data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
-      "[&>svg]:h-4 [&>svg]:w-4 [&>svg]:shrink-0",
+      "[&>svg]:h-4 [&>svg]:w-4 [&>svg]:shrink-0 [&>svg]:text-zinc-500 dark:[&>svg]:text-zinc-400",
       inset && "pl-8",
       className
     )}

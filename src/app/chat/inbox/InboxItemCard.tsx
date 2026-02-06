@@ -529,15 +529,15 @@ export const InboxItemCard = memo(function InboxItemCard({
 
   // Memoize card classes to prevent recalc during drag
   const cardClasses = useMemo(() => cn(
-    "relative rounded-lg border",
+    "relative rounded-2xl border",
     // GPU acceleration hints for smooth dragging
     "will-change-transform transform-gpu",
     isUnread 
-      ? "border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900"
-      : "border-zinc-100 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50",
-    item.priority === "urgent" && isUnread && "border-l-4 border-l-red-500",
-    item.priority === "high" && isUnread && "border-l-4 border-l-orange-500",
-    isSelected && "ring-2 ring-indigo-500 ring-offset-1 ring-offset-white dark:ring-offset-zinc-900",
+      ? "border-zinc-200/80 dark:border-zinc-700/80 bg-white dark:bg-zinc-900/90 shadow-sm"
+      : "border-zinc-100/80 dark:border-zinc-800/60 bg-zinc-50/50 dark:bg-zinc-900/50",
+    item.priority === "urgent" && isUnread && "border-l-[3px] border-l-red-500",
+    item.priority === "high" && isUnread && "border-l-[3px] border-l-orange-500",
+    isSelected && "ring-2 ring-indigo-500/60 ring-offset-2 ring-offset-white dark:ring-offset-zinc-900",
   ), [isUnread, item.priority, isSelected]);
 
   return (

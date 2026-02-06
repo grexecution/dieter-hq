@@ -106,8 +106,8 @@ function MessageBubble({ message, artefact, url }: MessageBubbleProps) {
   // System messages (hidden or minimal)
   if (isSystem) {
     return (
-      <div className="mx-auto max-w-md py-2 text-center">
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-zinc-100 dark:bg-zinc-800 px-3 py-1 text-xs text-muted-foreground">
+      <div className="mx-auto max-w-md py-3 text-center">
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-zinc-100/80 dark:bg-zinc-800/60 px-3.5 py-1.5 text-[11px] font-medium text-zinc-500 dark:text-zinc-400">
           <Sparkles className="h-3 w-3" />
           {meta.text.slice(0, 100)}
           {meta.text.length > 100 && "..."}
@@ -121,12 +121,12 @@ function MessageBubble({ message, artefact, url }: MessageBubbleProps) {
     return (
       <div
         className={cn(
-          "flex items-end gap-3",
+          "flex items-end gap-2.5",
           isUser ? "flex-row-reverse" : "flex-row"
         )}
       >
         {/* Avatar */}
-        <Avatar className="h-8 w-8 shrink-0">
+        <Avatar className="h-8 w-8 shrink-0 ring-2 ring-white dark:ring-zinc-900">
           {isUser ? (
             <AvatarFallback className="bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 text-xs font-medium">
               <User className="h-4 w-4" />
@@ -134,7 +134,7 @@ function MessageBubble({ message, artefact, url }: MessageBubbleProps) {
           ) : (
             <>
               <AvatarImage src="/dieter-avatar.png" alt={author} />
-              <AvatarFallback className="bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 text-xs font-medium">
+              <AvatarFallback className="bg-indigo-600 dark:bg-indigo-500 text-white text-xs font-medium">
                 <Bot className="h-4 w-4" />
               </AvatarFallback>
             </>
@@ -155,12 +155,12 @@ function MessageBubble({ message, artefact, url }: MessageBubbleProps) {
   return (
     <div
       className={cn(
-        "flex items-end gap-3",
+        "flex items-end gap-2.5",
         isUser ? "flex-row-reverse" : "flex-row"
       )}
     >
       {/* Avatar */}
-      <Avatar className="h-8 w-8 shrink-0">
+      <Avatar className="h-8 w-8 shrink-0 ring-2 ring-white dark:ring-zinc-900">
         {isUser ? (
           <AvatarFallback className="bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 text-xs font-medium">
             <User className="h-4 w-4" />
@@ -168,7 +168,7 @@ function MessageBubble({ message, artefact, url }: MessageBubbleProps) {
         ) : (
           <>
             <AvatarImage src="/dieter-avatar.png" alt={author} />
-            <AvatarFallback className="bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 text-xs font-medium">
+            <AvatarFallback className="bg-indigo-600 dark:bg-indigo-500 text-white text-xs font-medium">
               <Bot className="h-4 w-4" />
             </AvatarFallback>
           </>
@@ -178,18 +178,28 @@ function MessageBubble({ message, artefact, url }: MessageBubbleProps) {
       {/* Bubble */}
       <div
         className={cn(
-          "group relative max-w-[80%] rounded-lg px-4 py-3",
+          "group relative max-w-[75%] rounded-2xl px-4 py-3 shadow-sm",
           isUser
-            ? "bg-indigo-50 dark:bg-zinc-700 text-zinc-900 dark:text-zinc-100"
-            : "bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800"
+            ? "bg-indigo-600 text-white dark:bg-indigo-500"
+            : "bg-white dark:bg-zinc-800/80 border border-zinc-200/80 dark:border-zinc-700/60"
         )}
       >
         {/* Author & Time */}
-        <div className="mb-1 flex items-center justify-between gap-4">
-          <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
+        <div className="mb-1.5 flex items-center justify-between gap-4">
+          <span className={cn(
+            "text-[11px] font-medium",
+            isUser 
+              ? "text-indigo-200" 
+              : "text-zinc-500 dark:text-zinc-400"
+          )}>
             {author}
           </span>
-          <span className="text-[10px] text-zinc-400 dark:text-zinc-500">
+          <span className={cn(
+            "text-[10px]",
+            isUser
+              ? "text-indigo-300"
+              : "text-zinc-400 dark:text-zinc-500"
+          )}>
             {message.createdAtLabel}
           </span>
         </div>
@@ -197,7 +207,7 @@ function MessageBubble({ message, artefact, url }: MessageBubbleProps) {
         {/* Content */}
         {artefact && url ? (
           <div className="space-y-2">
-            <div className="flex items-center gap-2 text-sm font-medium">
+            <div className="flex items-center gap-2 text-[13px] font-medium">
               <span>📎</span>
               <span className="truncate">{artefact.originalName}</span>
             </div>
@@ -206,14 +216,14 @@ function MessageBubble({ message, artefact, url }: MessageBubbleProps) {
               <img
                 src={url}
                 alt={artefact.originalName}
-                className="max-h-[360px] w-auto rounded-lg border border-zinc-200 dark:border-zinc-700"
+                className="max-h-[360px] w-auto rounded-xl border border-zinc-200/50 dark:border-zinc-700/50"
               />
             ) : isAudioMime(artefact.mimeType) ? (
               <audio controls src={url} className="w-full max-w-xs" />
             ) : (
               <a
                 href={url}
-                className="inline-flex items-center gap-2 rounded-lg bg-zinc-100 dark:bg-zinc-800 px-3 py-2 text-sm hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
+                className="inline-flex items-center gap-2 rounded-xl bg-zinc-100/80 dark:bg-zinc-700/60 px-3 py-2 text-[13px] font-medium hover:bg-zinc-200/80 dark:hover:bg-zinc-700 transition-colors"
                 target="_blank"
                 rel="noreferrer"
               >
@@ -222,7 +232,10 @@ function MessageBubble({ message, artefact, url }: MessageBubbleProps) {
             )}
           </div>
         ) : (
-          <MarkdownContent content={meta.text} className="text-sm" />
+          <MarkdownContent content={meta.text} className={cn(
+            "text-[14px] leading-relaxed",
+            isUser ? "[&_*]:text-white [&_a]:text-indigo-200" : ""
+          )} />
         )}
       </div>
     </div>
@@ -263,10 +276,10 @@ function Composer({ draft, setDraft, isSending, onSubmit, onVoiceTranscript, onV
   };
 
   return (
-    <div className="sticky bottom-0 border-t border-divider bg-content1 px-4 py-4">
+    <div className="sticky bottom-0 border-t border-zinc-200/80 bg-white/95 backdrop-blur-xl px-4 py-4 dark:border-zinc-800/80 dark:bg-zinc-900/95">
       <div className="mx-auto w-full max-w-3xl pb-[env(safe-area-inset-bottom)]">
         <form
-          className="flex items-end gap-3"
+          className="flex items-end gap-2.5"
           onSubmit={(e) => {
             e.preventDefault();
             onSubmit();
@@ -283,17 +296,18 @@ function Composer({ draft, setDraft, isSending, onSubmit, onVoiceTranscript, onV
               rows={1}
               disabled={isSending}
               className={cn(
-                "w-full resize-none rounded-xl border border-divider bg-default-100 px-4 py-3 pr-12",
-                "text-sm placeholder:text-foreground-400",
-                "transition-all",
-                "focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary",
+                "w-full resize-none rounded-2xl border border-zinc-200/80 bg-zinc-50/80 px-4 py-3",
+                "text-[14px] placeholder:text-zinc-400 dark:placeholder:text-zinc-500",
+                "transition-all duration-150",
+                "focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300 focus:bg-white",
+                "dark:border-zinc-700/80 dark:bg-zinc-800/60 dark:focus:border-indigo-600 dark:focus:bg-zinc-800",
                 "disabled:opacity-50"
               )}
             />
           </div>
 
           {/* Action Buttons */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
             <ChatComposer threadId={threadId} disabled={isSending} />
             <VoiceRecorder
               threadId={threadId}
@@ -306,10 +320,10 @@ function Composer({ draft, setDraft, isSending, onSubmit, onVoiceTranscript, onV
               size="icon"
               disabled={isSending || !draft.trim()}
               className={cn(
-                "h-11 w-11 rounded-full transition-all",
+                "h-11 w-11 rounded-2xl transition-all duration-200",
                 draft.trim()
-                  ? "bg-primary text-primary-foreground shadow-lg hover:shadow-xl hover:scale-105"
-                  : "bg-muted text-muted-foreground"
+                  ? "bg-indigo-600 text-white shadow-lg shadow-indigo-500/25 hover:bg-indigo-700 hover:shadow-xl hover:shadow-indigo-500/30"
+                  : "bg-zinc-100 text-zinc-400 dark:bg-zinc-800 dark:text-zinc-500"
               )}
             >
               <Send className={cn("h-5 w-5", isSending && "animate-pulse")} />
@@ -318,9 +332,9 @@ function Composer({ draft, setDraft, isSending, onSubmit, onVoiceTranscript, onV
         </form>
 
         {/* Keyboard shortcut hint */}
-        <p className="mt-2 text-center text-[10px] text-muted-foreground/60">
-          Press <kbd className="rounded bg-muted/50 px-1">Enter</kbd> to send,{" "}
-          <kbd className="rounded bg-muted/50 px-1">Shift+Enter</kbd> for new line
+        <p className="mt-2.5 text-center text-[10px] font-medium text-zinc-400 dark:text-zinc-500">
+          Press <kbd className="rounded-md bg-zinc-100 px-1.5 py-0.5 font-sans dark:bg-zinc-800">Enter</kbd> to send,{" "}
+          <kbd className="rounded-md bg-zinc-100 px-1.5 py-0.5 font-sans dark:bg-zinc-800">Shift+Enter</kbd> for new line
         </p>
       </div>
     </div>
@@ -569,16 +583,16 @@ export function ChatView({
       )}
 
       {/* Main Chat Area */}
-      <section className="flex h-[calc(100dvh-120px)] flex-col overflow-hidden rounded-2xl border border-divider bg-content1 shadow-lg">
+      <section className="flex h-[calc(100dvh-120px)] flex-col overflow-hidden rounded-2xl border border-zinc-200/80 bg-white shadow-sm dark:border-zinc-800/80 dark:bg-zinc-900/80">
         {/* Header */}
-        <header className="flex items-center justify-between gap-4 border-b border-divider px-4 py-3">
+        <header className="flex items-center justify-between gap-4 border-b border-zinc-200/80 px-4 py-3.5 dark:border-zinc-800/80">
           <div className="flex min-w-0 items-center gap-3">
             {/* Mobile menu button */}
             <Button
               type="button"
               variant="ghost"
               size="icon"
-              className="h-9 w-9 lg:hidden"
+              className="h-9 w-9 rounded-xl lg:hidden"
               onClick={() => setMobileHudOpen(true)}
               title="Open status"
             >
@@ -587,18 +601,18 @@ export function ChatView({
 
             <div className="flex items-center gap-3">
               <div className="relative">
-                <Avatar className="h-10 w-10 ring-2 ring-default/20">
+                <Avatar className="h-10 w-10 ring-2 ring-zinc-100 dark:ring-zinc-800">
                   <AvatarImage src="/dieter-avatar.png" alt="Dieter" />
-                  <AvatarFallback className="bg-primary text-primary-foreground">
+                  <AvatarFallback className="bg-indigo-600 text-white dark:bg-indigo-500">
                     <Bot className="h-5 w-5" />
                   </AvatarFallback>
                 </Avatar>
                 {/* Online indicator */}
-                <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-background bg-success" />
+                <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-white bg-emerald-500 dark:border-zinc-900" />
               </div>
               <div className="min-w-0">
-                <h1 className="truncate text-base font-semibold">Dieter</h1>
-                <p className="text-xs text-muted-foreground">
+                <h1 className="truncate text-[15px] font-semibold text-zinc-900 dark:text-zinc-100">Dieter</h1>
+                <p className="text-[12px] font-medium text-zinc-500 dark:text-zinc-400">
                   AI Assistant • Online
                 </p>
               </div>
@@ -606,7 +620,7 @@ export function ChatView({
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="rounded-full bg-muted/50 px-2.5 py-1 text-xs text-muted-foreground tabular-nums">
+            <span className="rounded-xl bg-zinc-100/80 px-3 py-1.5 text-[11px] font-medium text-zinc-500 tabular-nums dark:bg-zinc-800/80 dark:text-zinc-400">
               {mainCount} messages
             </span>
           </div>
@@ -638,30 +652,30 @@ export function ChatView({
                 })}
                 {/* Streaming message indicator */}
                 {streamingMsgId && (
-                  <div className="flex items-end gap-3">
-                    <Avatar className="h-8 w-8 shrink-0">
+                  <div className="flex items-end gap-2.5">
+                    <Avatar className="h-8 w-8 shrink-0 ring-2 ring-white dark:ring-zinc-900">
                       <AvatarImage src="/dieter-avatar.png" alt="Dieter" />
-                      <AvatarFallback className="bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 text-xs font-medium">
+                      <AvatarFallback className="bg-indigo-600 dark:bg-indigo-500 text-white text-xs font-medium">
                         <Bot className="h-4 w-4" />
                       </AvatarFallback>
                     </Avatar>
-                    <div className="group relative max-w-[80%] rounded-lg px-4 py-3 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800">
-                      <div className="mb-1 flex items-center justify-between gap-4">
-                        <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
+                    <div className="group relative max-w-[75%] rounded-2xl px-4 py-3 bg-white dark:bg-zinc-800/80 border border-zinc-200/80 dark:border-zinc-700/60 shadow-sm">
+                      <div className="mb-1.5 flex items-center justify-between gap-4">
+                        <span className="text-[11px] font-medium text-zinc-500 dark:text-zinc-400">
                           Dieter
                         </span>
-                        <span className="text-[10px] text-zinc-400 dark:text-zinc-500">
+                        <span className="text-[10px] text-indigo-500 dark:text-indigo-400">
                           typing...
                         </span>
                       </div>
-                      <div className="text-sm leading-relaxed min-h-[1.5rem]">
+                      <div className="text-[14px] leading-relaxed min-h-[1.5rem]">
                         {streamingContent ? (
-                          <MarkdownContent content={streamingContent} className="text-sm" />
+                          <MarkdownContent content={streamingContent} className="text-[14px]" />
                         ) : (
-                          <span className="flex items-center gap-1.5 text-zinc-400">
-                            <span className="inline-block h-1.5 w-1.5 rounded-full bg-current opacity-60" />
-                            <span className="inline-block h-1.5 w-1.5 rounded-full bg-current opacity-40" />
-                            <span className="inline-block h-1.5 w-1.5 rounded-full bg-current opacity-20" />
+                          <span className="flex items-center gap-1 text-zinc-400">
+                            <span className="inline-block h-2 w-2 rounded-full bg-indigo-400/60 animate-pulse" />
+                            <span className="inline-block h-2 w-2 rounded-full bg-indigo-400/40 animate-pulse [animation-delay:150ms]" />
+                            <span className="inline-block h-2 w-2 rounded-full bg-indigo-400/20 animate-pulse [animation-delay:300ms]" />
                           </span>
                         )}
                       </div>
@@ -670,14 +684,14 @@ export function ChatView({
                 )}
               </>
             ) : (
-              <div className="flex flex-col items-center justify-center py-20 text-center">
-                <div className="mb-4 rounded-full bg-primary/10 p-6">
-                  <Bot className="h-12 w-12 text-primary" />
+              <div className="flex flex-col items-center justify-center py-24 text-center">
+                <div className="mb-5 flex h-20 w-20 items-center justify-center rounded-3xl bg-indigo-50/80 dark:bg-indigo-950/40">
+                  <Bot className="h-10 w-10 text-indigo-600 dark:text-indigo-400" strokeWidth={1.5} />
                 </div>
-                <h2 className="mb-2 text-lg font-semibold text-foreground">
+                <h2 className="mb-2 text-lg font-semibold text-zinc-900 dark:text-zinc-100">
                   Hey, I'm Dieter! 🐶
                 </h2>
-                <p className="max-w-sm text-sm text-foreground-500">
+                <p className="max-w-sm text-[14px] text-zinc-500 dark:text-zinc-400 leading-relaxed">
                   Your personal AI assistant. Ask me anything, and I'll do my
                   best to help. Start typing below!
                 </p>

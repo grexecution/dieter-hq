@@ -14,14 +14,32 @@ interface SendMessageResult {
 }
 
 // Gateway configuration
-const OPENCLAW_GATEWAY_URL = process.env.OPENCLAW_GATEWAY_URL || 'http://127.0.0.1:18789';
+const OPENCLAW_GATEWAY_URL = process.env.OPENCLAW_GATEWAY_URL;
 const OPENCLAW_GATEWAY_PASSWORD = process.env.OPENCLAW_GATEWAY_PASSWORD;
 
 /**
  * Spawn a sub-agent task to send a WhatsApp message via wacli
  */
 async function spawnMessageTask(to: string, message: string): Promise<SendMessageResult> {
+  // Validate config
+  if (!OPENCLAW_GATEWAY_URL) {
+    console.error("[messaging] OPENCLAW_GATEWAY_URL not configured!");
+    return {
+      ok: false,
+      error: "OPENCLAW_GATEWAY_URL not configured",
+    };
+  }
+  
+  if (!OPENCLAW_GATEWAY_PASSWORD) {
+    console.error("[messaging] OPENCLAW_GATEWAY_PASSWORD not configured!");
+    return {
+      ok: false,
+      error: "OPENCLAW_GATEWAY_PASSWORD not configured",
+    };
+  }
+
   const url = `${OPENCLAW_GATEWAY_URL}/tools/invoke`;
+  console.log(`[messaging] Using gateway: ${OPENCLAW_GATEWAY_URL}`);
   
   // Escape the message for the task prompt
   const escapedMessage = message.replace(/"/g, '\\"').replace(/\n/g, '\\n');

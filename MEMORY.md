@@ -103,6 +103,17 @@
 
 ## Lessons Learned
 
+### 2026-02-06 (continued)
+- **Unified Inbox Feature** gestartet — AI Command Center für alle Incoming Messages
+  - Email (4 Accounts) + WhatsApp MVP
+  - ClickUp + Slack später
+  - Action Recommendations mit One-Click Execute
+  - History/Audit Trail
+- **Daily Cron Jobs** eingerichtet:
+  - 19:00 — Time Tracking Frage (→ ClickUp Doc)
+  - 21:30 — System Summary (alle Aktivitäten des Tages)
+- **Whisper HTTP Server** läuft via PM2 auf Port 8082, exposed via Tailscale /whisper
+
 ### 2026-02-06
 - **ClickUp API funktioniert!** Token: `CLICKUP_TOKEN` env var, Workspace "2x10 & Blue Monkeys" = Team ID 24318857
 - **DieterHQ deployed**: Alle Features live, nur Infinite Context temporär deaktiviert

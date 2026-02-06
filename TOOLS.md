@@ -26,10 +26,35 @@ Skills define _how_ tools work. This file is for _your_ specifics — the stuff 
 - **Bluemonkeys:** g.wallner@bluemonkeys.com — Arbeitskalender, Out of Office hier
 - **Privat:** greg.wallner@gmail.com
 
-## Apple Reminders
+## Apple Reminders (remindctl)
 
-- Listen: Erinnerungen, Familie, Life, Shopping List
+- **Listen:** Erinnerungen, Familie, Life, Shopping List
 - Bimmelt auf iPhone wenn due time erreicht
+- **Status:** Full access granted ✓
+
+### Correct Commands
+```bash
+# List all lists
+remindctl list
+
+# Show reminders in a specific list
+remindctl list "Erinnerungen"
+
+# Time-based views (NOT list names!)
+remindctl today
+remindctl overdue
+remindctl show --list "Erinnerungen"  # Filter by list
+
+# Add reminder
+remindctl add "Title" --list "Erinnerungen" --due tomorrow
+
+# JSON output for scripting
+remindctl list "Erinnerungen" --json
+```
+
+### ⚠️ Common Mistakes
+- `remindctl show "Erinnerungen"` ❌ — "Erinnerungen" is not a filter
+- `remindctl list "Erinnerungen"` ✓ — correct way to view a list
 
 ---
 

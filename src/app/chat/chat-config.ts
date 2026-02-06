@@ -60,3 +60,4 @@ export const WORKSPACE_TAB_IDS = CHAT_TABS.filter(tab => tab.isWorkspace).map(ta
 
 // Get special view tab IDs (non-chat tabs like Inbox)
 export const SPECIAL_VIEW_TAB_IDS = CHAT_TABS.filter(tab => tab.isSpecialView).map(tab => tab.id);
+// Fri Feb  6 15:16:43 CET 2026

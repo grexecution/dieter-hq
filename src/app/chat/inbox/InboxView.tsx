@@ -137,10 +137,15 @@ export function InboxView() {
       timestamp: Date.now(),
     };
 
-    // Optimistic update
-    setItems(prev => prev.map(i => 
-      i.id === id ? { ...i, status } : i
-    ));
+    // Optimistic update - remove from list if status doesn't match current filter
+    setItems(prev => {
+      // If filter is set and new status doesn't match, remove item
+      if (filters.status !== "all" && status !== filters.status) {
+        return prev.filter(i => i.id !== id);
+      }
+      // Otherwise just update the status
+      return prev.map(i => i.id === id ? { ...i, status } : i);
+    });
 
     try {
       const res = await fetch(`/api/inbox/items/${id}`, {

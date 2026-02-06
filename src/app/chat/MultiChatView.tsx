@@ -493,13 +493,29 @@ export function MultiChatView({
         const res = await fetch('/api/workspace/projects');
         if (res.ok) {
           const data = await res.json();
-          setWorkspaceProjects(data.projects || []);
+          const projects = data.projects || [];
+          setWorkspaceProjects(projects);
+          // Check if active project still exists after refresh
+          setActiveProject(prev => {
+            if (!prev) return null;
+            const stillExists = projects.some((p: WorkspaceProject) => p.id === prev.id);
+            return stillExists ? prev : null;
+          });
         }
       } catch (err) {
         console.error('Error loading workspace projects:', err);
       }
     }
     loadWorkspaceProjects();
+
+    // Refresh projects when tab becomes visible (cross-device sync)
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        loadWorkspaceProjects();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
   }, []);
 
   // Sync messages from props
@@ -554,6 +570,39 @@ export function MultiChatView({
   // Handle project creation
   const handleProjectCreate = useCallback((project: WorkspaceProject) => {
     setWorkspaceProjects(prev => [project, ...prev]);
+  }, []);
+
+  // Handle project deletion (for cross-device sync)
+  const handleProjectDelete = useCallback((projectId: string) => {
+    // Find the project to get its threadId for cleanup
+    const project = workspaceProjects.find(p => p.id === projectId);
+    
+    setWorkspaceProjects(prev => prev.filter(p => p.id !== projectId));
+    
+    // Clear active project if it was deleted
+    setActiveProject(prev => prev?.id === projectId ? null : prev);
+    
+    // Clean up messages for the deleted project's thread
+    if (project) {
+      setLiveMessages(prev => {
+        const next = { ...prev };
+        delete next[project.threadId];
+        return next;
+      });
+      // Clean up timestamp ref
+      delete lastMessageTimestampsRef.current[project.threadId];
+    }
+  }, [workspaceProjects]);
+
+  // Handle projects refresh (from WorkspaceManager on visibility change)
+  const handleProjectsRefresh = useCallback((projects: WorkspaceProject[]) => {
+    setWorkspaceProjects(projects);
+    // Check if active project still exists
+    setActiveProject(prev => {
+      if (!prev) return null;
+      const stillExists = projects.some(p => p.id === prev.id);
+      return stillExists ? prev : null;
+    });
   }, []);
 
   // Handle draft changes per thread
@@ -889,6 +938,8 @@ export function MultiChatView({
               activeProjectId={null}
               onProjectSelect={handleProjectSelect}
               onProjectCreate={handleProjectCreate}
+              onProjectDelete={handleProjectDelete}
+              onProjectsRefresh={handleProjectsRefresh}
             />
           </div>
         )}

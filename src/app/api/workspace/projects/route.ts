@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/server/db';
-import { workspaceProjects } from '@/server/db/schema';
+import { workspaceProjects, messages } from '@/server/db/schema';
 import { eq, desc } from 'drizzle-orm';
 
 // GET - List all projects
@@ -128,9 +128,23 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: 'ID required' }, { status: 400 });
     }
 
+    // First get the project to find its threadId
+    const [project] = await db
+      .select({ threadId: workspaceProjects.threadId })
+      .from(workspaceProjects)
+      .where(eq(workspaceProjects.id, id));
+
+    // Delete the project
     await db
       .delete(workspaceProjects)
       .where(eq(workspaceProjects.id, id));
+
+    // Also delete all messages for this project's thread
+    if (project?.threadId) {
+      await db
+        .delete(messages)
+        .where(eq(messages.threadId, project.threadId));
+    }
 
     return NextResponse.json({ ok: true });
   } catch (error) {

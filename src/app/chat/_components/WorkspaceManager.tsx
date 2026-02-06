@@ -310,12 +310,16 @@ interface WorkspaceManagerProps {
   activeProjectId: string | null;
   onProjectSelect: (project: WorkspaceProject | null) => void;
   onProjectCreate: (project: WorkspaceProject) => void;
+  onProjectDelete?: (projectId: string) => void;
+  onProjectsRefresh?: (projects: WorkspaceProject[]) => void;
 }
 
 export function WorkspaceManager({ 
   activeProjectId, 
   onProjectSelect,
-  onProjectCreate 
+  onProjectCreate,
+  onProjectDelete,
+  onProjectsRefresh,
 }: WorkspaceManagerProps) {
   const [projects, setProjects] = useState<WorkspaceProject[]>([]);
   const [showArchived, setShowArchived] = useState(false);
@@ -343,18 +347,34 @@ export function WorkspaceManager({
         // Re-fetch after migration
         const migrated = await fetchProjects();
         setProjects(migrated);
+        onProjectsRefresh?.(migrated);
       } else {
         // Clear old localStorage if DB has projects
         if (localProjects.length > 0) {
           clearLocalStorageProjects();
         }
         setProjects(dbProjects);
+        onProjectsRefresh?.(dbProjects);
       }
       
       setIsLoading(false);
     }
     load();
-  }, []);
+  }, [onProjectsRefresh]);
+
+  // Refresh projects when tab becomes visible (cross-device sync)
+  useEffect(() => {
+    const handleVisibilityChange = async () => {
+      if (document.visibilityState === 'visible' && !isLoading) {
+        const freshProjects = await fetchProjects();
+        setProjects(freshProjects);
+        onProjectsRefresh?.(freshProjects);
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [isLoading, onProjectsRefresh]);
 
   // Filter projects
   const activeProjects = projects.filter(p => !p.archived);
@@ -399,11 +419,14 @@ export function WorkspaceManager({
     if (success) {
       setProjects(prev => prev.filter(p => p.id !== projectId));
       
+      // Notify parent about deletion for cross-device sync
+      onProjectDelete?.(projectId);
+      
       if (activeProjectId === projectId) {
         onProjectSelect(null);
       }
     }
-  }, [activeProjectId, onProjectSelect]);
+  }, [activeProjectId, onProjectSelect, onProjectDelete]);
 
   const handleProjectClick = useCallback(async (project: WorkspaceProject) => {
     // Update last active time in background

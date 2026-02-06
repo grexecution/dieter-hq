@@ -2,18 +2,12 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  Home,
-  MessageCircle,
-  Calendar,
-  LayoutGrid,
-} from "lucide-react";
+import { Home, MessageCircle, Calendar, LayoutGrid } from "lucide-react";
 
 import { ThemeToggle } from "@/components/theme-toggle";
 import { NotificationPermission } from "@/components/NotificationPermission";
 import { cn } from "@/lib/utils";
 
-// Navigation items configuration
 const NAV_ITEMS = [
   { href: "/", icon: Home, label: "Home", id: "home" },
   { href: "/chat", icon: MessageCircle, label: "Chat", id: "chat" },
@@ -28,24 +22,18 @@ interface AppShellProps {
   active?: "chat" | "kanban" | "calendar" | "events" | "home";
 }
 
-// ============================================
-// Desktop Header - Clean navbar
-// ============================================
-
 function DesktopHeader({ active }: { active?: string }) {
   return (
     <header className="fixed left-0 right-0 top-0 z-50 hidden md:block">
       <div className="mx-auto max-w-6xl px-6 pt-4">
-        <nav className="flex h-14 items-center justify-between rounded-xl border border-zinc-200 bg-white/80 px-4 backdrop-blur-lg dark:border-zinc-800 dark:bg-zinc-900/80">
-          {/* Logo - Simple, no gradient */}
+        <nav className="flex h-14 items-center justify-between rounded-xl border border-border bg-background/80 px-4 backdrop-blur-xl shadow-sm">
+          {/* Logo */}
           <Link
             href="/"
             className="flex items-center gap-2 font-semibold tracking-tight transition-opacity hover:opacity-80"
           >
             <span className="text-lg">🐕</span>
-            <span className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
-              Dieter HQ
-            </span>
+            <span className="text-sm font-bold text-foreground">Dieter HQ</span>
           </Link>
 
           {/* Nav Links */}
@@ -56,10 +44,10 @@ function DesktopHeader({ active }: { active?: string }) {
                 <Link key={item.id} href={item.href}>
                   <button
                     className={cn(
-                      "inline-flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors",
+                      "inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-150",
                       isActive
-                        ? "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400"
-                        : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
+                        ? "bg-primary/10 text-primary"
+                        : "text-foreground-secondary hover:bg-muted hover:text-foreground"
                     )}
                   >
                     <item.icon className="h-4 w-4" />
@@ -81,14 +69,10 @@ function DesktopHeader({ active }: { active?: string }) {
   );
 }
 
-// ============================================
-// Mobile Bottom Tab Bar - Clean, minimal
-// ============================================
-
 function MobileTabBar({ active }: { active?: string }) {
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 md:hidden">
-      <div className="border-t border-zinc-200 bg-white/95 pb-safe backdrop-blur-lg dark:border-zinc-800 dark:bg-zinc-900/95">
+      <div className="border-t border-border bg-background/95 pb-safe backdrop-blur-xl">
         <div className="flex items-center justify-around px-2 py-2">
           {NAV_ITEMS.map((item) => {
             const isActive =
@@ -99,15 +83,15 @@ function MobileTabBar({ active }: { active?: string }) {
                 key={item.id}
                 href={item.href}
                 className={cn(
-                  "flex min-w-[64px] flex-col items-center gap-1 rounded-lg px-3 py-2 transition-colors",
+                  "flex min-w-[64px] flex-col items-center gap-1 rounded-lg px-3 py-2 transition-all duration-150",
                   isActive
-                    ? "text-indigo-600 dark:text-indigo-400"
-                    : "text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"
+                    ? "text-primary"
+                    : "text-foreground-tertiary hover:text-foreground-secondary"
                 )}
               >
                 <item.icon
                   className={cn(
-                    "h-5 w-5 transition-transform",
+                    "h-5 w-5 transition-transform duration-150",
                     isActive && "scale-110"
                   )}
                   strokeWidth={isActive ? 2.5 : 2}
@@ -129,47 +113,37 @@ function MobileTabBar({ active }: { active?: string }) {
   );
 }
 
-// ============================================
-// Main AppShell
-// ============================================
-
 export function AppShell({ children, active }: AppShellProps) {
   const pathname = usePathname();
 
-  // Determine active state from pathname if not provided
   const resolvedActive =
     active ||
-    (pathname === "/" ? "home" : NAV_ITEMS.find((n) => pathname.startsWith(n.href) && n.href !== "/")?.id);
+    (pathname === "/"
+      ? "home"
+      : NAV_ITEMS.find((n) => pathname.startsWith(n.href) && n.href !== "/")
+          ?.id);
 
   return (
-    <div className="relative min-h-dvh bg-zinc-50 dark:bg-zinc-950">
-      {/* Desktop Header */}
+    <div className="relative min-h-dvh bg-background">
       <DesktopHeader active={resolvedActive} />
 
-      {/* Main Content */}
       <main
         className={cn(
           "mx-auto w-full max-w-6xl px-4 md:px-6",
-          // Mobile: bottom padding for tab bar
           "pb-24 pt-6",
-          // Desktop: top padding for header
           "md:pb-8 md:pt-24"
         )}
       >
         {children}
       </main>
 
-      {/* Mobile Tab Bar */}
       <MobileTabBar active={resolvedActive} />
     </div>
   );
 }
 
-// Export for pages that want to manage their own layout
 export function AppShellMinimal({ children }: { children: React.ReactNode }) {
   return (
-    <div className="relative min-h-dvh bg-zinc-50 dark:bg-zinc-950">
-      {children}
-    </div>
+    <div className="relative min-h-dvh bg-background">{children}</div>
   );
 }

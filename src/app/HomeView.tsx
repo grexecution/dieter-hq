@@ -11,9 +11,10 @@ import {
 } from "lucide-react";
 
 import { AppShell } from "./_ui/AppShell";
+import { cn } from "@/lib/utils";
 
 // ============================================
-// Greeting - Clean, minimal
+// Greeting
 // ============================================
 
 function Greeting() {
@@ -30,11 +31,9 @@ function Greeting() {
   }
 
   return (
-    <div className="mb-8">
-      <h1 className="text-xl font-medium text-zinc-900 dark:text-zinc-100">
-        {greeting}
-      </h1>
-      <p className="mt-1 text-sm text-zinc-400">
+    <div className="mb-10">
+      <h1 className="text-2xl font-semibold text-foreground">{greeting}</h1>
+      <p className="mt-1.5 text-sm text-foreground-secondary">
         {timeContext} · What would you like to do?
       </p>
     </div>
@@ -42,7 +41,7 @@ function Greeting() {
 }
 
 // ============================================
-// Quick Actions - Flat cards, Lucide icons only
+// Quick Actions
 // ============================================
 
 interface QuickActionProps {
@@ -73,41 +72,47 @@ const QUICK_ACTIONS: QuickActionProps[] = [
   },
 ];
 
-function QuickActionCard({ href, icon: Icon, label, description }: QuickActionProps) {
+function QuickActionCard({
+  href,
+  icon: Icon,
+  label,
+  description,
+}: QuickActionProps) {
   return (
     <Link href={href} className="block">
-      <div className="rounded-lg border border-zinc-200 bg-white p-4 transition-shadow hover:shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-        <div className="flex items-center gap-3">
-          <Icon className="h-4 w-4 text-zinc-400" />
-          <div>
-            <h3 className="text-sm font-medium text-zinc-900 dark:text-zinc-100">{label}</h3>
-            <p className="text-xs text-zinc-400">{description}</p>
-          </div>
+      <div className="card-interactive group flex items-center gap-4 p-4">
+        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary transition-transform duration-150 group-hover:scale-105">
+          <Icon className="h-5 w-5" />
         </div>
+        <div className="flex-1 min-w-0">
+          <h3 className="text-sm font-semibold text-foreground">{label}</h3>
+          <p className="text-xs text-foreground-tertiary">{description}</p>
+        </div>
+        <ArrowRight className="h-4 w-4 text-foreground-tertiary opacity-0 transition-all duration-150 group-hover:opacity-100 group-hover:translate-x-0.5" />
       </div>
     </Link>
   );
 }
 
 // ============================================
-// Status - Compact inline
+// Status
 // ============================================
 
 function StatusIndicator() {
   return (
-    <div className="flex items-center gap-4 text-sm text-zinc-500">
-      <div className="flex items-center gap-1.5">
-        <Circle className="h-2 w-2 fill-emerald-500 text-emerald-500" />
-        <span className="text-zinc-600 dark:text-zinc-400">Online</span>
+    <div className="flex items-center gap-4 text-sm">
+      <div className="flex items-center gap-2">
+        <Circle className="h-2 w-2 fill-success text-success" />
+        <span className="text-foreground-secondary">Online</span>
       </div>
-      <span className="text-zinc-300 dark:text-zinc-600">·</span>
+      <span className="text-border">·</span>
       <Link
         href="/chat"
-        className="inline-flex items-center gap-1 text-zinc-500 transition-colors hover:text-zinc-700 dark:hover:text-zinc-300"
+        className="inline-flex items-center gap-1.5 text-foreground-secondary transition-colors hover:text-foreground"
       >
-        <Clock className="h-3 w-3" />
+        <Clock className="h-3.5 w-3.5" />
         Continue last chat
-        <ArrowRight className="h-3 w-3" />
+        <ArrowRight className="h-3.5 w-3.5" />
       </Link>
     </div>
   );
@@ -125,8 +130,8 @@ export function HomeView() {
         <Greeting />
 
         {/* Quick Actions */}
-        <section className="mb-8">
-          <h2 className="mb-3 text-xs font-medium uppercase tracking-wide text-zinc-400">
+        <section className="mb-10">
+          <h2 className="mb-4 text-xs font-semibold uppercase tracking-wider text-foreground-tertiary">
             Quick Actions
           </h2>
           <div className="grid gap-3 md:grid-cols-3">
@@ -137,15 +142,15 @@ export function HomeView() {
         </section>
 
         {/* Status */}
-        <section className="mb-8">
-          <h2 className="mb-3 text-xs font-medium uppercase tracking-wide text-zinc-400">
+        <section className="mb-10">
+          <h2 className="mb-4 text-xs font-semibold uppercase tracking-wider text-foreground-tertiary">
             Status
           </h2>
           <StatusIndicator />
         </section>
 
         {/* Footer */}
-        <p className="mt-12 text-center text-xs text-zinc-400">
+        <p className="mt-16 text-center text-xs text-foreground-tertiary">
           Dieter HQ
         </p>
       </div>

@@ -301,15 +301,60 @@ interface ChatContentProps {
 
 function ChatContent({ activeTab, messages, artefactsById, isTranscribing, isSending, onSuggestionClick }: ChatContentProps) {
   const endRef = useRef<HTMLDivElement | null>(null);
+  const scrollAreaRef = useRef<HTMLDivElement | null>(null);
   const currentTab = CHAT_TABS.find(tab => tab.id === activeTab);
+  const prevTabRef = useRef<string>(activeTab);
+  const initialScrollDone = useRef<boolean>(false);
 
-  // Auto-scroll to bottom when messages change
+  // Scroll to bottom helper
+  const scrollToBottom = useCallback((behavior: ScrollBehavior = "smooth") => {
+    // Try scrollIntoView first
+    if (endRef.current) {
+      endRef.current.scrollIntoView({ behavior, block: "end" });
+    }
+    // Also try scrolling the viewport directly (for Radix ScrollArea)
+    if (scrollAreaRef.current) {
+      const viewport = scrollAreaRef.current.querySelector('[data-radix-scroll-area-viewport]');
+      if (viewport) {
+        viewport.scrollTop = viewport.scrollHeight;
+      }
+    }
+  }, []);
+
+  // Initial scroll on mount (instant, no animation)
   useEffect(() => {
-    endRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
-  }, [messages.length]);
+    if (!initialScrollDone.current && messages.length > 0) {
+      // Use requestAnimationFrame to ensure DOM is rendered
+      requestAnimationFrame(() => {
+        scrollToBottom("instant");
+        initialScrollDone.current = true;
+      });
+    }
+  }, [messages.length, scrollToBottom]);
+
+  // Scroll when tab changes (instant scroll to show newest messages)
+  useEffect(() => {
+    if (prevTabRef.current !== activeTab) {
+      prevTabRef.current = activeTab;
+      // Reset initial scroll flag for new tab
+      initialScrollDone.current = false;
+      // Instant scroll when switching tabs
+      requestAnimationFrame(() => {
+        scrollToBottom("instant");
+        initialScrollDone.current = true;
+      });
+    }
+  }, [activeTab, scrollToBottom]);
+
+  // Smooth scroll when new messages arrive
+  useEffect(() => {
+    if (initialScrollDone.current) {
+      scrollToBottom("smooth");
+    }
+  }, [messages.length, scrollToBottom]);
 
   return (
-    <ScrollArea className="flex-1">
+    <ScrollArea className="flex-1" ref={scrollAreaRef}>
       <div className="mx-auto flex w-full max-w-3xl flex-col gap-3 px-4 py-4">
         {messages.length > 0 ? (
             <div key={activeTab} className="space-y-2.5">

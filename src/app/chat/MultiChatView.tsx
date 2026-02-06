@@ -960,15 +960,76 @@ export function MultiChatView({
               isSending={isSending}
               onSubmit={handleSend}
               onVoiceTranscript={(transcript) => setDraft(transcript)}
-              onVoiceMessage={(message) => {
+              onVoiceMessage={async (message) => {
                 // Add voice message to chat immediately
+                const threadIdAtSend = effectiveThreadId;
                 setLiveMessages((prev) => ({
                   ...prev,
-                  [effectiveThreadId]: [
-                    ...(prev[effectiveThreadId] || []),
+                  [threadIdAtSend]: [
+                    ...(prev[threadIdAtSend] || []),
                     message
                   ].filter((m, i, arr) => arr.findIndex(msg => msg.id === m.id) === i) // dedup
                 }));
+                
+                // If transcription exists, send it to get assistant response
+                if (message.transcription) {
+                  setSendingStates(prev => ({ ...prev, [threadIdAtSend]: true }));
+                  
+                  try {
+                    const r = await fetch("/api/chat/send", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ 
+                        threadId: threadIdAtSend, 
+                        content: message.transcription,
+                        skipUserMessage: true // User message already added as voice message
+                      }),
+                    });
+
+                    if (r.ok && r.body) {
+                      const reader = r.body.getReader();
+                      const decoder = new TextDecoder();
+                      let buffer = "";
+
+                      while (true) {
+                        const { done, value } = await reader.read();
+                        if (done) break;
+
+                        buffer += decoder.decode(value, { stream: true });
+                        const lines = buffer.split("\n");
+                        buffer = lines.pop() || "";
+
+                        for (const line of lines) {
+                          if (!line.startsWith("data: ")) continue;
+                          const payload = line.slice(6).trim();
+                          if (!payload || payload === "[DONE]") continue;
+
+                          try {
+                            const event = JSON.parse(payload);
+                            if (event.type === "done" && event.item) {
+                              setLiveMessages((prev) => ({
+                                ...prev,
+                                [threadIdAtSend]: [
+                                  ...(prev[threadIdAtSend] || []),
+                                  event.item
+                                ].filter((m, i, arr) => arr.findIndex(msg => msg.id === m.id) === i)
+                              }));
+                              if (event.item.createdAt) {
+                                lastMessageTimestampsRef.current[threadIdAtSend] = event.item.createdAt;
+                              }
+                            }
+                          } catch {
+                            // Ignore JSON parse errors
+                          }
+                        }
+                      }
+                    }
+                  } catch (err) {
+                    console.error("Voice message assistant response failed:", err);
+                  } finally {
+                    setSendingStates(prev => ({ ...prev, [threadIdAtSend]: false }));
+                  }
+                }
               }}
               threadId={effectiveThreadId}
               activeTab={activeTab}

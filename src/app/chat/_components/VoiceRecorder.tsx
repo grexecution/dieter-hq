@@ -27,7 +27,7 @@ interface VoiceRecorderProps {
   disabled?: boolean;
 }
 
-type RecordingState = "idle" | "recording" | "uploading";
+type RecordingState = "idle" | "recording" | "transcribing";
 
 // ============================================
 // Waveform Visualization Component
@@ -221,7 +221,7 @@ export function VoiceRecorder({ onTranscript, onVoiceMessage, threadId, disabled
     }
 
     recorder.onstop = async () => {
-      setState("uploading");
+      setState("transcribing");
 
       try {
         const blob = new Blob(chunksRef.current, { type: recorder.mimeType });
@@ -230,7 +230,7 @@ export function VoiceRecorder({ onTranscript, onVoiceMessage, threadId, disabled
         formData.append("threadId", threadId);
         formData.append("durationMs", String(duration));
 
-        // Send as voice message
+        // Send as voice message (includes synchronous transcription)
         const response = await fetch("/api/chat/voice-message", {
           method: "POST",
           body: formData,
@@ -275,7 +275,7 @@ export function VoiceRecorder({ onTranscript, onVoiceMessage, threadId, disabled
   }, [cleanup]);
 
   const isRecording = state === "recording";
-  const isUploading = state === "uploading";
+  const isTranscribing = state === "transcribing";
 
   // Recording UI - inline bar instead of fullscreen overlay
   if (isRecording) {
@@ -310,25 +310,31 @@ export function VoiceRecorder({ onTranscript, onVoiceMessage, threadId, disabled
     );
   }
 
-  // Idle / Uploading state - just the mic button
+  // Transcribing state - show status indicator
+  if (isTranscribing) {
+    return (
+      <div className="flex items-center gap-2 rounded-full bg-indigo-50 px-3 py-1.5 dark:bg-indigo-950/30">
+        <div className="h-4 w-4 animate-spin rounded-full border-2 border-indigo-400 border-t-transparent" />
+        <span className="text-sm text-indigo-600 dark:text-indigo-400">
+          Transkribiere...
+        </span>
+      </div>
+    );
+  }
+
+  // Idle state - just the mic button
   return (
     <button
       type="button"
       onClick={startRecording}
       className={cn(
         "relative flex h-11 w-11 items-center justify-center rounded-full transition-all",
-        isUploading
-          ? "bg-zinc-200 text-zinc-500 dark:bg-zinc-700"
-          : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-700"
+        "bg-zinc-100 text-zinc-600 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-700"
       )}
-      disabled={disabled || isUploading}
-      title={isUploading ? "Processing..." : "Tap to record"}
+      disabled={disabled}
+      title="Tap to record"
     >
-      {isUploading ? (
-        <div className="h-5 w-5 animate-spin rounded-full border-2 border-zinc-400 border-t-transparent" />
-      ) : (
-        <Mic className="h-5 w-5" />
-      )}
+      <Mic className="h-5 w-5" />
     </button>
   );
 }

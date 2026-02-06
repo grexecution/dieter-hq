@@ -22,6 +22,7 @@ const GATEWAY_PASSWORD = process.env.OPENCLAW_GATEWAY_PASSWORD;
 type Payload = {
   threadId?: string;
   content?: string;
+  skipUserMessage?: boolean; // For voice messages where user message already exists
 };
 
 function fmtLabel(d: Date): string {
@@ -46,6 +47,8 @@ export async function POST(req: NextRequest) {
   const threadId = String(body.threadId ?? "main");
   const raw = String(body.content ?? "");
   const content = raw.trim();
+  const skipUserMessage = body.skipUserMessage === true;
+  
   if (!content) {
     return new Response(JSON.stringify({ ok: false, error: "missing_content" }), {
       status: 400,
@@ -56,19 +59,22 @@ export async function POST(req: NextRequest) {
   const now = new Date();
   const id = crypto.randomUUID();
 
-  await db.insert(messages).values({
-    id,
-    threadId,
-    role: "user",
-    content,
-    createdAt: now,
-  });
+  // Skip creating user message if it already exists (e.g., voice messages)
+  if (!skipUserMessage) {
+    await db.insert(messages).values({
+      id,
+      threadId,
+      role: "user",
+      content,
+      createdAt: now,
+    });
 
-  await logEvent({
-    threadId,
-    type: "message.create",
-    payload: { role: "user" },
-  });
+    await logEvent({
+      threadId,
+      type: "message.create",
+      payload: { role: "user" },
+    });
+  }
 
   // Tool command: /image <prompt>
   if (content.startsWith("/image")) {
@@ -155,22 +161,24 @@ export async function POST(req: NextRequest) {
     const encoder = new TextEncoder();
     const stream = new ReadableStream({
       async start(controller) {
-        // First, send the user message confirmation (with context status)
-        controller.enqueue(encoder.encode(`data: ${JSON.stringify({
-          type: "user_confirmed",
-          item: {
-            id,
-            threadId,
-            role: "user",
-            content,
-            createdAt: now.getTime(),
-            createdAtLabel: fmtLabel(now),
-          },
-          contextStatus: {
-            utilization: Math.round(infiniteContextResult.contextState.contextUtilization),
-            summarized: infiniteContextResult.summarizationTriggered,
-          }
-        })}\n\n`));
+        // First, send the user message confirmation (skip for voice messages)
+        if (!skipUserMessage) {
+          controller.enqueue(encoder.encode(`data: ${JSON.stringify({
+            type: "user_confirmed",
+            item: {
+              id,
+              threadId,
+              role: "user",
+              content,
+              createdAt: now.getTime(),
+              createdAtLabel: fmtLabel(now),
+            },
+            contextStatus: {
+              utilization: Math.round(infiniteContextResult.contextState.contextUtilization),
+              summarized: infiniteContextResult.summarizationTriggered,
+            }
+          })}\n\n`));
+        }
 
         let fullContent = "";
         const assistantMsgId = crypto.randomUUID();

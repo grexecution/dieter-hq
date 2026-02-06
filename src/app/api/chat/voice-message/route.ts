@@ -65,18 +65,19 @@ export async function POST(req: Request) {
       payload: { id, durationMs },
     });
 
-    // Fire-and-forget transcription via OpenAI Whisper API
-    void (async () => {
-      try {
-        const { transcribeOpenAIWhisper } = await import("@/server/whisper/transcribe-openai");
-        const text = await transcribeOpenAIWhisper(buf, mimeType, { language: "auto" });
-        if (!text) return;
-
+    // Synchronous transcription via OpenAI Whisper API (wait for result)
+    let transcription: string | null = null;
+    try {
+      const { transcribeOpenAIWhisper } = await import("@/server/whisper/transcribe-openai");
+      const text = await transcribeOpenAIWhisper(buf, mimeType, { language: "auto" });
+      if (text) {
+        transcription = text;
+        
         // Update the message with transcription
         const { eq } = await import("drizzle-orm");
         await db
           .update(messages)
-          .set({ transcription: text })
+          .set({ transcription: text, content: text })
           .where(eq(messages.id, id));
 
         await logEvent({
@@ -84,25 +85,25 @@ export async function POST(req: Request) {
           type: "voice.transcribed",
           payload: { messageId: id, ok: true },
         });
-      } catch (err) {
-        console.error("Voice transcription failed:", err);
-        await logEvent({
-          threadId,
-          type: "voice.transcribed",
-          payload: { messageId: id, ok: false },
-        });
       }
-    })();
+    } catch (err) {
+      console.error("Voice transcription failed:", err);
+      await logEvent({
+        threadId,
+        type: "voice.transcribed",
+        payload: { messageId: id, ok: false },
+      });
+    }
 
     // Build response message object
     const message = {
       id,
       threadId,
       role: "user" as const,
-      content: "🎤 Voice message",
+      content: transcription || "🎤 Voice message",
       audioUrl,
       audioDurationMs: durationMs || 0,
-      transcription: null,
+      transcription,
       createdAt: now.getTime(),
       createdAtLabel: now.toLocaleTimeString("de-DE", {
         hour: "2-digit",

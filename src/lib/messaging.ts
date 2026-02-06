@@ -15,7 +15,7 @@ interface SendMessageResult {
 
 // Gateway configuration
 const OPENCLAW_GATEWAY_URL = process.env.OPENCLAW_GATEWAY_URL || 'http://127.0.0.1:18789';
-const OPENCLAW_GATEWAY_TOKEN = process.env.OPENCLAW_GATEWAY_TOKEN;
+const OPENCLAW_GATEWAY_PASSWORD = process.env.OPENCLAW_GATEWAY_PASSWORD;
 
 /**
  * Spawn a sub-agent task to send a WhatsApp message via wacli
@@ -44,7 +44,7 @@ Do NOT ask for confirmation. Just execute the command and report success or fail
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        ...(OPENCLAW_GATEWAY_TOKEN && { "Authorization": `Bearer ${OPENCLAW_GATEWAY_TOKEN}` }),
+        ...(OPENCLAW_GATEWAY_PASSWORD && { "Authorization": `Bearer ${OPENCLAW_GATEWAY_PASSWORD}` }),
       },
       body: JSON.stringify({
         tool: "sessions_spawn",

@@ -8,6 +8,20 @@ This folder is home. Treat it that way.
 
 Your human MUST be able to reach you at ALL times. No exceptions.
 
+### ⛔ NEVER CRASH THE GATEWAY
+
+**Commands that can crash/restart the Gateway:**
+- `gateway.config.patch` / `gateway.config.apply` → TRIGGERS RESTART
+- `gateway.restart`
+- `gateway.update.run`
+
+**Before running ANY of these:**
+1. **ASK FIRST** — "Ich muss die Gateway neu starten für X. OK?"
+2. **Wait for explicit approval**
+3. **NEVER run during active tasks/subagents**
+
+**If you crashed the Gateway, you're OFFLINE until Greg manually restarts it.**
+
 ### How to guarantee this:
 
 1. **NEVER run blocking foreground tasks** — use `background: true` or `yieldMs: 2000` max

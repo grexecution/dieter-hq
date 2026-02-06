@@ -22,17 +22,32 @@
 
 ## DieterHQ Projekt
 
-### Status (2026-02-05)
+### Status (2026-02-06) ✅ LIVE auf Vercel!
 - Repo: `https://github.com/grexecution/dieter-hq`
+- URL: `https://dieter-hq.vercel.app`
 - Tech: Next.js 16, Drizzle ORM, Neon Postgres, Tailwind, shadcn/ui, PWA
-- Deployment blocked: braucht Vercel Secrets
+
+### Features implementiert:
+- ✅ **4 Chat-Tabs**: Life, Dev (Workspace Manager), Sport, Creative
+- ✅ **PWA Push Notifications** (VAPID keys auf Vercel setzen!)
+- ✅ **Voice Messages** (Telegram-style, tap-to-record)
+- ✅ **Workspace Manager**: Dev-Tab mit dynamischen Projekt-Sessions
+- ✅ **Reset Chat Button** im Header
+- ⏸️ **Infinite Context**: Code da, aber temporär deaktiviert (DB Schema Issue)
+
+### Vercel Env Vars (wichtig!):
+- `DATABASE_URL` — Neon Postgres
+- `OPENCLAW_GATEWAY_HTTP_URL` — Gateway URL
+- `OPENCLAW_GATEWAY_PASSWORD` — Gateway Auth
+- `NEXT_PUBLIC_VAPID_PUBLIC_KEY` — Push Notifications
+- `VAPID_PRIVATE_KEY` — Push Notifications
+- `VAPID_SUBJECT` — mailto:greg@...
 
 ### Vision
 - Hub-App fürs ganze Leben
 - Kanban nach Kontext (Kreativ, Bluemonkeys, Privat, etc.)
 - Chat-Interface (Telegram-Ersatz langfristig)
 - Kalender-Integration
-- Tasks vorschlagen nur wenn Zeit verfügbar
 
 ## Infrastruktur
 
@@ -77,9 +92,28 @@
 - User: `grexecution`
 - Repos: dieter-hq, diverse Kundenprojekte
 
+### ClickUp
+- **Token:** `CLICKUP_TOKEN` env var gesetzt
+- **Workspaces:**
+  - "2x10 & Blue Monkeys" (Team ID: 24318857) — mit Chris Tockner, Moritz Miedler
+  - "SQD. Digital Consulting" (Team ID: 2190370)
+  - "Olivadis" (Team ID: 90152304684)
+  - "derGreg" (Team ID: 9012110771)
+- **API:** Comments/Tasks durchsuchbar, keine direkte "Chat" API aber Comments auf Tasks
+
 ## Lessons Learned
+
+### 2026-02-06
+- **ClickUp API funktioniert!** Token: `CLICKUP_TOKEN` env var, Workspace "2x10 & Blue Monkeys" = Team ID 24318857
+- **DieterHQ deployed**: Alle Features live, nur Infinite Context temporär deaktiviert
+- **Voice Recorder**: Hold-to-record buggy auf Mobile → tap-to-record mit Send-Button
+- **Subagents**: Können parallel arbeiten, cleanup=delete räumt automatisch auf
+- **Context Management**: Greg will KEINE Warnungen — einfach leise sichern und bei Bedarf /new vorschlagen
+- **Telegram nach Gateway-Restart kaputt**: Provider startet nicht sauber → Health-Check nötig
 
 ### 2026-02-05
 - **Blocking ist tödlich**: OAuth-Flows haben Session gekillt → immer `background: true`
 - **clawhub = Sicherheitsrisiko**: Ermöglicht Installation beliebiger Skills von außen → entfernt
 - **Haiku für Heartbeats**: Ältestes Modell reicht völlig, spart massiv Tokens
+Session context at 38% on Fri Feb  6 11:55:23 CET 2026.
+Could not test Telegram channel health - agent not authorized for notifications.

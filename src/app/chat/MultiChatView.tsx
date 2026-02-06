@@ -14,7 +14,7 @@ import { NowBar } from "./NowBar";
 import { OpenClawStatusSidebar } from "./OpenClawStatusSidebar";
 import { StatusBar } from "./_components/StatusBar";
 import { SubagentPanel } from "./_components/SubagentPanel";
-import { WorkspaceManager, type WorkspaceProject, loadProjects } from "./_components/WorkspaceManager";
+import { WorkspaceManager, type WorkspaceProject } from "./_components/WorkspaceManager";
 import { CHAT_TABS, type ChatTab } from "./chat-config";
 
 const VoiceRecorder = dynamic(
@@ -486,9 +486,20 @@ export function MultiChatView({
   // Ref to track pending send operation to avoid stale closure issues
   const pendingSendRef = useRef<{ threadId: string; content: string } | null>(null);
 
-  // Load workspace projects on mount
+  // Load workspace projects on mount (from API for persistence across devices)
   useEffect(() => {
-    setWorkspaceProjects(loadProjects());
+    async function loadWorkspaceProjects() {
+      try {
+        const res = await fetch('/api/workspace/projects');
+        if (res.ok) {
+          const data = await res.json();
+          setWorkspaceProjects(data.projects || []);
+        }
+      } catch (err) {
+        console.error('Error loading workspace projects:', err);
+      }
+    }
+    loadWorkspaceProjects();
   }, []);
 
   // Sync messages from props

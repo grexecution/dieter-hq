@@ -9,7 +9,8 @@ import {
   Code, 
   MoreVertical,
   Trash2,
-  X
+  X,
+  Loader2
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -28,33 +29,77 @@ export type WorkspaceProject = {
 };
 
 // ============================================
-// Local Storage Helpers
+// API Helpers (persistent in Neon DB)
 // ============================================
 
-const STORAGE_KEY = "dieter-hq:workspace-projects";
+async function fetchProjects(): Promise<WorkspaceProject[]> {
+  try {
+    const res = await fetch('/api/workspace/projects');
+    if (!res.ok) throw new Error('Failed to fetch');
+    const data = await res.json();
+    return data.projects || [];
+  } catch (err) {
+    console.error('Error fetching projects:', err);
+    return [];
+  }
+}
 
-function loadProjects(): WorkspaceProject[] {
+async function createProject(name: string): Promise<WorkspaceProject | null> {
+  try {
+    const res = await fetch('/api/workspace/projects', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name }),
+    });
+    if (!res.ok) throw new Error('Failed to create');
+    const data = await res.json();
+    return data.project || null;
+  } catch (err) {
+    console.error('Error creating project:', err);
+    return null;
+  }
+}
+
+async function updateProject(id: string, updates: { archived?: boolean; touch?: boolean }): Promise<boolean> {
+  try {
+    const res = await fetch('/api/workspace/projects', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, ...updates }),
+    });
+    return res.ok;
+  } catch (err) {
+    console.error('Error updating project:', err);
+    return false;
+  }
+}
+
+async function deleteProject(id: string): Promise<boolean> {
+  try {
+    const res = await fetch(`/api/workspace/projects?id=${encodeURIComponent(id)}`, {
+      method: 'DELETE',
+    });
+    return res.ok;
+  } catch (err) {
+    console.error('Error deleting project:', err);
+    return false;
+  }
+}
+
+// Legacy localStorage helpers for migration
+function loadProjectsFromLocalStorage(): WorkspaceProject[] {
   if (typeof window === "undefined") return [];
   try {
-    const stored = localStorage.getItem(STORAGE_KEY);
+    const stored = localStorage.getItem("dieter-hq:workspace-projects");
     return stored ? JSON.parse(stored) : [];
   } catch {
     return [];
   }
 }
 
-function saveProjects(projects: WorkspaceProject[]) {
+function clearLocalStorageProjects() {
   if (typeof window === "undefined") return;
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(projects));
-}
-
-function generateThreadId(name: string): string {
-  const slug = name
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-|-$/g, "")
-    .slice(0, 30);
-  return `dev:${slug}`;
+  localStorage.removeItem("dieter-hq:workspace-projects");
 }
 
 // ============================================
@@ -65,18 +110,18 @@ interface CreateProjectDialogProps {
   isOpen: boolean;
   onClose: () => void;
   onCreate: (name: string) => void;
+  isCreating: boolean;
 }
 
-function CreateProjectDialog({ isOpen, onClose, onCreate }: CreateProjectDialogProps) {
+function CreateProjectDialog({ isOpen, onClose, onCreate, isCreating }: CreateProjectDialogProps) {
   const [name, setName] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const trimmed = name.trim();
-    if (trimmed) {
+    if (trimmed && !isCreating) {
       onCreate(trimmed);
       setName("");
-      onClose();
     }
   };
 
@@ -95,6 +140,7 @@ function CreateProjectDialog({ isOpen, onClose, onCreate }: CreateProjectDialogP
           <button
             onClick={onClose}
             className="rounded-md p-1 text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+            disabled={isCreating}
           >
             <X className="h-5 w-5" />
           </button>
@@ -116,15 +162,23 @@ function CreateProjectDialog({ isOpen, onClose, onCreate }: CreateProjectDialogP
                 "focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600"
               )}
               autoFocus
+              disabled={isCreating}
             />
           </div>
           
           <div className="flex justify-end gap-2">
-            <Button type="button" variant="ghost" onClick={onClose}>
+            <Button type="button" variant="ghost" onClick={onClose} disabled={isCreating}>
               Cancel
             </Button>
-            <Button type="submit" disabled={!name.trim()}>
-              Create Project
+            <Button type="submit" disabled={!name.trim() || isCreating}>
+              {isCreating ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Creating...
+                </>
+              ) : (
+                'Create Project'
+              )}
             </Button>
           </div>
         </form>
@@ -266,10 +320,40 @@ export function WorkspaceManager({
   const [projects, setProjects] = useState<WorkspaceProject[]>([]);
   const [showArchived, setShowArchived] = useState(false);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isCreating, setIsCreating] = useState(false);
 
-  // Load projects on mount
+  // Load projects on mount (with localStorage migration)
   useEffect(() => {
-    setProjects(loadProjects());
+    async function load() {
+      setIsLoading(true);
+      
+      // Fetch from DB
+      const dbProjects = await fetchProjects();
+      
+      // Check for localStorage projects to migrate
+      const localProjects = loadProjectsFromLocalStorage();
+      if (localProjects.length > 0 && dbProjects.length === 0) {
+        // Migrate localStorage projects to DB
+        console.log('Migrating', localProjects.length, 'projects from localStorage to DB...');
+        for (const lp of localProjects) {
+          await createProject(lp.name);
+        }
+        clearLocalStorageProjects();
+        // Re-fetch after migration
+        const migrated = await fetchProjects();
+        setProjects(migrated);
+      } else {
+        // Clear old localStorage if DB has projects
+        if (localProjects.length > 0) {
+          clearLocalStorageProjects();
+        }
+        setProjects(dbProjects);
+      }
+      
+      setIsLoading(false);
+    }
+    load();
   }, []);
 
   // Filter projects
@@ -277,66 +361,68 @@ export function WorkspaceManager({
   const archivedProjects = projects.filter(p => p.archived);
   const visibleProjects = showArchived ? projects : activeProjects;
 
-  const handleCreate = useCallback((name: string) => {
-    const threadId = generateThreadId(name);
-    const now = Date.now();
+  const handleCreate = useCallback(async (name: string) => {
+    setIsCreating(true);
+    const newProject = await createProject(name);
+    setIsCreating(false);
     
-    // Check for duplicate thread ID
-    let finalThreadId = threadId;
-    let counter = 1;
-    while (projects.some(p => p.threadId === finalThreadId)) {
-      finalThreadId = `${threadId}-${counter}`;
-      counter++;
+    if (newProject) {
+      setProjects(prev => [newProject, ...prev]);
+      setCreateDialogOpen(false);
+      onProjectCreate(newProject);
+      onProjectSelect(newProject);
     }
+  }, [onProjectCreate, onProjectSelect]);
 
-    const newProject: WorkspaceProject = {
-      id: crypto.randomUUID(),
-      name,
-      threadId: finalThreadId,
-      createdAt: now,
-      lastActiveAt: now,
-      archived: false,
-    };
-
-    const updated = [newProject, ...projects];
-    setProjects(updated);
-    saveProjects(updated);
-    onProjectCreate(newProject);
-    onProjectSelect(newProject);
-  }, [projects, onProjectCreate, onProjectSelect]);
-
-  const handleArchive = useCallback((projectId: string) => {
-    const updated = projects.map(p => 
-      p.id === projectId ? { ...p, archived: !p.archived } : p
-    );
-    setProjects(updated);
-    saveProjects(updated);
+  const handleArchive = useCallback(async (projectId: string) => {
+    const project = projects.find(p => p.id === projectId);
+    if (!project) return;
     
-    // If archiving the active project, deselect it
-    if (activeProjectId === projectId) {
-      onProjectSelect(null);
+    const newArchived = !project.archived;
+    const success = await updateProject(projectId, { archived: newArchived });
+    
+    if (success) {
+      setProjects(prev => prev.map(p => 
+        p.id === projectId ? { ...p, archived: newArchived } : p
+      ));
+      
+      // If archiving the active project, deselect it
+      if (activeProjectId === projectId && newArchived) {
+        onProjectSelect(null);
+      }
     }
   }, [projects, activeProjectId, onProjectSelect]);
 
-  const handleDelete = useCallback((projectId: string) => {
-    const updated = projects.filter(p => p.id !== projectId);
-    setProjects(updated);
-    saveProjects(updated);
+  const handleDelete = useCallback(async (projectId: string) => {
+    const success = await deleteProject(projectId);
     
-    if (activeProjectId === projectId) {
-      onProjectSelect(null);
+    if (success) {
+      setProjects(prev => prev.filter(p => p.id !== projectId));
+      
+      if (activeProjectId === projectId) {
+        onProjectSelect(null);
+      }
     }
-  }, [projects, activeProjectId, onProjectSelect]);
+  }, [activeProjectId, onProjectSelect]);
 
-  const handleProjectClick = useCallback((project: WorkspaceProject) => {
-    // Update last active time
-    const updated = projects.map(p => 
+  const handleProjectClick = useCallback(async (project: WorkspaceProject) => {
+    // Update last active time in background
+    updateProject(project.id, { touch: true });
+    
+    setProjects(prev => prev.map(p => 
       p.id === project.id ? { ...p, lastActiveAt: Date.now() } : p
-    );
-    setProjects(updated);
-    saveProjects(updated);
+    ));
     onProjectSelect(project);
-  }, [projects, onProjectSelect]);
+  }, [onProjectSelect]);
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center h-full py-12">
+        <Loader2 className="h-8 w-8 animate-spin text-zinc-400" />
+        <p className="mt-2 text-sm text-zinc-500">Loading projects...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col h-full">
@@ -422,10 +508,11 @@ export function WorkspaceManager({
         isOpen={createDialogOpen}
         onClose={() => setCreateDialogOpen(false)}
         onCreate={handleCreate}
+        isCreating={isCreating}
       />
     </div>
   );
 }
 
-// Export for use in parent components
-export { loadProjects, saveProjects, generateThreadId };
+// Export loadProjects for SSE subscription in parent
+export { fetchProjects as loadProjects };

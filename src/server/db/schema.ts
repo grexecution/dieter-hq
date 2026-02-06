@@ -110,3 +110,13 @@ export const contextState = pgTable("context_state", {
   lastSnapshotAt: timestamp("last_snapshot_at", { mode: "date", withTimezone: true }),
   updatedAt: timestamp("updated_at", { mode: "date", withTimezone: true }).notNull(),
 });
+
+// --- Workspace Projects (Dev tab persistent projects) ---
+export const workspaceProjects = pgTable("workspace_projects", {
+  id: text("id").primaryKey(),
+  name: text("name").notNull(),
+  threadId: text("thread_id").notNull().unique(),
+  archived: boolean("archived").notNull().default(false),
+  createdAt: timestamp("created_at", { mode: "date", withTimezone: true }).notNull(),
+  lastActiveAt: timestamp("last_active_at", { mode: "date", withTimezone: true }).notNull(),
+});

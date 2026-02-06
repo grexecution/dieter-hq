@@ -25,19 +25,14 @@ type StatusResponse = {
 async function checkGateway(): Promise<{ reachable: boolean; latencyMs?: number; error?: string }> {
   const start = Date.now();
   try {
-    // Simple ping via chat completions with minimal tokens
-    const response = await fetch(`${GATEWAY_HTTP_URL}/v1/chat/completions`, {
-      method: "POST",
+    // Use a lightweight health endpoint instead of chat completions
+    // This avoids creating sessions for every health check!
+    const response = await fetch(`${GATEWAY_HTTP_URL}/health`, {
+      method: "GET",
       headers: {
-        "Content-Type": "application/json",
         ...(GATEWAY_PASSWORD && { Authorization: `Bearer ${GATEWAY_PASSWORD}` }),
       },
-      body: JSON.stringify({
-        model: "openclaw:main",
-        messages: [{ role: "user", content: "/status" }],
-        max_tokens: 50,
-      }),
-      signal: AbortSignal.timeout(10000),
+      signal: AbortSignal.timeout(5000),
     });
 
     const latencyMs = Date.now() - start;
@@ -110,8 +105,8 @@ export async function GET(req: NextRequest) {
       // Initial send
       await sendUpdate();
 
-      // Poll interval (2 seconds)
-      const interval = setInterval(sendUpdate, 2000);
+      // Poll interval (15 seconds - no need to hammer the gateway)
+      const interval = setInterval(sendUpdate, 15000);
 
       // Cleanup after 5 minutes max
       const timeout = setTimeout(() => {

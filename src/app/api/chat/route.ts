@@ -32,9 +32,11 @@ export async function POST(request: NextRequest) {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          ...(GATEWAY_PASSWORD && { 'Authorization': `Basic ${Buffer.from(`:${GATEWAY_PASSWORD}`).toString('base64')}` }),
+          // Use Bearer auth, not Basic!
+          ...(GATEWAY_PASSWORD && { 'Authorization': `Bearer ${GATEWAY_PASSWORD}` }),
           'x-openclaw-agent-id': 'main',
           'x-openclaw-session-key': `agent:main:dieter-hq:${threadId}`,
+          'x-openclaw-source': 'dieter-hq',
         },
         body: JSON.stringify({
           model: 'openclaw:main',

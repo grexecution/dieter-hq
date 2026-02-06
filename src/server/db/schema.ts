@@ -120,3 +120,61 @@ export const workspaceProjects = pgTable("workspace_projects", {
   createdAt: timestamp("created_at", { mode: "date", withTimezone: true }).notNull(),
   lastActiveAt: timestamp("last_active_at", { mode: "date", withTimezone: true }).notNull(),
 });
+
+// --- Unified Inbox ---
+// Inbox items from all sources (email, whatsapp, clickup, slack, etc.)
+export const inboxItems = pgTable("inbox_items", {
+  id: text("id").primaryKey(),
+  source: text("source").notNull(), // "email" | "whatsapp" | "clickup" | "slack"
+  sourceId: text("source_id").notNull(), // original ID from source
+  sourceAccount: text("source_account"), // which account (email address, phone, etc)
+  threadId: text("thread_id"), // for grouping conversations
+  sender: text("sender").notNull(),
+  senderName: text("sender_name"),
+  subject: text("subject"),
+  preview: text("preview").notNull(),
+  content: text("content"),
+  priority: text("priority").notNull().default("normal"), // "urgent" | "high" | "normal" | "low"
+  status: text("status").notNull().default("pending"), // "pending" | "actioned" | "archived" | "snoozed"
+  receivedAt: timestamp("received_at", { mode: "date", withTimezone: true }).notNull(),
+  createdAt: timestamp("created_at", { mode: "date", withTimezone: true }).notNull(),
+});
+
+// AI recommendations for inbox items
+export const inboxRecommendations = pgTable("inbox_recommendations", {
+  id: text("id").primaryKey(),
+  inboxItemId: text("inbox_item_id").notNull().references(() => inboxItems.id, { onDelete: "cascade" }),
+  actionType: text("action_type").notNull(), // "reply" | "archive" | "delegate" | "task" | "schedule" | "custom"
+  actionLabel: text("action_label").notNull(), // Human readable: "Antwort mit Verfügbarkeit"
+  actionDescription: text("action_description"), // Detailed description
+  actionPayload: text("action_payload"), // JSON with action details (draft text, etc)
+  confidence: integer("confidence"), // 0-100 confidence score (integer for Drizzle)
+  reasoning: text("reasoning"), // Why this recommendation
+  status: text("status").notNull().default("pending"), // "pending" | "approved" | "rejected" | "executed"
+  executedAt: timestamp("executed_at", { mode: "date", withTimezone: true }),
+  executionResult: text("execution_result"),
+  createdAt: timestamp("created_at", { mode: "date", withTimezone: true }).notNull(),
+});
+
+// Action history / audit log for inbox
+export const inboxActionLog = pgTable("inbox_action_log", {
+  id: text("id").primaryKey(),
+  recommendationId: text("recommendation_id").references(() => inboxRecommendations.id),
+  inboxItemId: text("inbox_item_id").references(() => inboxItems.id),
+  action: text("action").notNull(),
+  executedBy: text("executed_by").notNull().default("user"), // "user" | "auto" | "dieter"
+  result: text("result"),
+  metadata: text("metadata"), // JSON
+  createdAt: timestamp("created_at", { mode: "date", withTimezone: true }).notNull(),
+});
+
+// Sync state for each source
+export const inboxSyncState = pgTable("inbox_sync_state", {
+  id: text("id").primaryKey(), // "email:greg@gmail.com" or "whatsapp"
+  source: text("source").notNull(),
+  account: text("account"),
+  lastSyncAt: timestamp("last_sync_at", { mode: "date", withTimezone: true }),
+  lastMessageId: text("last_message_id"),
+  cursor: text("cursor"), // For pagination
+  metadata: text("metadata"), // JSON
+});

@@ -7,10 +7,51 @@ import { logEvent } from "@/server/events/log";
 export const runtime = "nodejs";
 
 /**
+ * Background transcription - fire and forget
+ * Transcribes audio and updates the message in DB when complete.
+ */
+async function transcribeInBackground(
+  messageId: string,
+  threadId: string,
+  audioBuffer: Buffer,
+  mimeType: string,
+): Promise<void> {
+  try {
+    const { transcribeViaGateway } = await import("@/server/whisper/transcribe-gateway");
+    const text = await transcribeViaGateway(audioBuffer, mimeType, { language: "de" });
+    
+    if (text) {
+      // Update the message with transcription
+      const { eq } = await import("drizzle-orm");
+      await db
+        .update(messages)
+        .set({ transcription: text, content: text })
+        .where(eq(messages.id, messageId));
+
+      await logEvent({
+        threadId,
+        type: "voice.transcribed",
+        payload: { messageId, ok: true, text: text.slice(0, 100) },
+      });
+      
+      console.log(`[Voice] Background transcription complete for ${messageId}: "${text.slice(0, 50)}..."`);
+    }
+  } catch (err) {
+    console.error("[Voice] Background transcription failed:", err);
+    await logEvent({
+      threadId,
+      type: "voice.transcribed",
+      payload: { messageId, ok: false },
+    });
+  }
+}
+
+/**
  * POST /api/chat/voice-message
  *
  * Receives audio blob, stores it as base64 data URL, creates voice message in DB.
- * Triggers transcription via OpenClaw Gateway's local whisper-cpp.
+ * Returns IMMEDIATELY with audioUrl for instant playback.
+ * Triggers transcription in background (non-blocking).
  *
  * Works on Vercel serverless - calls Gateway's whisper HTTP server.
  *
@@ -48,6 +89,7 @@ export async function POST(req: Request) {
     const mimeType = audioFile.type || "audio/webm";
     const audioUrl = `data:${mimeType};base64,${base64}`;
 
+    // Insert message immediately (no transcription yet)
     await db.insert(messages).values({
       id,
       threadId,
@@ -65,45 +107,15 @@ export async function POST(req: Request) {
       payload: { id, durationMs },
     });
 
-    // Synchronous transcription via OpenClaw Gateway's local whisper-cpp
-    let transcription: string | null = null;
-    try {
-      const { transcribeViaGateway } = await import("@/server/whisper/transcribe-gateway");
-      const text = await transcribeViaGateway(buf, mimeType, { language: "de" });
-      if (text) {
-        transcription = text;
-        
-        // Update the message with transcription
-        const { eq } = await import("drizzle-orm");
-        await db
-          .update(messages)
-          .set({ transcription: text, content: text })
-          .where(eq(messages.id, id));
-
-        await logEvent({
-          threadId,
-          type: "voice.transcribed",
-          payload: { messageId: id, ok: true },
-        });
-      }
-    } catch (err) {
-      console.error("Voice transcription failed:", err);
-      await logEvent({
-        threadId,
-        type: "voice.transcribed",
-        payload: { messageId: id, ok: false },
-      });
-    }
-
-    // Build response message object
+    // Build response message object IMMEDIATELY (without transcription)
     const message = {
       id,
       threadId,
       role: "user" as const,
-      content: transcription || "🎤 Voice message",
+      content: "🎤 Voice message",
       audioUrl,
       audioDurationMs: durationMs || 0,
-      transcription,
+      transcription: null,
       createdAt: now.getTime(),
       createdAtLabel: now.toLocaleTimeString("de-DE", {
         hour: "2-digit",
@@ -111,6 +123,13 @@ export async function POST(req: Request) {
       }),
     };
 
+    // Fire-and-forget: Start background transcription
+    // This runs after the response is sent
+    transcribeInBackground(id, threadId, buf, mimeType).catch((err) => {
+      console.error("[Voice] Background transcription error:", err);
+    });
+
+    // Return immediately - user sees playable audio right away!
     return NextResponse.json({ ok: true, message });
   } catch (error) {
     console.error("Voice message error:", error);

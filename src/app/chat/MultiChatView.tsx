@@ -15,6 +15,7 @@ import { OpenClawStatusSidebar } from "./OpenClawStatusSidebar";
 import { StatusBar } from "./_components/StatusBar";
 import { SubagentPanel } from "./_components/SubagentPanel";
 import { WorkspaceManager, type WorkspaceProject } from "./_components/WorkspaceManager";
+import { InboxView } from "./inbox";
 import { CHAT_TABS, type ChatTab } from "./chat-config";
 
 const VoiceRecorder = dynamic(
@@ -546,7 +547,11 @@ export function MultiChatView({
   const threadCounts = useMemo(() => {
     const counts: Record<string, number> = {};
     for (const tab of CHAT_TABS) {
-      if (tab.isWorkspace) {
+      if (tab.isSpecialView) {
+        // Special view tabs (like Inbox) don't have message counts
+        // TODO: Could fetch pending inbox items count from API
+        counts[tab.id] = 0;
+      } else if (tab.isWorkspace) {
         // For workspace tabs, count total messages across all projects
         const projectThreadIds = workspaceProjects.map(p => p.threadId);
         counts[tab.id] = projectThreadIds.reduce((sum, tid) => sum + (liveMessages[tid]?.length || 0), 0);
@@ -717,7 +722,7 @@ export function MultiChatView({
   useEffect(() => {
     const timestamps = lastMessageTimestampsRef.current;
     for (const tab of CHAT_TABS) {
-      if (tab.isWorkspace) continue;
+      if (tab.isWorkspace || tab.isSpecialView) continue;
       const messages = threadMessages[tab.id];
       if (messages?.length) {
         const lastTs = messages[messages.length - 1]?.createdAt || 0;
@@ -772,9 +777,9 @@ export function MultiChatView({
       eventSources.push(es);
     };
     
-    // Subscribe to regular tabs (non-workspace)
+    // Subscribe to regular tabs (non-workspace, non-special view)
     for (const tab of CHAT_TABS) {
-      if (tab.isWorkspace) continue;
+      if (tab.isWorkspace || tab.isSpecialView) continue;
       subscribeToThread(tab.id);
     }
 
@@ -792,9 +797,13 @@ export function MultiChatView({
 
   const currentTab = CHAT_TABS.find(tab => tab.id === activeTab);
   
+  // Check if current tab is a special view (like Inbox)
+  const isSpecialViewTab = currentTabConfig?.isSpecialView === true;
+  
   // Determine what to show in the main area
   const showWorkspaceManager = isWorkspaceTab && !activeProject;
-  const showChat = !isWorkspaceTab || (isWorkspaceTab && activeProject);
+  const showInboxView = isSpecialViewTab && activeTab === "inbox";
+  const showChat = !isWorkspaceTab && !isSpecialViewTab || (isWorkspaceTab && activeProject);
 
   return (
     <div className={cn(
@@ -952,6 +961,13 @@ export function MultiChatView({
               onProjectDelete={handleProjectDelete}
               onProjectsRefresh={handleProjectsRefresh}
             />
+          </div>
+        )}
+
+        {/* Inbox View (for Inbox tab) */}
+        {showInboxView && (
+          <div className="flex-1 overflow-hidden">
+            <InboxView />
           </div>
         )}
 

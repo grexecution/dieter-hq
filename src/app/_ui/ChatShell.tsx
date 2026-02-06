@@ -27,8 +27,8 @@ function ChatHeader() {
 
           {/* Title - smaller on desktop */}
           <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-            <h1 className="flex items-center gap-1 text-[10px] font-medium text-zinc-500 dark:text-zinc-400">
-              <span className="text-xs">💬</span>
+            <h1 className="flex items-center gap-1.5 text-xs md:text-[10px] font-medium text-zinc-900 md:text-zinc-500 dark:text-zinc-100 md:dark:text-zinc-400">
+              <span className="text-sm md:text-xs">💬</span>
               <span>Chat</span>
             </h1>
           </div>

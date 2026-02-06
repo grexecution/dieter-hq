@@ -925,13 +925,13 @@ export function MultiChatView({
                 <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full border-2 border-white dark:border-zinc-950 bg-emerald-500" />
               </div>
               <div className="min-w-0">
-                <h1 className="truncate text-xs font-medium text-zinc-700 dark:text-zinc-300">
+                <h1 className="truncate text-sm md:text-xs font-medium text-zinc-900 md:text-zinc-700 dark:text-zinc-100 md:dark:text-zinc-300">
                   {isWorkspaceTab && activeProject 
                     ? `Dieter · ${activeProject.name}`
                     : `Dieter ${currentTab ? `· ${currentTab.name}` : ''}`
                   }
                 </h1>
-                <p className="text-[10px] text-zinc-400 dark:text-zinc-500">
+                <p className="text-xs md:text-[10px] text-zinc-500 md:text-zinc-400 dark:text-zinc-400 md:dark:text-zinc-500">
                   {isWorkspaceTab && activeProject ? 'Project Session' : 'Online'}
                 </p>
               </div>

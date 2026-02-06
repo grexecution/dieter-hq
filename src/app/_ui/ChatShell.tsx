@@ -14,33 +14,32 @@ interface ChatShellProps {
 function ChatHeader() {
   return (
     <header className="sticky left-0 right-0 top-0 z-50">
-      <div className="border-b border-zinc-200 bg-white/80 backdrop-blur-lg dark:border-zinc-800 dark:bg-zinc-900/80">
-        <div className="mx-auto flex h-12 max-w-6xl items-center justify-between px-4">
+      <div className="border-b border-zinc-200/80 bg-white/80 backdrop-blur-xl dark:border-zinc-800/80 dark:bg-zinc-900/80">
+        <div className="mx-auto flex h-12 items-center justify-between px-4 lg:px-6">
           {/* Back button */}
           <Link
             href="/"
-            className="flex items-center gap-1 rounded-lg px-2 py-1.5 text-sm font-medium text-zinc-600 transition-colors hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
+            className="flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-sm font-medium text-zinc-600 transition-colors hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
           >
-            <ChevronLeft className="h-5 w-5" />
+            <ChevronLeft className="h-4 w-4" />
             <span className="hidden sm:inline">Home</span>
           </Link>
 
-          {/* Title - tiny */}
+          {/* Title */}
           <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-            <span className="flex items-center gap-0.5 text-[9px] font-medium text-zinc-400 dark:text-zinc-500">
-              <span className="text-[8px]">💬</span>
-              <span>Chat</span>
+            <span className="text-xs font-semibold tracking-wide text-zinc-500 dark:text-zinc-400 uppercase">
+              Chat
             </span>
           </div>
 
-          {/* Actions - fixed width to prevent layout shift */}
-          <div className="flex shrink-0 items-center gap-0.5">
+          {/* Actions */}
+          <div className="flex shrink-0 items-center gap-1">
             <ThemeToggle />
             <Link
               href="/settings"
-              className="rounded-md p-1.5 text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
+              className="rounded-lg p-2 text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
             >
-              <Settings className="h-3.5 w-3.5" />
+              <Settings className="h-4 w-4" />
             </Link>
           </div>
         </div>

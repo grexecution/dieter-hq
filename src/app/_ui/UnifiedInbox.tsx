@@ -108,12 +108,12 @@ export function UnifiedInbox() {
   };
 
   return (
-    <div className="flex h-full flex-col rounded-2xl border border-white/20 bg-white/40 shadow-xl backdrop-blur-2xl dark:border-white/5 dark:bg-zinc-900/40">
+    <div className="flex h-full flex-col rounded-2xl border border-zinc-200/70 bg-white/60 shadow-sm backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/40">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-white/10 p-4 dark:border-white/5">
-        <div className="flex items-center gap-2">
-          <Mail className="h-5 w-5 text-primary" />
-          <h2 className="font-semibold">Unified Inbox</h2>
+      <div className="flex items-center justify-between border-b border-zinc-200/70 px-4 py-3.5 dark:border-zinc-800">
+        <div className="flex items-center gap-2.5">
+          <Mail className="h-4.5 w-4.5 text-primary" />
+          <h2 className="text-sm font-semibold">Unified Inbox</h2>
           {unreadCount > 0 && (
             <Badge variant="default" className="h-5 text-xs">
               {unreadCount}
@@ -136,10 +136,10 @@ export function UnifiedInbox() {
               <div
                 key={item.id}
                 className={cn(
-                  "group cursor-pointer rounded-lg border p-3 transition-all hover:bg-white/50 dark:hover:bg-white/5",
-                  isSelected && "bg-white/60 dark:bg-white/10",
-                  item.isUnread && "border-primary/30 bg-primary/5",
-                  !item.isUnread && "border-white/10 dark:border-white/5"
+                  "group cursor-pointer rounded-xl border p-3 transition-all hover:bg-zinc-50 dark:hover:bg-zinc-800/50",
+                  isSelected && "bg-zinc-50 dark:bg-zinc-800/40",
+                  item.isUnread && "border-primary/20 bg-primary/5",
+                  !item.isUnread && "border-zinc-200/70 dark:border-zinc-800"
                 )}
                 onClick={() => setSelectedItem(isSelected ? null : item.id)}
               >
@@ -184,7 +184,7 @@ export function UnifiedInbox() {
 
                 {/* Action Suggestions (expanded) */}
                 {isSelected && item.suggestedResponse && (
-                  <div className="mt-3 space-y-2 border-t border-white/10 pt-3 dark:border-white/5">
+                  <div className="mt-3 space-y-2 border-t border-zinc-200/70 pt-3 dark:border-zinc-800">
                     <div className="flex items-center gap-2">
                       <span className="text-xs font-medium">Dieter suggests:</span>
                       <Badge variant="secondary" className="text-xs h-4">
@@ -192,7 +192,7 @@ export function UnifiedInbox() {
                       </Badge>
                     </div>
                     
-                    <div className="rounded-md bg-white/30 p-2 text-xs dark:bg-white/5">
+                    <div className="rounded-lg bg-zinc-100/80 p-2.5 text-xs leading-relaxed dark:bg-zinc-800/50">
                       {item.suggestedResponse}
                     </div>
                     
@@ -243,9 +243,9 @@ export function UnifiedInbox() {
       </ScrollArea>
       
       {/* Action Suggestions Footer */}
-      <div className="border-t border-white/10 p-3 dark:border-white/5">
+      <div className="border-t border-zinc-200/70 px-4 py-2.5 dark:border-zinc-800">
         <div className="flex items-center justify-between text-xs text-muted-foreground">
-          <span>💡 {items.filter(i => i.suggestedResponse).length} suggestions available</span>
+          <span>{items.filter(i => i.suggestedResponse).length} suggestions available</span>
           <Button variant="ghost" size="sm" className="h-6 text-xs">
             Manage
           </Button>

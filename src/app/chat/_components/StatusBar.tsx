@@ -110,16 +110,15 @@ export function StatusBar() {
     : "Offline";
 
   return (
-    <div className="border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900">
-      {/* Collapsed bar - minimal */}
+    <div className="border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50/80 dark:bg-zinc-900/80">
+      {/* Collapsed bar */}
       <button
         onClick={() => setExpanded(!expanded)}
-        className="flex h-5 w-full items-center justify-between px-3 transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-800"
+        className="flex h-7 md:h-8 w-full items-center justify-between px-3 md:px-5 transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-800"
       >
         {/* Left: Status indicator */}
-        <div className="flex items-center gap-1.5 text-[10px] text-zinc-500 dark:text-zinc-400">
-          {/* Status dot */}
-          <span className="relative flex h-1.5 w-1.5">
+        <div className="flex items-center gap-2 text-[11px] md:text-xs text-zinc-500 dark:text-zinc-400">
+          <span className="relative flex h-2 w-2">
             {isOnline && connectionState === "connected" && (
               <span
                 className={cn(
@@ -130,7 +129,7 @@ export function StatusBar() {
             )}
             <span
               className={cn(
-                "relative inline-flex h-1.5 w-1.5 rounded-full",
+                "relative inline-flex h-2 w-2 rounded-full",
                 dotColor
               )}
             />
@@ -146,15 +145,15 @@ export function StatusBar() {
 
         {/* Right: Expand icon */}
         {expanded ? (
-          <ChevronUp className="h-3 w-3 text-zinc-400" />
+          <ChevronUp className="h-3.5 w-3.5 text-zinc-400" />
         ) : (
-          <ChevronDown className="h-3 w-3 text-zinc-400" />
+          <ChevronDown className="h-3.5 w-3.5 text-zinc-400" />
         )}
       </button>
 
       {/* Expanded details */}
       {expanded && (
-        <div className="border-t border-zinc-200 dark:border-zinc-800 px-3 py-2 text-[10px] text-zinc-500 dark:text-zinc-400 space-y-1">
+        <div className="border-t border-zinc-200 dark:border-zinc-800 px-3 md:px-5 py-2.5 text-[11px] md:text-xs text-zinc-500 dark:text-zinc-400 space-y-1.5">
           <div className="flex justify-between">
             <span>Agent</span>
             <span className="font-mono">{agentId}</span>

@@ -112,7 +112,7 @@ export function OpenClawStatusSidebar({
   const updatedAtMs = data?.live?.updatedAtMs ?? null;
 
   return (
-    <aside className="h-[calc(100dvh-120px)] rounded-2xl border border-zinc-200/70 bg-white/60 p-4 shadow-sm backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/40">
+    <aside className="h-[calc(100dvh-100px)] rounded-2xl border border-zinc-200/70 bg-white/60 p-4 shadow-sm backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/40">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="flex items-center gap-2">
@@ -122,7 +122,7 @@ export function OpenClawStatusSidebar({
               <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-500" />
             </span>
           </div>
-          <div className="text-xs text-zinc-500 dark:text-zinc-400">
+          <div className="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">
             {headerMeta.sessionsLabel} • {headerMeta.cronLabel}
             {headerMeta.nextCronIn !== "—" ? ` • next ${headerMeta.nextCronIn}` : ""}
             {data?.source?.adapter ? ` • ${data.source.adapter}` : ""}
@@ -137,15 +137,15 @@ export function OpenClawStatusSidebar({
 
       <Separator className="my-4" />
 
-      <ScrollArea className="h-[calc(100dvh-220px)] pr-3">
+      <ScrollArea className="h-[calc(100dvh-200px)] pr-3">
         <div className="space-y-6">
           {/* NOW */}
-          <section className="space-y-2">
-            <div className="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+          <section className="space-y-2.5">
+            <div className="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
               NOW
             </div>
 
-            <div className="rounded-xl border border-zinc-200/70 bg-white/70 p-3 dark:border-zinc-800 dark:bg-zinc-950/40">
+            <div className="rounded-xl border border-zinc-200/70 bg-white/70 p-3.5 dark:border-zinc-800 dark:bg-zinc-950/40">
               <div className="relative overflow-hidden">
                 <div
                   className={cn(
@@ -186,9 +186,9 @@ export function OpenClawStatusSidebar({
           </section>
 
           {/* RECENT */}
-          <section className="space-y-2">
+          <section className="space-y-2.5">
             <div className="flex items-center justify-between">
-              <div className="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+              <div className="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
                 Recent
               </div>
               <details className="group">

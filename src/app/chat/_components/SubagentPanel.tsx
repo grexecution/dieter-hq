@@ -124,7 +124,7 @@ function SubagentCard({ session, onKill, isKilling }: SubagentCardProps) {
       {/* Status indicator */}
       <div className="absolute right-3 top-3 flex items-center gap-1.5">
         <span className={cn("h-2 w-2 rounded-full", statusColor)} />
-        <span className="text-[10px] font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+        <span className="text-[11px] font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
           {statusLabel}
         </span>
       </div>
@@ -137,7 +137,7 @@ function SubagentCard({ session, onKill, isKilling }: SubagentCardProps) {
             {session.label || "subagent"}
           </span>
         </div>
-        <div className="mt-0.5 flex items-center gap-1.5 text-[11px] text-zinc-500 dark:text-zinc-400">
+        <div className="mt-0.5 flex items-center gap-1.5 text-xs text-zinc-500 dark:text-zinc-400">
           <Cpu className="h-3 w-3" />
           <span>{modelName}</span>
         </div>
@@ -161,10 +161,10 @@ function SubagentCard({ session, onKill, isKilling }: SubagentCardProps) {
 
       {/* Session key (collapsed) */}
       <details className="mt-2">
-        <summary className="cursor-pointer text-[10px] text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300">
+        <summary className="cursor-pointer text-[11px] text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300">
           Session ID
         </summary>
-        <code className="mt-1 block truncate rounded bg-zinc-100 px-2 py-1 text-[10px] text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400">
+        <code className="mt-1 block truncate rounded bg-zinc-100 px-2 py-1 text-[11px] text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400">
           {session.key}
         </code>
       </details>
@@ -345,10 +345,10 @@ export function SubagentPanel({ className, collapsed = false, onToggleCollapse }
             <div className="mt-1 opacity-80">{error}</div>
           </div>
         ) : sessions.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-8 text-center text-zinc-500 dark:text-zinc-400">
+          <div className="flex flex-col items-center justify-center py-10 text-center text-zinc-500 dark:text-zinc-400">
             <Bot className="h-8 w-8 opacity-50" />
-            <div className="mt-2 text-xs font-medium">No active subagents</div>
-            <div className="mt-1 text-[10px] opacity-70">
+            <div className="mt-3 text-sm font-medium">No active subagents</div>
+            <div className="mt-1 text-xs opacity-70">
               Subagents will appear here when spawned
             </div>
           </div>
@@ -367,9 +367,9 @@ export function SubagentPanel({ className, collapsed = false, onToggleCollapse }
       </ScrollArea>
 
       {/* Footer */}
-      <div className="border-t border-zinc-200/70 px-4 py-2 dark:border-zinc-800">
-        <div className="text-[10px] text-zinc-400 dark:text-zinc-500">
-          Last refresh: {new Date(lastRefresh).toLocaleTimeString("de-AT")} • Auto-refresh: 5s
+      <div className="border-t border-zinc-200/70 px-4 py-2.5 dark:border-zinc-800">
+        <div className="text-[11px] text-zinc-400 dark:text-zinc-500">
+          Last refresh: {new Date(lastRefresh).toLocaleTimeString("de-AT")} · Auto-refresh: 5s
         </div>
       </div>
     </aside>

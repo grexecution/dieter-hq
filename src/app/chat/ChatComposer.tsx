@@ -308,13 +308,13 @@ export function ChatComposer({ threadId, disabled }: { threadId: string; disable
         </div>
       )}
       
-      {/* Attachment button - aligned with input height */}
+      {/* Attachment button */}
       <button
         type="button"
         onClick={() => fileInputRef.current?.click()}
         disabled={disabled}
         className={cn(
-          "flex h-9 w-9 items-center justify-center rounded-xl transition-all",
+          "flex h-9 w-9 md:h-10 md:w-10 items-center justify-center rounded-xl transition-all",
           "bg-zinc-100 text-zinc-500 hover:bg-zinc-200 hover:text-zinc-700",
           "dark:bg-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-700 dark:hover:text-zinc-200",
           disabled && "opacity-50 pointer-events-none"

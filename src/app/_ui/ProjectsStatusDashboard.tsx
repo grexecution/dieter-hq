@@ -159,12 +159,12 @@ export function ProjectsStatusDashboard() {
   const criticalCount = projects.filter(p => p.status === "critical").length;
 
   return (
-    <div className="flex h-full flex-col rounded-2xl border border-white/20 bg-white/40 shadow-xl backdrop-blur-2xl dark:border-white/5 dark:bg-zinc-900/40">
+    <div className="flex h-full flex-col rounded-2xl border border-zinc-200/70 bg-white/60 shadow-sm backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/40">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-white/10 p-4 dark:border-white/5">
-        <div className="flex items-center gap-2">
-          <GitBranch className="h-5 w-5 text-primary" />
-          <h2 className="font-semibold">Projects</h2>
+      <div className="flex items-center justify-between border-b border-zinc-200/70 px-4 py-3.5 dark:border-zinc-800">
+        <div className="flex items-center gap-2.5">
+          <GitBranch className="h-4.5 w-4.5 text-primary" />
+          <h2 className="text-sm font-semibold">Projects</h2>
           <Badge variant="outline" className="text-xs">
             {projects.length}
           </Badge>
@@ -172,7 +172,7 @@ export function ProjectsStatusDashboard() {
       </div>
 
       {/* Health Overview */}
-      <div className="border-b border-white/10 p-4 dark:border-white/5">
+      <div className="border-b border-zinc-200/70 px-4 py-3.5 dark:border-zinc-800">
         <div className="grid grid-cols-3 gap-2 text-center text-xs">
           <div className="flex flex-col items-center gap-1">
             <span className="text-lg font-semibold text-green-500">{healthyCount}</span>
@@ -243,7 +243,7 @@ export function ProjectsStatusDashboard() {
 
                 {/* Expanded Details */}
                 {isExpanded && (
-                  <div className="mt-3 space-y-3 border-t border-white/10 pt-3 dark:border-white/5">
+                  <div className="mt-3 space-y-3 border-t border-zinc-200/70 pt-3 dark:border-zinc-800">
                     {/* Health Check Details */}
                     <div className="space-y-2">
                       <h4 className="text-xs font-medium">Health Check:</h4>
@@ -302,7 +302,7 @@ export function ProjectsStatusDashboard() {
                         {project.suggestions.map((suggestion) => {
                           const SuggestionIcon = suggestionTypeIcons[suggestion.type];
                           return (
-                            <div key={suggestion.id} className="flex items-center justify-between rounded bg-white/30 p-2 text-xs dark:bg-white/5">
+                            <div key={suggestion.id} className="flex items-center justify-between rounded-lg bg-zinc-100/80 p-2 text-xs dark:bg-zinc-800/50">
                               <div className="flex items-center gap-2 flex-1 min-w-0">
                                 <SuggestionIcon className="h-3 w-3 flex-shrink-0" />
                                 <span className="truncate">{suggestion.title}</span>
@@ -341,7 +341,7 @@ export function ProjectsStatusDashboard() {
       </ScrollArea>
 
       {/* Footer */}
-      <div className="border-t border-white/10 p-3 dark:border-white/5">
+      <div className="border-t border-zinc-200/70 px-4 py-2.5 dark:border-zinc-800">
         <div className="flex items-center justify-between text-xs text-muted-foreground">
           <span>Last check: 2 min ago</span>
           <Button variant="ghost" size="sm" className="h-6 text-xs">

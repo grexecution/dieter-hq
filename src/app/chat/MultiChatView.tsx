@@ -843,12 +843,23 @@ export function MultiChatView({
               variant="ghost"
               size="icon"
               className="h-9 w-9 text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200"
-              onClick={() => {
+              onClick={async () => {
                 if (window.confirm("Chat neu starten? Alle Nachrichten werden gelöscht.")) {
+                  // Clear locally first for instant feedback
                   setLiveMessages((prev) => ({
                     ...prev,
                     [effectiveThreadId]: [],
                   }));
+                  // Then delete from DB for persistence across devices
+                  try {
+                    await fetch('/api/chat/reset', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ threadId: effectiveThreadId }),
+                    });
+                  } catch (err) {
+                    console.error('Failed to reset chat in DB:', err);
+                  }
                 }
               }}
               title="Chat neu starten"

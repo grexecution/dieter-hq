@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, memo, useCallback, useMemo } from "react";
+import { useState, useRef, memo, useCallback, useMemo, FormEvent } from "react";
 import { 
   Archive, 
   Clock, 
@@ -39,6 +39,7 @@ interface InboxItemCardProps {
   item: InboxItem;
   onStatusChange: (id: string, status: InboxStatus) => Promise<void>;
   onExecuteRecommendation: (id: string, approve: boolean, modifiedPayload?: string) => Promise<void>;
+  onSendCustomReply?: (id: string, message: string) => Promise<void>;
   isExpanded?: boolean;
   isSelected?: boolean;
   onToggleExpand?: () => void;
@@ -80,6 +81,12 @@ const CardContent = memo(function CardContent({
   onToggleExpand,
   handleStatusChange,
   onExecuteRecommendation,
+  onSendCustomReply,
+  showCustomReply,
+  setShowCustomReply,
+  customReplyText,
+  setCustomReplyText,
+  isSendingReply,
 }: {
   item: InboxItem;
   sourceConfig: typeof SOURCE_CONFIG[InboxSource];
@@ -95,6 +102,12 @@ const CardContent = memo(function CardContent({
   onToggleExpand?: () => void;
   handleStatusChange: (status: InboxStatus) => void;
   onExecuteRecommendation: (id: string, approve: boolean, modifiedPayload?: string) => Promise<void>;
+  onSendCustomReply?: (message: string) => Promise<void>;
+  showCustomReply: boolean;
+  setShowCustomReply: (v: boolean) => void;
+  customReplyText: string;
+  setCustomReplyText: (v: string) => void;
+  isSendingReply: boolean;
 }) {
   return (
     <>
@@ -360,17 +373,72 @@ const CardContent = memo(function CardContent({
                   <Archive className="h-3.5 w-3.5 mr-1" />
                   Archivieren
                 </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => handleStatusChange("snoozed")}
-                  disabled={isUpdating || item.status === "snoozed"}
-                  className="transition-all hover:bg-zinc-100 dark:hover:bg-zinc-800"
-                >
-                  <Clock className="h-3.5 w-3.5 mr-1" />
-                  Zurückstellen
-                </Button>
+                {onSendCustomReply && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setShowCustomReply(!showCustomReply)}
+                    disabled={isUpdating}
+                    className={cn(
+                      "transition-all hover:bg-zinc-100 dark:hover:bg-zinc-800",
+                      showCustomReply && "bg-indigo-50 dark:bg-indigo-950 border-indigo-300 dark:border-indigo-700"
+                    )}
+                  >
+                    <Reply className="h-3.5 w-3.5 mr-1" />
+                    Antworten
+                  </Button>
+                )}
               </motion.div>
+
+              {/* Custom Reply Input */}
+              <AnimatePresence>
+                {showCustomReply && onSendCustomReply && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="pt-3 space-y-2">
+                      <textarea
+                        value={customReplyText}
+                        onChange={(e) => setCustomReplyText(e.target.value)}
+                        placeholder="Deine Nachricht..."
+                        className={cn(
+                          "w-full rounded-lg border border-zinc-200 dark:border-zinc-700",
+                          "bg-white dark:bg-zinc-800 px-3 py-2",
+                          "text-sm placeholder:text-zinc-400 dark:text-zinc-100",
+                          "focus:outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400",
+                          "transition-colors resize-none"
+                        )}
+                        rows={3}
+                        autoFocus
+                      />
+                      <div className="flex justify-end gap-2">
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => {
+                            setShowCustomReply(false);
+                            setCustomReplyText("");
+                          }}
+                          className="h-7 text-xs"
+                        >
+                          Abbrechen
+                        </Button>
+                        <Button
+                          size="sm"
+                          onClick={() => onSendCustomReply(customReplyText)}
+                          disabled={isSendingReply || !customReplyText.trim()}
+                          className="h-7 text-xs bg-indigo-600 hover:bg-indigo-700"
+                        >
+                          {isSendingReply ? "Sende..." : "Senden"}
+                        </Button>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           </motion.div>
         )}
@@ -383,12 +451,29 @@ export const InboxItemCard = memo(function InboxItemCard({
   item, 
   onStatusChange, 
   onExecuteRecommendation,
+  onSendCustomReply,
   isExpanded = false,
   isSelected = false,
   onToggleExpand
 }: InboxItemCardProps) {
   const [isUpdating, setIsUpdating] = useState(false);
   const [showQuickActions, setShowQuickActions] = useState(false);
+  const [showCustomReply, setShowCustomReply] = useState(false);
+  const [customReplyText, setCustomReplyText] = useState("");
+  const [isSendingReply, setIsSendingReply] = useState(false);
+
+  // Handle sending custom reply
+  const handleSendCustomReply = useCallback(async (message: string) => {
+    if (!onSendCustomReply || !message.trim()) return;
+    setIsSendingReply(true);
+    try {
+      await onSendCustomReply(item.id, message);
+      setCustomReplyText("");
+      setShowCustomReply(false);
+    } finally {
+      setIsSendingReply(false);
+    }
+  }, [item.id, onSendCustomReply]);
   const constraintsRef = useRef<HTMLDivElement>(null);
   
   // Use motion values for GPU-accelerated transforms (no re-renders during drag)
@@ -507,6 +592,12 @@ export const InboxItemCard = memo(function InboxItemCard({
           onToggleExpand={onToggleExpand}
           handleStatusChange={handleStatusChange}
           onExecuteRecommendation={onExecuteRecommendation}
+          onSendCustomReply={onSendCustomReply ? handleSendCustomReply : undefined}
+          showCustomReply={showCustomReply}
+          setShowCustomReply={setShowCustomReply}
+          customReplyText={customReplyText}
+          setCustomReplyText={setCustomReplyText}
+          isSendingReply={isSendingReply}
         />
       </motion.div>
     </div>

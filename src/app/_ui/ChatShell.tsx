@@ -25,22 +25,22 @@ function ChatHeader() {
             <span className="hidden sm:inline">Home</span>
           </Link>
 
-          {/* Title - smaller on desktop */}
+          {/* Title - tiny on mobile, small on desktop */}
           <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-            <h1 className="flex items-center gap-1.5 text-xs md:text-[10px] font-medium text-zinc-900 md:text-zinc-500 dark:text-zinc-100 md:dark:text-zinc-400">
-              <span className="text-sm md:text-xs">💬</span>
+            <h1 className="flex items-center gap-1 text-[10px] md:text-[10px] font-medium text-zinc-500 dark:text-zinc-400">
+              <span className="text-[10px]">💬</span>
               <span>Chat</span>
             </h1>
           </div>
 
-          {/* Actions */}
-          <div className="flex items-center gap-1">
+          {/* Actions - fixed width to prevent layout shift */}
+          <div className="flex shrink-0 items-center gap-0.5">
             <ThemeToggle />
             <Link
               href="/settings"
-              className="rounded-lg p-2 text-zinc-600 transition-colors hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
+              className="rounded-md p-1.5 text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
             >
-              <Settings className="h-4 w-4" />
+              <Settings className="h-3.5 w-3.5" />
             </Link>
           </div>
         </div>

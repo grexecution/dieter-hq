@@ -296,23 +296,27 @@ export function ChatComposer({ threadId, disabled }: { threadId: string; disable
   }, [uppy]);
 
   return (
-    <div className="flex flex-col gap-2">
-      {/* File previews */}
+    <>
+      {/* File previews - rendered above the composer row via portal or absolute positioning */}
       {files.length > 0 && (
-        <div className="flex flex-wrap gap-1.5 pb-1">
-          {files.map((file) => (
-            <FilePreviewItem key={file.id} file={file} onRemove={handleRemoveFile} />
-          ))}
+        <div className="absolute bottom-full left-0 right-0 mb-2 px-3">
+          <div className="mx-auto max-w-3xl">
+            <div className="flex flex-wrap gap-1.5 pb-1">
+              {files.map((file) => (
+                <FilePreviewItem key={file.id} file={file} onRemove={handleRemoveFile} />
+              ))}
+            </div>
+          </div>
         </div>
       )}
       
-      {/* Attachment button */}
+      {/* Attachment button - single element, no wrapper */}
       <button
         type="button"
         onClick={() => fileInputRef.current?.click()}
         disabled={disabled}
         className={cn(
-          "flex h-9 w-9 items-center justify-center rounded-xl transition-all",
+          "flex h-9 w-9 items-center justify-center rounded-xl transition-all flex-shrink-0",
           "bg-zinc-100 text-zinc-500 hover:bg-zinc-200 hover:text-zinc-700",
           "dark:bg-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-700 dark:hover:text-zinc-200",
           disabled && "opacity-50 pointer-events-none"
@@ -331,6 +335,6 @@ export function ChatComposer({ threadId, disabled }: { threadId: string; disable
         onChange={handleFileSelect}
         className="hidden"
       />
-    </div>
+    </>
   );
 }

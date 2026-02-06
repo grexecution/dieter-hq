@@ -116,20 +116,20 @@ function TabNavigation({ activeTab, onTabChange, threadCounts }: TabNavigationPr
               key={tab.id}
               onClick={() => onTabChange(tab.id)}
               className={cn(
-                "relative flex min-w-[70px] flex-1 flex-col items-center justify-center gap-0.5 rounded-lg px-3 py-2 text-xs font-medium transition-colors",
-                "focus:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400",
+                "relative flex min-w-[60px] md:min-w-[70px] flex-1 flex-col items-center justify-center gap-0.5 rounded-lg px-2 md:px-3 py-1.5 md:py-2 text-xs font-medium transition-colors",
+                "focus:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400 dark:focus-visible:ring-zinc-500",
                 isActive
                   ? "bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 shadow-sm"
-                  : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800/50"
+                  : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800/50"
               )}
             >
-              {/* Content */}
-              <span className="text-sm">{tab.emoji}</span>
-              <span className="truncate text-[11px]">{tab.name}</span>
+              {/* Content - smaller on mobile */}
+              <span className="text-xs md:text-sm">{tab.emoji}</span>
+              <span className="truncate text-[10px] md:text-[11px]">{tab.name}</span>
               
               {/* Badge */}
               {messageCount > 0 && !isActive && (
-                <span className="absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-zinc-200 dark:bg-zinc-700 px-1 text-[9px] font-medium text-zinc-600 dark:text-zinc-300">
+                <span className="absolute right-0.5 md:right-1 top-0.5 md:top-1 flex h-3.5 md:h-4 min-w-3.5 md:min-w-4 items-center justify-center rounded-full bg-zinc-200 dark:bg-zinc-700 px-0.5 md:px-1 text-[8px] md:text-[9px] font-medium text-zinc-600 dark:text-zinc-300">
                   {messageCount > 99 ? "99" : messageCount}
                 </span>
               )}
@@ -404,20 +404,22 @@ function Composer({ draft, setDraft, isSending, onSubmit, onVoiceTranscript, onV
   };
 
   return (
-    <div className="sticky bottom-0 border-t border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 px-3 py-2 md:px-4 md:py-3">
-      <div className="mx-auto w-full max-w-3xl pb-safe">
+    <div className="sticky bottom-0 border-t border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 px-3 py-2 md:px-4 md:py-3 pb-safe">
+      <div className="mx-auto w-full max-w-3xl" style={{ paddingBottom: "max(0.5rem, env(safe-area-inset-bottom))" }}>
         <form
-          className="flex items-end gap-2"
+          className="flex items-center gap-2"
           onSubmit={(e) => {
             e.preventDefault();
             onSubmit();
           }}
         >
-          {/* Attachment - Left side */}
-          <ChatComposer threadId={threadId} disabled={isSending} />
+          {/* Attachment - Left side - aligned with input */}
+          <div className="flex-shrink-0 self-end pb-0.5">
+            <ChatComposer threadId={threadId} disabled={isSending} />
+          </div>
 
           {/* Text Input */}
-          <div className="relative flex-1">
+          <div className="relative flex-1 min-w-0">
             <textarea
               ref={textareaRef}
               value={draft}
@@ -435,15 +437,17 @@ function Composer({ draft, setDraft, isSending, onSubmit, onVoiceTranscript, onV
             />
           </div>
 
-          {/* Voice Recorder - Right side */}
-          <VoiceRecorder
-            threadId={threadId}
-            onTranscript={onVoiceTranscript}
-            onVoiceMessage={onVoiceMessage}
-            onTranscriptionStart={onTranscriptionStart}
-            onTranscriptionEnd={onTranscriptionEnd}
-            disabled={isSending}
-          />
+          {/* Voice Recorder - Right side - aligned with input */}
+          <div className="flex-shrink-0 self-end pb-0.5">
+            <VoiceRecorder
+              threadId={threadId}
+              onTranscript={onVoiceTranscript}
+              onVoiceMessage={onVoiceMessage}
+              onTranscriptionStart={onTranscriptionStart}
+              onTranscriptionEnd={onTranscriptionEnd}
+              disabled={isSending}
+            />
+          </div>
         </form>
 
         {/* Context indicator - Hidden on mobile */}
@@ -925,13 +929,13 @@ export function MultiChatView({
                 <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full border-2 border-white dark:border-zinc-950 bg-emerald-500" />
               </div>
               <div className="min-w-0">
-                <h1 className="truncate text-sm md:text-xs font-medium text-zinc-900 md:text-zinc-700 dark:text-zinc-100 md:dark:text-zinc-300">
+                <h1 className="truncate text-xs md:text-sm font-medium text-zinc-900 dark:text-zinc-100">
                   {isWorkspaceTab && activeProject 
                     ? `Dieter · ${activeProject.name}`
                     : `Dieter ${currentTab ? `· ${currentTab.name}` : ''}`
                   }
                 </h1>
-                <p className="text-xs md:text-[10px] text-zinc-500 md:text-zinc-400 dark:text-zinc-400 md:dark:text-zinc-500">
+                <p className="text-[10px] md:text-xs text-zinc-500 dark:text-zinc-400">
                   {isWorkspaceTab && activeProject ? 'Project Session' : 'Online'}
                 </p>
               </div>

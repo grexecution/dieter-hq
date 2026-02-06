@@ -125,7 +125,7 @@ function TabNavigation({ activeTab, onTabChange, threadCounts }: TabNavigationPr
             >
               {/* Content - smaller on mobile */}
               <span className="text-xs md:text-sm">{tab.emoji}</span>
-              <span className="truncate text-[10px] md:text-[11px]">{tab.name}</span>
+              <span className="truncate text-[9px]">{tab.name}</span>
               
               {/* Badge */}
               {messageCount > 0 && !isActive && (

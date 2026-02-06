@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Mic, X } from "lucide-react";
+import { Mic, Square, Send, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 // ============================================
@@ -59,7 +59,6 @@ function WaveformBars({ analyser }: { analyser: AnalyserNode | null }) {
       const centerY = canvas.height / 2;
 
       for (let i = 0; i < barCount; i++) {
-        // Average a few frequency bins
         let sum = 0;
         for (let j = 0; j < step; j++) {
           sum += dataArray[i * step + j];
@@ -70,7 +69,7 @@ function WaveformBars({ analyser }: { analyser: AnalyserNode | null }) {
         const x = i * (barWidth + barGap);
         const y = centerY - barHeight / 2;
 
-        ctx.fillStyle = "rgba(239, 68, 68, 0.9)"; // red-500
+        ctx.fillStyle = "rgba(239, 68, 68, 0.9)";
         ctx.beginPath();
         ctx.roundRect(x, y, barWidth, barHeight, 1.5);
         ctx.fill();
@@ -90,7 +89,7 @@ function WaveformBars({ analyser }: { analyser: AnalyserNode | null }) {
     <canvas
       ref={canvasRef}
       width={24 * 5}
-      height={40}
+      height={32}
       className="opacity-90"
     />
   );
@@ -122,21 +121,18 @@ function RecordingTimer({ startTime }: { startTime: number }) {
 }
 
 // ============================================
-// Main VoiceRecorder Component
+// Main VoiceRecorder Component (Tap to Record)
 // ============================================
 
 export function VoiceRecorder({ onTranscript, onVoiceMessage, threadId, disabled }: VoiceRecorderProps) {
   const [state, setState] = useState<RecordingState>("idle");
   const [startTime, setStartTime] = useState<number>(0);
   const [analyser, setAnalyser] = useState<AnalyserNode | null>(null);
-  const [cancelled, setCancelled] = useState(false);
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const chunksRef = useRef<Blob[]>([]);
-  const startYRef = useRef<number>(0);
-  const isTouchRef = useRef(false);
 
   // Cleanup function
   const cleanup = useCallback(() => {
@@ -153,14 +149,11 @@ export function VoiceRecorder({ onTranscript, onVoiceMessage, threadId, disabled
     chunksRef.current = [];
   }, []);
 
-  // Start recording
-  const startRecording = useCallback(async (clientY: number) => {
+  // Start recording (tap to start)
+  const startRecording = useCallback(async () => {
     if (disabled || state !== "idle") return;
 
     try {
-      startYRef.current = clientY;
-      setCancelled(false);
-
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: {
           echoCancellation: true,
@@ -194,7 +187,7 @@ export function VoiceRecorder({ onTranscript, onVoiceMessage, threadId, disabled
         }
       };
 
-      mediaRecorder.start(100); // Collect data every 100ms
+      mediaRecorder.start(100);
       setState("recording");
       setStartTime(Date.now());
     } catch (err) {
@@ -203,133 +196,76 @@ export function VoiceRecorder({ onTranscript, onVoiceMessage, threadId, disabled
     }
   }, [disabled, state, cleanup]);
 
-  // Stop recording and send
-  const stopRecording = useCallback(async (wasCancelled: boolean) => {
+  // Cancel recording
+  const cancelRecording = useCallback(() => {
+    if (state !== "recording" || !mediaRecorderRef.current) return;
+    
+    mediaRecorderRef.current.onstop = () => {
+      cleanup();
+      setState("idle");
+    };
+    mediaRecorderRef.current.stop();
+  }, [state, cleanup]);
+
+  // Send recording
+  const sendRecording = useCallback(async () => {
     if (state !== "recording" || !mediaRecorderRef.current) return;
 
     const recorder = mediaRecorderRef.current;
+    const duration = Date.now() - startTime;
 
-    return new Promise<void>((resolve) => {
-      recorder.onstop = async () => {
-        if (wasCancelled) {
-          cleanup();
-          setState("idle");
-          resolve();
-          return;
-        }
+    // Minimum recording duration: 500ms
+    if (duration < 500) {
+      cancelRecording();
+      return;
+    }
 
-        // Minimum recording duration: 500ms
-        const duration = Date.now() - startTime;
-        if (duration < 500) {
-          cleanup();
-          setState("idle");
-          resolve();
-          return;
-        }
+    recorder.onstop = async () => {
+      setState("uploading");
 
-        setState("uploading");
+      try {
+        const blob = new Blob(chunksRef.current, { type: recorder.mimeType });
+        const formData = new FormData();
+        formData.append("audio", blob, `voice-${Date.now()}.webm`);
+        formData.append("threadId", threadId);
+        formData.append("durationMs", String(duration));
 
-        try {
-          const blob = new Blob(chunksRef.current, { type: recorder.mimeType });
-          const formData = new FormData();
-          formData.append("audio", blob, `voice-${Date.now()}.webm`);
-          formData.append("threadId", threadId);
-          formData.append("durationMs", String(duration));
+        // Send as voice message
+        const response = await fetch("/api/chat/voice-message", {
+          method: "POST",
+          body: formData,
+        });
 
-          // Send as voice message (Telegram-style)
-          const response = await fetch("/api/chat/voice-message", {
+        if (response.ok) {
+          const data = await response.json();
+          if (data.ok && data.message && onVoiceMessage) {
+            onVoiceMessage(data.message);
+          }
+        } else {
+          // Fallback: Try old transcript API
+          const fallbackForm = new FormData();
+          fallbackForm.append("audio", blob, `voice-${Date.now()}.webm`);
+          const fallbackRes = await fetch("/api/chat/voice", {
             method: "POST",
-            body: formData,
+            body: fallbackForm,
           });
-
-          if (response.ok) {
-            const data = await response.json();
-            if (data.ok && data.message && onVoiceMessage) {
-              onVoiceMessage(data.message);
-            }
-          } else {
-            // Fallback: Try old transcript API
-            const fallbackForm = new FormData();
-            fallbackForm.append("audio", blob, `voice-${Date.now()}.webm`);
-            const fallbackRes = await fetch("/api/chat/voice", {
-              method: "POST",
-              body: fallbackForm,
-            });
-            if (fallbackRes.ok) {
-              const fallbackData = await fallbackRes.json();
-              if (fallbackData.transcript && onTranscript) {
-                onTranscript(fallbackData.transcript);
-              }
+          if (fallbackRes.ok) {
+            const fallbackData = await fallbackRes.json();
+            if (fallbackData.transcript && onTranscript) {
+              onTranscript(fallbackData.transcript);
             }
           }
-        } catch (err) {
-          console.error("Failed to upload voice:", err);
-        } finally {
-          cleanup();
-          setState("idle");
-          resolve();
         }
-      };
+      } catch (err) {
+        console.error("Failed to upload voice:", err);
+      } finally {
+        cleanup();
+        setState("idle");
+      }
+    };
 
-      recorder.stop();
-    });
-  }, [state, startTime, threadId, onTranscript, onVoiceMessage, cleanup]);
-
-  // Handle swipe up to cancel
-  const handleMove = useCallback((clientY: number) => {
-    if (state !== "recording") return;
-
-    const deltaY = startYRef.current - clientY;
-    if (deltaY > 50) {
-      setCancelled(true);
-    } else {
-      setCancelled(false);
-    }
-  }, [state]);
-
-  // Mouse event handlers
-  const handleMouseDown = useCallback((e: React.MouseEvent) => {
-    if (isTouchRef.current) return; // Prevent mouse events on touch devices
-    e.preventDefault();
-    startRecording(e.clientY);
-  }, [startRecording]);
-
-  const handleMouseUp = useCallback(() => {
-    if (isTouchRef.current) return;
-    stopRecording(cancelled);
-  }, [stopRecording, cancelled]);
-
-  const handleMouseLeave = useCallback(() => {
-    if (isTouchRef.current) return;
-    if (state === "recording") {
-      stopRecording(true); // Cancel if mouse leaves
-    }
-  }, [state, stopRecording]);
-
-  const handleMouseMove = useCallback((e: React.MouseEvent) => {
-    handleMove(e.clientY);
-  }, [handleMove]);
-
-  // Touch event handlers
-  const handleTouchStart = useCallback((e: React.TouchEvent) => {
-    isTouchRef.current = true;
-    e.preventDefault();
-    const touch = e.touches[0];
-    startRecording(touch.clientY);
-  }, [startRecording]);
-
-  const handleTouchEnd = useCallback(() => {
-    stopRecording(cancelled);
-  }, [stopRecording, cancelled]);
-
-  const handleTouchCancel = useCallback(() => {
-    stopRecording(true);
-  }, [stopRecording]);
-
-  const handleTouchMove = useCallback((e: React.TouchEvent) => {
-    const touch = e.touches[0];
-    handleMove(touch.clientY);
-  }, [handleMove]);
+    recorder.stop();
+  }, [state, startTime, threadId, onTranscript, onVoiceMessage, cleanup, cancelRecording]);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -341,70 +277,58 @@ export function VoiceRecorder({ onTranscript, onVoiceMessage, threadId, disabled
   const isRecording = state === "recording";
   const isUploading = state === "uploading";
 
+  // Recording UI - inline bar instead of fullscreen overlay
+  if (isRecording) {
+    return (
+      <div className="flex items-center gap-2 rounded-full bg-red-50 px-3 py-1.5 dark:bg-red-950/30">
+        {/* Waveform */}
+        <WaveformBars analyser={analyser} />
+        
+        {/* Timer */}
+        <RecordingTimer startTime={startTime} />
+        
+        {/* Cancel button */}
+        <button
+          type="button"
+          onClick={cancelRecording}
+          className="flex h-8 w-8 items-center justify-center rounded-full bg-zinc-200 text-zinc-600 transition-colors hover:bg-zinc-300 dark:bg-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-600"
+          title="Cancel"
+        >
+          <X className="h-4 w-4" />
+        </button>
+        
+        {/* Send button */}
+        <button
+          type="button"
+          onClick={sendRecording}
+          className="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-500 text-white transition-colors hover:bg-indigo-600"
+          title="Send"
+        >
+          <Send className="h-4 w-4" />
+        </button>
+      </div>
+    );
+  }
+
+  // Idle / Uploading state - just the mic button
   return (
-    <div className="relative">
-      {/* Recording overlay */}
-      {isRecording && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/20 backdrop-blur-[2px]">
-          <div className="mb-32 flex flex-col items-center gap-4 rounded-2xl bg-white p-6 shadow-2xl dark:bg-zinc-900">
-            {/* Cancel indicator */}
-            {cancelled ? (
-              <div className="flex items-center gap-2 text-red-500">
-                <X className="h-5 w-5" />
-                <span className="text-sm font-medium">Release to cancel</span>
-              </div>
-            ) : (
-              <span className="text-sm text-muted-foreground">
-                Release to send • Swipe up to cancel
-              </span>
-            )}
-
-            {/* Waveform */}
-            <WaveformBars analyser={analyser} />
-
-            {/* Timer */}
-            <RecordingTimer startTime={startTime} />
-
-            {/* Pulsing indicator */}
-            <div className="relative">
-              <div className="h-16 w-16 rounded-full bg-red-500 shadow-lg">
-                <Mic className="absolute inset-0 m-auto h-8 w-8 text-white" />
-              </div>
-              <div className="absolute inset-0 animate-ping rounded-full bg-red-500 opacity-30" />
-            </div>
-          </div>
-        </div>
+    <button
+      type="button"
+      onClick={startRecording}
+      className={cn(
+        "relative flex h-11 w-11 items-center justify-center rounded-full transition-all",
+        isUploading
+          ? "bg-zinc-200 text-zinc-500 dark:bg-zinc-700"
+          : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-700"
       )}
-
-      {/* Main button */}
-      <button
-        type="button"
-        className={cn(
-          "relative flex h-11 w-11 items-center justify-center rounded-full transition-all",
-          "touch-none select-none",
-          isRecording
-            ? "scale-110 bg-red-500 text-white shadow-lg"
-            : isUploading
-              ? "bg-zinc-200 text-zinc-500 dark:bg-zinc-700"
-              : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-700"
-        )}
-        disabled={disabled || isUploading}
-        onMouseDown={handleMouseDown}
-        onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseLeave}
-        onMouseMove={handleMouseMove}
-        onTouchStart={handleTouchStart}
-        onTouchEnd={handleTouchEnd}
-        onTouchCancel={handleTouchCancel}
-        onTouchMove={handleTouchMove}
-        title={isUploading ? "Processing..." : "Hold to record"}
-      >
-        {isUploading ? (
-          <div className="h-5 w-5 animate-spin rounded-full border-2 border-zinc-400 border-t-transparent" />
-        ) : (
-          <Mic className={cn("h-5 w-5", isRecording && "animate-pulse")} />
-        )}
-      </button>
-    </div>
+      disabled={disabled || isUploading}
+      title={isUploading ? "Processing..." : "Tap to record"}
+    >
+      {isUploading ? (
+        <div className="h-5 w-5 animate-spin rounded-full border-2 border-zinc-400 border-t-transparent" />
+      ) : (
+        <Mic className="h-5 w-5" />
+      )}
+    </button>
   );
 }

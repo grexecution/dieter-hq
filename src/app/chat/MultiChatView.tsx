@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import dynamic from "next/dynamic";
-import { Menu, Send, Sparkles, User, Bot, MessageCircle, Dumbbell, Briefcase, Code, ChevronLeft } from "lucide-react";
+import { Menu, Send, Sparkles, User, Bot, MessageCircle, Dumbbell, Briefcase, Code, ChevronLeft, RotateCcw } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -783,6 +783,24 @@ export function MultiChatView({
             <span className="rounded-md bg-zinc-100 dark:bg-zinc-800 px-2 py-1 text-xs text-zinc-600 dark:text-zinc-400 tabular-nums">
               {currentMessages.length}
             </span>
+            {/* Reset Chat Button */}
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="h-9 w-9 text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200"
+              onClick={() => {
+                if (window.confirm("Chat neu starten? Alle Nachrichten werden gelöscht.")) {
+                  setLiveMessages((prev) => ({
+                    ...prev,
+                    [effectiveThreadId]: [],
+                  }));
+                }
+              }}
+              title="Chat neu starten"
+            >
+              <RotateCcw className="h-4 w-4" />
+            </Button>
           </div>
         </header>
 

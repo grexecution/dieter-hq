@@ -350,20 +350,7 @@ function ChatContent({ activeTab, messages, artefactsById, isTranscribing, isSen
             </div>
           )}
         
-        {/* Quick action suggestions after assistant messages */}
-        {messages.length > 0 && !isTranscribing && !isSending && onSuggestionClick && (() => {
-          // Find last assistant message
-          const lastAssistant = [...messages].reverse().find(m => m.role === "assistant");
-          if (!lastAssistant) return null;
-          return (
-            <ChatSuggestions
-              lastAssistantMessage={lastAssistant.content}
-              currentTab={activeTab}
-              onSuggestionClick={onSuggestionClick}
-              className="mt-2"
-            />
-          );
-        })()}
+        {/* ChatSuggestions temporarily disabled - will be integrated into Inbox item detail view */}
 
         {/* Transcription/Sending status indicator */}
         {(isTranscribing || isSending) && (

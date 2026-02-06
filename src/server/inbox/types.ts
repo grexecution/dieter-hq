@@ -49,6 +49,63 @@ export interface WacliResponse {
   error: string | null;
 }
 
+// Slack types (Slack Web API)
+export interface SlackMessage {
+  type: string;
+  subtype?: string;
+  ts: string;
+  user?: string;
+  bot_id?: string;
+  text: string;
+  channel: string;
+  thread_ts?: string;
+}
+
+export interface SlackUser {
+  id: string;
+  name: string;
+  real_name?: string;
+  profile?: {
+    display_name?: string;
+    real_name?: string;
+    email?: string;
+  };
+}
+
+export interface SlackChannel {
+  id: string;
+  name: string;
+  is_channel: boolean;
+  is_im: boolean;
+  is_mpim: boolean;
+  is_private: boolean;
+}
+
+export interface SlackConversationsHistoryResponse {
+  ok: boolean;
+  messages?: SlackMessage[];
+  has_more?: boolean;
+  response_metadata?: {
+    next_cursor?: string;
+  };
+  error?: string;
+}
+
+export interface SlackConversationsListResponse {
+  ok: boolean;
+  channels?: SlackChannel[];
+  response_metadata?: {
+    next_cursor?: string;
+  };
+  error?: string;
+}
+
+export interface SlackUsersInfoResponse {
+  ok: boolean;
+  user?: SlackUser;
+  error?: string;
+}
+
 // Sync state stored in DB
 export interface SyncState {
   id: string;

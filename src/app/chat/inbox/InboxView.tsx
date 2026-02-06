@@ -254,19 +254,11 @@ export function InboxView() {
   const handleSync = async () => {
     setIsSyncing(true);
     try {
-      const emailAccounts = ["greg@example.com"];
-      for (const account of emailAccounts) {
-        await fetch("/api/inbox/sync", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ source: "email", account }),
-        });
-      }
-      
+      // Sync all sources at once
       await fetch("/api/inbox/sync", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ source: "whatsapp" }),
+        body: JSON.stringify({ source: "all" }),
       });
       
       await loadItems(true);

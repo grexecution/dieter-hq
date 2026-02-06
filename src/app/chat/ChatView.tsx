@@ -13,6 +13,7 @@ import { ChatComposer } from "./ChatComposer";
 import { NowBar } from "./NowBar";
 import { OpenClawStatusSidebar } from "./OpenClawStatusSidebar";
 import { AgentStatusPanel } from "@/components/agent-status-panel";
+import { MarkdownContent } from "@/components/MarkdownContent";
 
 const VoiceRecorder = dynamic(
   () => import("./_components/VoiceRecorder").then((m) => m.VoiceRecorder),
@@ -221,9 +222,7 @@ function MessageBubble({ message, artefact, url }: MessageBubbleProps) {
             )}
           </div>
         ) : (
-          <div className="whitespace-pre-wrap text-sm leading-relaxed">
-            {meta.text}
-          </div>
+          <MarkdownContent content={meta.text} className="text-sm" />
         )}
       </div>
     </div>
@@ -655,8 +654,10 @@ export function ChatView({
                           typing...
                         </span>
                       </div>
-                      <div className="whitespace-pre-wrap text-sm leading-relaxed min-h-[1.5rem]">
-                        {streamingContent || (
+                      <div className="text-sm leading-relaxed min-h-[1.5rem]">
+                        {streamingContent ? (
+                          <MarkdownContent content={streamingContent} className="text-sm" />
+                        ) : (
                           <span className="flex items-center gap-1.5 text-zinc-400">
                             <span className="inline-block h-1.5 w-1.5 rounded-full bg-current opacity-60" />
                             <span className="inline-block h-1.5 w-1.5 rounded-full bg-current opacity-40" />

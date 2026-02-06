@@ -7,7 +7,7 @@ import {
   apiError,
   ErrorCodes,
 } from "@/server/inbox/validation";
-import { syncEmailInbox, syncAllEmailInboxes, syncWhatsAppInbox, EMAIL_ACCOUNTS } from "@/server/inbox";
+import { syncEmailInbox, syncAllEmailInboxes, syncWhatsAppInbox, syncSlackInbox, EMAIL_ACCOUNTS } from "@/server/inbox";
 import type { SyncResult } from "@/server/inbox";
 
 export const runtime = "nodejs";
@@ -67,6 +67,11 @@ export async function POST(req: NextRequest) {
         results.push(waResult);
         break;
 
+      case "slack":
+        const slackResult = await syncSlackInbox();
+        results.push(slackResult);
+        break;
+
       case "all":
         // Sync everything
         console.log("[Sync] Syncing all sources...");
@@ -78,6 +83,10 @@ export async function POST(req: NextRequest) {
         // Sync WhatsApp
         const allWaResult = await syncWhatsAppInbox();
         results.push(allWaResult);
+        
+        // Sync Slack
+        const allSlackResult = await syncSlackInbox();
+        results.push(allSlackResult);
         break;
     }
 

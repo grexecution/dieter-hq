@@ -99,12 +99,12 @@ export type CreateRecommendation = z.infer<typeof CreateRecommendationSchema>;
 
 // POST /api/inbox/sync
 export const SyncRequestSchema = z.object({
-  source: z.enum(["email", "whatsapp", "all"]),
+  source: z.enum(["email", "whatsapp", "slack", "all"]),
   account: z.string().optional(),
 }).refine(data => {
   // Email with specific account is fine
   // Email without account will sync all accounts
-  // WhatsApp and all don't need account
+  // WhatsApp, Slack, and all don't need account
   return true;
 }, {
   message: "Invalid sync request",

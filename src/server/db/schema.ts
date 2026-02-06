@@ -188,6 +188,23 @@ export const inboxActionLog = pgTable("inbox_action_log", {
   index("idx_inbox_action_log_created").on(table.createdAt),
 ]);
 
+// Pending replies - OpenClaw cron job sends these
+export const pendingReplies = pgTable("pending_replies", {
+  id: text("id").primaryKey(),
+  inboxItemId: text("inbox_item_id").references(() => inboxItems.id, { onDelete: "set null" }),
+  channel: text("channel").notNull(), // "whatsapp" | "email" | "slack" etc
+  recipient: text("recipient").notNull(), // phone/email/id
+  recipientName: text("recipient_name"),
+  message: text("message").notNull(),
+  status: text("status").notNull().default("pending"), // "pending" | "sent" | "failed"
+  error: text("error"),
+  sentAt: timestamp("sent_at", { mode: "date", withTimezone: true }),
+  createdAt: timestamp("created_at", { mode: "date", withTimezone: true }).notNull(),
+}, (table) => [
+  index("idx_pending_replies_status").on(table.status),
+  index("idx_pending_replies_created").on(table.createdAt),
+]);
+
 // Sync state for each source
 export const inboxSyncState = pgTable("inbox_sync_state", {
   id: text("id").primaryKey(), // "email:greg@gmail.com" or "whatsapp"

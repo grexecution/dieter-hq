@@ -1,8 +1,8 @@
 /**
- * Messaging utilities - sends via OpenClaw Gateway /tools/invoke
+ * Messaging utilities - spawns OpenClaw sub-agent to send messages
  * 
- * This uses the Gateway's HTTP API to invoke the message tool directly.
- * Works from anywhere (Vercel, local, etc.) as long as Gateway is reachable.
+ * Uses sessions_spawn to create a task that executes wacli.
+ * The agent has access to exec tool and can run wacli directly.
  */
 
 export type MessageChannel = 'whatsapp' | 'telegram' | 'email' | 'slack';
@@ -18,16 +18,26 @@ const OPENCLAW_GATEWAY_URL = process.env.OPENCLAW_GATEWAY_URL || 'http://127.0.0
 const OPENCLAW_GATEWAY_TOKEN = process.env.OPENCLAW_GATEWAY_TOKEN;
 
 /**
- * Send a message via OpenClaw Gateway's /tools/invoke endpoint
+ * Spawn a sub-agent task to send a WhatsApp message via wacli
  */
-async function sendViaGateway(
-  channel: MessageChannel,
-  to: string,
-  message: string
-): Promise<SendMessageResult> {
+async function spawnMessageTask(to: string, message: string): Promise<SendMessageResult> {
   const url = `${OPENCLAW_GATEWAY_URL}/tools/invoke`;
   
-  console.log(`[messaging] Sending ${channel} to ${to} via Gateway: ${message.slice(0, 50)}...`);
+  // Escape the message for the task prompt
+  const escapedMessage = message.replace(/"/g, '\\"').replace(/\n/g, '\\n');
+  const escapedTo = to.replace(/"/g, '\\"');
+  
+  const task = `Send this WhatsApp message immediately using wacli:
+
+To: ${escapedTo}
+Message: "${escapedMessage}"
+
+Use this exact command:
+wacli send text --to "${escapedTo}" --message "${escapedMessage}"
+
+Do NOT ask for confirmation. Just execute the command and report success or failure.`;
+
+  console.log(`[messaging] Spawning agent task to send WhatsApp to ${to}`);
 
   try {
     const response = await fetch(url, {
@@ -37,12 +47,11 @@ async function sendViaGateway(
         ...(OPENCLAW_GATEWAY_TOKEN && { "Authorization": `Bearer ${OPENCLAW_GATEWAY_TOKEN}` }),
       },
       body: JSON.stringify({
-        tool: "message",
+        tool: "sessions_spawn",
         args: {
-          action: "send",
-          channel,
-          to,
-          message,
+          task,
+          label: `whatsapp-send-${Date.now()}`,
+          runTimeoutSeconds: 30,
         },
       }),
     });
@@ -50,39 +59,39 @@ async function sendViaGateway(
     const result = await response.json();
     
     if (!response.ok || result.ok === false) {
-      console.error("[messaging] Gateway error:", result);
+      console.error("[messaging] Spawn error:", result);
       return {
         ok: false,
         error: result.error?.message || result.error || `Gateway returned ${response.status}`,
       };
     }
 
-    console.log("[messaging] Gateway success:", result);
+    console.log("[messaging] Spawn success:", result);
     return {
       ok: true,
-      messageId: result.result?.messageId,
+      messageId: result.result?.sessionId,
     };
   } catch (error) {
-    console.error("[messaging] Gateway request failed:", error);
+    console.error("[messaging] Spawn request failed:", error);
     return {
       ok: false,
-      error: error instanceof Error ? error.message : "Gateway request failed",
+      error: error instanceof Error ? error.message : "Spawn request failed",
     };
   }
 }
 
 /**
- * Send a WhatsApp message via OpenClaw Gateway
+ * Send a WhatsApp message by spawning an agent task
  */
 export async function sendWhatsAppMessage(
   to: string, 
   message: string,
-  _replyTo?: string // Note: reply-to not yet supported
+  _replyTo?: string
 ): Promise<SendMessageResult> {
   // Ensure proper WhatsApp JID format
   const jid = to.includes('@') ? to : `${to}@s.whatsapp.net`;
   
-  return sendViaGateway('whatsapp', jid, message);
+  return spawnMessageTask(jid, message);
 }
 
 /**

@@ -30,11 +30,32 @@ interface RecommendationCardProps {
   compact?: boolean;
 }
 
+// Helper to extract draft text from JSON payload
+function extractDraftText(payload: string | null | undefined): string {
+  if (!payload) return "";
+  try {
+    const parsed = JSON.parse(payload);
+    return parsed.draft || payload;
+  } catch {
+    return payload;
+  }
+}
+
+// Helper to rebuild JSON payload with updated draft
+function buildPayloadWithDraft(originalPayload: string | null | undefined, newDraft: string): string {
+  try {
+    const parsed = JSON.parse(originalPayload || "{}");
+    return JSON.stringify({ ...parsed, draft: newDraft });
+  } catch {
+    return JSON.stringify({ draft: newDraft });
+  }
+}
+
 export function RecommendationCard({ recommendation, onExecute, compact = false }: RecommendationCardProps) {
   const [isExecuting, setIsExecuting] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-  const [editedPayload, setEditedPayload] = useState(recommendation.actionPayload || "{}");
+  const [editedDraft, setEditedDraft] = useState(() => extractDraftText(recommendation.actionPayload));
   const [executionState, setExecutionState] = useState<"idle" | "executing" | "success" | "error">("idle");
 
   const actionConfig = ACTION_TYPE_CONFIG[recommendation.actionType] || ACTION_TYPE_CONFIG.custom;
@@ -57,10 +78,15 @@ export function RecommendationCard({ recommendation, onExecute, compact = false 
     setIsExecuting(true);
     setExecutionState("executing");
     try {
+      // If editing, rebuild the JSON payload with the updated draft
+      const modifiedPayload = isEditing 
+        ? buildPayloadWithDraft(recommendation.actionPayload, editedDraft)
+        : undefined;
+      
       await onExecute(
         recommendation.id, 
         approve, 
-        isEditing ? editedPayload : undefined
+        modifiedPayload
       );
       setExecutionState(approve ? "success" : "idle");
     } catch {
@@ -398,18 +424,19 @@ export function RecommendationCard({ recommendation, onExecute, compact = false 
                   className="space-y-2"
                 >
                   <label className="text-xs font-medium text-zinc-700 dark:text-zinc-300">
-                    Aktion anpassen (JSON):
+                    Nachricht bearbeiten:
                   </label>
                   <textarea
-                    value={editedPayload}
-                    onChange={(e) => setEditedPayload(e.target.value)}
+                    value={editedDraft}
+                    onChange={(e) => setEditedDraft(e.target.value)}
+                    placeholder="Deine Nachricht hier eingeben..."
                     className={cn(
                       "w-full rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-3 py-2",
-                      "text-xs font-mono placeholder:text-zinc-400",
+                      "text-sm placeholder:text-zinc-400",
                       "focus:outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400",
-                      "transition-colors"
+                      "transition-colors resize-none"
                     )}
-                    rows={3}
+                    rows={4}
                   />
                   <div className="flex justify-end gap-2">
                     <Button
@@ -417,7 +444,7 @@ export function RecommendationCard({ recommendation, onExecute, compact = false 
                       variant="ghost"
                       onClick={() => {
                         setIsEditing(false);
-                        setEditedPayload(recommendation.actionPayload || "{}");
+                        setEditedDraft(extractDraftText(recommendation.actionPayload));
                       }}
                       className="h-7 text-xs"
                     >

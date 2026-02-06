@@ -6,6 +6,7 @@ import { PWAInitializer } from "@/components/PWAInitializer";
 import { UnifiedStoreProvider } from "@/lib/unified-store";
 import { useViewPreloader } from "@/components/ViewTransition";
 import { useRouter } from "next/navigation";
+import { Toaster } from "@/components/ui/toaster";
 
 function ViewPreloaderEffect() {
   useViewPreloader();
@@ -30,6 +31,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
           <PWAInitializer />
           <ViewPreloaderEffect />
           {children}
+          <Toaster position="bottom-right" richColors closeButton />
         </UnifiedStoreProvider>
       </HeroUIWrapper>
     </ThemeProvider>

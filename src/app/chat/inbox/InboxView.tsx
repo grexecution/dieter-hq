@@ -1,21 +1,32 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
-import { RefreshCw, Inbox, History as HistoryIcon, Loader2 } from "lucide-react";
+import { useEffect, useState, useCallback, useRef } from "react";
+import { RefreshCw, Inbox, History as HistoryIcon, Keyboard } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { 
   InboxItem, 
   InboxFilters as FiltersType, 
   InboxStatus,
-  InboxSource,
-  InboxPriority
 } from "./types";
 import { InboxFilters } from "./InboxFilters";
 import { InboxItemCard } from "./InboxItemCard";
 import { InboxHistory } from "./InboxHistory";
+import { InboxListSkeleton, PullToRefreshIndicator } from "./InboxSkeleton";
+import { useKeyboardNavigation } from "./hooks/useKeyboardNavigation";
+import { usePullToRefresh } from "./hooks/usePullToRefresh";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 
 type ViewMode = "inbox" | "history";
+
+// Undo stack for actions
+interface UndoAction {
+  itemId: string;
+  previousStatus: InboxStatus;
+  timestamp: number;
+}
 
 export function InboxView() {
   const [items, setItems] = useState<InboxItem[]>([]);
@@ -23,6 +34,10 @@ export function InboxView() {
   const [isSyncing, setIsSyncing] = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>("inbox");
   const [expandedItemId, setExpandedItemId] = useState<string | null>(null);
+  const [selectedIndex, setSelectedIndex] = useState(0);
+  const [showKeyboardHints, setShowKeyboardHints] = useState(false);
+  const [undoStack, setUndoStack] = useState<UndoAction[]>([]);
+  const scrollRef = useRef<HTMLDivElement>(null);
   
   const [filters, setFilters] = useState<FiltersType>({
     source: "all",
@@ -38,7 +53,7 @@ export function InboxView() {
 
   // Load inbox items
   const loadItems = useCallback(async (reset = false) => {
-    setIsLoading(true);
+    if (reset) setIsLoading(true);
     try {
       const params = new URLSearchParams();
       if (filters.source !== "all") params.set("source", filters.source);
@@ -50,7 +65,7 @@ export function InboxView() {
       const res = await fetch(`/api/inbox/items?${params.toString()}`);
       if (res.ok) {
         const data = await res.json();
-        setItems(reset ? data.items : [...items, ...data.items]);
+        setItems(reset ? data.items : (prev: InboxItem[]) => [...prev, ...data.items]);
         setPagination({
           total: data.pagination.total,
           hasMore: data.pagination.hasMore,
@@ -59,10 +74,11 @@ export function InboxView() {
       }
     } catch (err) {
       console.error("Error loading inbox:", err);
+      toast.error("Fehler beim Laden der Inbox");
     } finally {
       setIsLoading(false);
     }
-  }, [filters, pagination.offset, items]);
+  }, [filters, pagination.offset]);
 
   // Initial load
   useEffect(() => {
@@ -70,27 +86,93 @@ export function InboxView() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filters]);
 
+  // Pull to refresh
+  const { ref: pullRef, pullDistance, isRefreshing, isTriggered } = usePullToRefresh<HTMLDivElement>({
+    onRefresh: async () => {
+      await loadItems(true);
+      toast.success("Inbox aktualisiert");
+    },
+    enabled: viewMode === "inbox",
+  });
+
   // Handle filter change
   const handleFiltersChange = (newFilters: FiltersType) => {
     setFilters(newFilters);
     setPagination({ total: 0, hasMore: false, offset: 0 });
+    setSelectedIndex(0);
   };
 
-  // Handle status change
+  // Handle status change with optimistic update
   const handleStatusChange = async (id: string, status: InboxStatus) => {
+    const item = items.find(i => i.id === id);
+    if (!item) return;
+
+    // Save for undo
+    const undoAction: UndoAction = {
+      itemId: id,
+      previousStatus: item.status,
+      timestamp: Date.now(),
+    };
+
+    // Optimistic update
+    setItems(prev => prev.map(i => 
+      i.id === id ? { ...i, status } : i
+    ));
+
     try {
       const res = await fetch(`/api/inbox/items/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status }),
       });
+      
       if (res.ok) {
-        setItems(prev => prev.map(item => 
-          item.id === id ? { ...item, status } : item
+        setUndoStack(prev => [...prev.slice(-9), undoAction]);
+        
+        const statusLabels: Record<InboxStatus, string> = {
+          archived: "Archiviert",
+          snoozed: "Zurückgestellt",
+          pending: "Als offen markiert",
+          actioned: "Als erledigt markiert",
+        };
+        
+        toast.success(statusLabels[status], {
+          action: {
+            label: "Rückgängig",
+            onClick: () => handleUndo(undoAction),
+          },
+        });
+      } else {
+        // Revert on failure
+        setItems(prev => prev.map(i => 
+          i.id === id ? { ...i, status: undoAction.previousStatus } : i
         ));
+        toast.error("Fehler beim Aktualisieren");
       }
     } catch (err) {
-      console.error("Error updating status:", err);
+      // Revert on error
+      setItems(prev => prev.map(i => 
+        i.id === id ? { ...i, status: undoAction.previousStatus } : i
+      ));
+      toast.error("Fehler beim Aktualisieren");
+    }
+  };
+
+  // Undo action
+  const handleUndo = async (action: UndoAction) => {
+    setItems(prev => prev.map(i => 
+      i.id === action.itemId ? { ...i, status: action.previousStatus } : i
+    ));
+
+    try {
+      await fetch(`/api/inbox/items/${action.itemId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: action.previousStatus }),
+      });
+      toast.success("Rückgängig gemacht");
+    } catch {
+      toast.error("Fehler beim Rückgängig machen");
     }
   };
 
@@ -107,11 +189,14 @@ export function InboxView() {
         body: JSON.stringify({ approve, modifiedPayload }),
       });
       if (res.ok) {
-        // Refresh items to get updated recommendations
+        toast.success(approve ? "Aktion ausgeführt" : "Aktion abgelehnt");
         loadItems(true);
+      } else {
+        toast.error("Fehler bei der Ausführung");
       }
     } catch (err) {
       console.error("Error executing recommendation:", err);
+      toast.error("Fehler bei der Ausführung");
     }
   };
 
@@ -119,8 +204,7 @@ export function InboxView() {
   const handleSync = async () => {
     setIsSyncing(true);
     try {
-      // Sync all email accounts (will be populated later)
-      const emailAccounts = ["greg@example.com"]; // TODO: Get from config
+      const emailAccounts = ["greg@example.com"];
       for (const account of emailAccounts) {
         await fetch("/api/inbox/sync", {
           method: "POST",
@@ -129,23 +213,57 @@ export function InboxView() {
         });
       }
       
-      // Sync WhatsApp
       await fetch("/api/inbox/sync", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ source: "whatsapp" }),
       });
       
-      // Refresh items
-      loadItems(true);
+      await loadItems(true);
+      toast.success("Synchronisation abgeschlossen");
     } catch (err) {
       console.error("Error syncing:", err);
+      toast.error("Synchronisation fehlgeschlagen");
     } finally {
       setIsSyncing(false);
     }
   };
 
+  // Keyboard navigation
+  const handleKeyboardAction = useCallback((action: string, item: { id: string }) => {
+    switch (action) {
+      case "archive":
+        handleStatusChange(item.id, "archived");
+        break;
+      case "snooze":
+        handleStatusChange(item.id, "snoozed");
+        break;
+      case "open":
+        setExpandedItemId(expandedItemId === item.id ? null : item.id);
+        break;
+      case "close":
+        setExpandedItemId(null);
+        break;
+    }
+  }, [expandedItemId]);
+
+  useKeyboardNavigation({
+    items,
+    selectedIndex,
+    onSelectIndex: (index) => {
+      setSelectedIndex(index);
+      // Scroll item into view
+      const itemElement = document.getElementById(`inbox-item-${items[index]?.id}`);
+      if (itemElement) {
+        itemElement.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      }
+    },
+    onAction: handleKeyboardAction,
+    enabled: viewMode === "inbox" && !isLoading,
+  });
+
   const pendingCount = items.filter(i => i.status === "pending").length;
+  const unreadCount = items.filter(i => i.status === "pending" && i.priority !== "low").length;
 
   return (
     <div className="flex flex-col h-full">
@@ -156,7 +274,7 @@ export function InboxView() {
             <button
               onClick={() => setViewMode("inbox")}
               className={cn(
-                "flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors",
+                "flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-all duration-200",
                 viewMode === "inbox"
                   ? "bg-white dark:bg-zinc-700 text-zinc-900 dark:text-zinc-100 shadow-sm"
                   : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300"
@@ -164,11 +282,19 @@ export function InboxView() {
             >
               <Inbox className="h-3.5 w-3.5" />
               Inbox
+              {unreadCount > 0 && (
+                <Badge 
+                  variant="default" 
+                  className="ml-1 h-4 min-w-[16px] px-1 text-[10px] bg-indigo-600 hover:bg-indigo-600"
+                >
+                  {unreadCount}
+                </Badge>
+              )}
             </button>
             <button
               onClick={() => setViewMode("history")}
               className={cn(
-                "flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors",
+                "flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-all duration-200",
                 viewMode === "history"
                   ? "bg-white dark:bg-zinc-700 text-zinc-900 dark:text-zinc-100 shadow-sm"
                   : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300"
@@ -180,16 +306,52 @@ export function InboxView() {
           </div>
         </div>
 
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={handleSync}
-          disabled={isSyncing}
-        >
-          <RefreshCw className={cn("h-3.5 w-3.5 mr-1.5", isSyncing && "animate-spin")} />
-          {isSyncing ? "Sync..." : "Sync"}
-        </Button>
+        <div className="flex items-center gap-2">
+          {/* Keyboard shortcuts hint */}
+          <button
+            onClick={() => setShowKeyboardHints(!showKeyboardHints)}
+            className={cn(
+              "hidden sm:flex items-center gap-1 px-2 py-1 text-xs rounded-md transition-colors",
+              showKeyboardHints 
+                ? "bg-zinc-200 dark:bg-zinc-700 text-zinc-900 dark:text-zinc-100"
+                : "text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
+            )}
+          >
+            <Keyboard className="h-3.5 w-3.5" />
+          </button>
+
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={handleSync}
+            disabled={isSyncing}
+            className="transition-all duration-200"
+          >
+            <RefreshCw className={cn("h-3.5 w-3.5 mr-1.5", isSyncing && "animate-spin")} />
+            {isSyncing ? "Sync..." : "Sync"}
+          </Button>
+        </div>
       </div>
+
+      {/* Keyboard shortcuts panel */}
+      <AnimatePresence>
+        {showKeyboardHints && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="overflow-hidden border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900"
+          >
+            <div className="px-4 py-2 flex flex-wrap gap-x-6 gap-y-1 text-xs text-zinc-500 dark:text-zinc-400">
+              <span><kbd className="px-1.5 py-0.5 rounded bg-zinc-200 dark:bg-zinc-700 font-mono">j</kbd> / <kbd className="px-1.5 py-0.5 rounded bg-zinc-200 dark:bg-zinc-700 font-mono">k</kbd> Navigieren</span>
+              <span><kbd className="px-1.5 py-0.5 rounded bg-zinc-200 dark:bg-zinc-700 font-mono">Enter</kbd> Öffnen</span>
+              <span><kbd className="px-1.5 py-0.5 rounded bg-zinc-200 dark:bg-zinc-700 font-mono">e</kbd> Archivieren</span>
+              <span><kbd className="px-1.5 py-0.5 rounded bg-zinc-200 dark:bg-zinc-700 font-mono">s</kbd> Zurückstellen</span>
+              <span><kbd className="px-1.5 py-0.5 rounded bg-zinc-200 dark:bg-zinc-700 font-mono">Esc</kbd> Schließen</span>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Content based on view mode */}
       {viewMode === "inbox" ? (
@@ -201,15 +363,30 @@ export function InboxView() {
             counts={{ pending: pendingCount, total: pagination.total }}
           />
 
+          {/* Pull to refresh indicator */}
+          <PullToRefreshIndicator
+            pullDistance={pullDistance}
+            isRefreshing={isRefreshing}
+            isTriggered={isTriggered}
+          />
+
           {/* Items list */}
-          <div className="flex-1 overflow-auto">
+          <div 
+            ref={(node) => {
+              // Combine refs
+              (pullRef as React.MutableRefObject<HTMLDivElement | null>).current = node;
+              (scrollRef as React.MutableRefObject<HTMLDivElement | null>).current = node;
+            }}
+            className="flex-1 overflow-auto"
+          >
             {isLoading && items.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-12">
-                <Loader2 className="h-6 w-6 animate-spin text-zinc-400" />
-                <p className="mt-2 text-sm text-zinc-500">Lade Inbox...</p>
-              </div>
+              <InboxListSkeleton count={6} />
             ) : items.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-12 text-center px-4">
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="flex flex-col items-center justify-center py-12 text-center px-4"
+              >
                 <div className="mb-3 rounded-lg bg-zinc-100 dark:bg-zinc-800 p-4">
                   <Inbox className="h-8 w-8 text-zinc-400" />
                 </div>
@@ -230,25 +407,44 @@ export function InboxView() {
                     Filter zurücksetzen
                   </button>
                 )}
-              </div>
+              </motion.div>
             ) : (
               <div className="space-y-2 p-3">
-                {items.map((item) => (
-                  <InboxItemCard
-                    key={item.id}
-                    item={item}
-                    onStatusChange={handleStatusChange}
-                    onExecuteRecommendation={handleExecuteRecommendation}
-                    isExpanded={expandedItemId === item.id}
-                    onToggleExpand={() => setExpandedItemId(
-                      expandedItemId === item.id ? null : item.id
-                    )}
-                  />
-                ))}
+                <AnimatePresence mode="popLayout">
+                  {items.map((item, index) => (
+                    <motion.div
+                      key={item.id}
+                      id={`inbox-item-${item.id}`}
+                      layout
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, x: -100 }}
+                      transition={{ 
+                        duration: 0.2,
+                        delay: index * 0.02,
+                      }}
+                    >
+                      <InboxItemCard
+                        item={item}
+                        onStatusChange={handleStatusChange}
+                        onExecuteRecommendation={handleExecuteRecommendation}
+                        isExpanded={expandedItemId === item.id}
+                        isSelected={selectedIndex === index}
+                        onToggleExpand={() => setExpandedItemId(
+                          expandedItemId === item.id ? null : item.id
+                        )}
+                      />
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
 
                 {/* Load more */}
                 {pagination.hasMore && (
-                  <div className="flex justify-center py-4">
+                  <motion.div 
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="flex justify-center py-4"
+                  >
                     <Button
                       variant="outline"
                       size="sm"
@@ -257,14 +453,14 @@ export function InboxView() {
                     >
                       {isLoading ? (
                         <>
-                          <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />
+                          <RefreshCw className="h-3.5 w-3.5 mr-1.5 animate-spin" />
                           Laden...
                         </>
                       ) : (
                         "Mehr laden"
                       )}
                     </Button>
-                  </div>
+                  </motion.div>
                 )}
               </div>
             )}

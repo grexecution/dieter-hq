@@ -19,8 +19,12 @@ export interface InboxItem {
   content: string | null;
   priority: InboxPriority;
   status: InboxStatus;
+  isRead: boolean;
   receivedAt: string; // ISO date
   createdAt: string; // ISO date
+  updatedAt: string; // ISO date
+  archivedAt: string | null;
+  snoozedUntil: string | null;
   recommendations?: Recommendation[];
 }
 
@@ -37,6 +41,7 @@ export interface Recommendation {
   executedAt: string | null;
   executionResult: string | null;
   createdAt: string;
+  updatedAt: string;
 }
 
 export interface ActionLogEntry {

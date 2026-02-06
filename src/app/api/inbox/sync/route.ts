@@ -1,124 +1,115 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/server/db";
 import { inboxSyncState } from "@/server/db/schema";
-import { eq } from "drizzle-orm";
+import {
+  SyncRequestSchema,
+  apiSuccess,
+  apiError,
+  ErrorCodes,
+} from "@/server/inbox/validation";
+import { syncEmailInbox, syncAllEmailInboxes, syncWhatsAppInbox, EMAIL_ACCOUNTS } from "@/server/inbox";
+import type { SyncResult } from "@/server/inbox";
 
 export const runtime = "nodejs";
+export const maxDuration = 120; // Allow up to 2 minutes for sync
 
-type SyncSource = "email" | "whatsapp";
-
-type SyncPayload = {
-  source: SyncSource;
-  account?: string; // For email: the account to sync
+const CACHE_HEADERS = {
+  "Cache-Control": "private, no-cache, must-revalidate",
 };
-
-// Stub functions for sync - will be implemented with gog/wacli CLIs
-async function syncEmailInbox(account: string): Promise<{ synced: number; errors: string[] }> {
-  // TODO: Implement using gog CLI
-  // Command: gog gmail list --account=<account> --unread --json
-  console.log(`[Sync] Email sync triggered for account: ${account}`);
-  
-  return {
-    synced: 0,
-    errors: ["Email sync not yet implemented - will use gog CLI"],
-  };
-}
-
-async function syncWhatsAppInbox(): Promise<{ synced: number; errors: string[] }> {
-  // TODO: Implement using wacli CLI
-  // Command: wacli messages list --unread --json
-  console.log("[Sync] WhatsApp sync triggered");
-  
-  return {
-    synced: 0,
-    errors: ["WhatsApp sync not yet implemented - will use wacli CLI"],
-  };
-}
 
 // POST /api/inbox/sync - Trigger sync for a source
 export async function POST(req: NextRequest) {
-  let body: SyncPayload;
+  let body: unknown;
   try {
-    body = (await req.json()) as SyncPayload;
+    body = await req.json();
   } catch {
     return NextResponse.json(
-      { ok: false, error: "invalid_json" },
-      { status: 400 }
+      apiError(ErrorCodes.INVALID_JSON, "Request body must be valid JSON"),
+      { status: 400, headers: CACHE_HEADERS }
     );
   }
-  
-  if (!body.source) {
+
+  const result = SyncRequestSchema.safeParse(body);
+  if (!result.success) {
     return NextResponse.json(
-      { ok: false, error: "missing_source" },
-      { status: 400 }
+      apiError(ErrorCodes.VALIDATION_ERROR, "Invalid request body", result.error.flatten()),
+      { status: 400, headers: CACHE_HEADERS }
     );
   }
-  
+
+  const { source, account } = result.data;
   const now = new Date();
-  let result: { synced: number; errors: string[] };
-  
+  const startTime = Date.now();
+  const results: SyncResult[] = [];
+
   try {
-    switch (body.source) {
+    switch (source) {
       case "email":
-        if (!body.account) {
-          return NextResponse.json(
-            { ok: false, error: "email_requires_account" },
-            { status: 400 }
-          );
+        if (account) {
+          // Sync specific account
+          if (!EMAIL_ACCOUNTS.includes(account as typeof EMAIL_ACCOUNTS[number])) {
+            return NextResponse.json(
+              apiError(ErrorCodes.VALIDATION_ERROR, "Invalid account", { validAccounts: EMAIL_ACCOUNTS }),
+              { status: 400, headers: CACHE_HEADERS }
+            );
+          }
+          const emailResult = await syncEmailInbox(account);
+          results.push(emailResult);
+        } else {
+          // Sync all email accounts
+          const emailResults = await syncAllEmailInboxes();
+          results.push(...emailResults);
         }
-        result = await syncEmailInbox(body.account);
         break;
-        
+
       case "whatsapp":
-        result = await syncWhatsAppInbox();
+        const waResult = await syncWhatsAppInbox();
+        results.push(waResult);
         break;
+
+      case "all":
+        // Sync everything
+        console.log("[Sync] Syncing all sources...");
         
-      default:
-        return NextResponse.json(
-          { ok: false, error: "unsupported_source" },
-          { status: 400 }
-        );
+        // Sync all emails
+        const allEmailResults = await syncAllEmailInboxes();
+        results.push(...allEmailResults);
+        
+        // Sync WhatsApp
+        const allWaResult = await syncWhatsAppInbox();
+        results.push(allWaResult);
+        break;
     }
-    
-    // Update sync state
-    const syncId = body.account ? `${body.source}:${body.account}` : body.source;
-    
-    await db
-      .insert(inboxSyncState)
-      .values({
-        id: syncId,
-        source: body.source,
-        account: body.account || null,
-        lastSyncAt: now,
-        metadata: JSON.stringify({ 
-          synced: result.synced, 
-          errors: result.errors,
-        }),
-      })
-      .onConflictDoUpdate({
-        target: inboxSyncState.id,
-        set: {
-          lastSyncAt: now,
-          metadata: JSON.stringify({ 
-            synced: result.synced, 
-            errors: result.errors,
-          }),
-        },
-      });
-    
-    return NextResponse.json({
-      ok: true,
-      source: body.source,
-      account: body.account,
-      synced: result.synced,
-      errors: result.errors,
-      syncedAt: now.toISOString(),
-    });
-  } catch (err) {
-    console.error("Sync error:", err);
+
+    // Aggregate stats
+    const totalSynced = results.reduce((sum, r) => sum + r.synced, 0);
+    const totalSkipped = results.reduce((sum, r) => sum + r.skipped, 0);
+    const allErrors = results.flatMap(r => r.errors);
+    const durationMs = Date.now() - startTime;
+
+    console.log(`[Sync] Completed in ${durationMs}ms: ${totalSynced} synced, ${totalSkipped} skipped, ${allErrors.length} errors`);
+
     return NextResponse.json(
-      { ok: false, error: "sync_failed" },
-      { status: 500 }
+      apiSuccess({
+        source,
+        account: account || null,
+        results,
+        summary: {
+          totalSynced,
+          totalSkipped,
+          errorCount: allErrors.length,
+          durationMs,
+        },
+        errors: allErrors.length > 0 ? allErrors : undefined,
+        syncedAt: now.toISOString(),
+      }),
+      { headers: CACHE_HEADERS }
+    );
+  } catch (err) {
+    console.error("[inbox/sync] POST error:", err);
+    return NextResponse.json(
+      apiError(ErrorCodes.DATABASE_ERROR, "Sync failed", { message: (err as Error).message }),
+      { status: 500, headers: CACHE_HEADERS }
     );
   }
 }
@@ -127,22 +118,42 @@ export async function POST(req: NextRequest) {
 export async function GET() {
   try {
     const states = await db.select().from(inboxSyncState);
-    
-    return NextResponse.json({
-      ok: true,
-      syncStates: states.map(s => ({
-        id: s.id,
-        source: s.source,
-        account: s.account,
-        lastSyncAt: s.lastSyncAt?.toISOString() || null,
-        metadata: s.metadata ? JSON.parse(s.metadata) : null,
-      })),
-    });
-  } catch (err) {
-    console.error("Error fetching sync states:", err);
+
+    // Group by source
+    const emailStates = states.filter(s => s.source === "email");
+    const whatsappState = states.find(s => s.source === "whatsapp");
+
     return NextResponse.json(
-      { ok: false, error: "database_error" },
-      { status: 500 }
+      apiSuccess({
+        syncStates: {
+          email: {
+            accounts: EMAIL_ACCOUNTS,
+            states: emailStates.map(s => ({
+              account: s.account,
+              lastSyncAt: s.lastSyncAt?.toISOString() || null,
+              metadata: s.metadata ? JSON.parse(s.metadata) : null,
+            })),
+          },
+          whatsapp: {
+            lastSyncAt: whatsappState?.lastSyncAt?.toISOString() || null,
+            metadata: whatsappState?.metadata ? JSON.parse(whatsappState.metadata) : null,
+          },
+        },
+        raw: states.map(s => ({
+          id: s.id,
+          source: s.source,
+          account: s.account,
+          lastSyncAt: s.lastSyncAt?.toISOString() || null,
+          metadata: s.metadata ? JSON.parse(s.metadata) : null,
+        })),
+      }),
+      { headers: CACHE_HEADERS }
+    );
+  } catch (err) {
+    console.error("[inbox/sync] GET error:", err);
+    return NextResponse.json(
+      apiError(ErrorCodes.DATABASE_ERROR, "Failed to fetch sync states"),
+      { status: 500, headers: CACHE_HEADERS }
     );
   }
 }

@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, boolean, integer } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, boolean, integer, index } from "drizzle-orm/pg-core";
 
 // --- Chat ---
 export const messages = pgTable("messages", {
@@ -136,9 +136,20 @@ export const inboxItems = pgTable("inbox_items", {
   content: text("content"),
   priority: text("priority").notNull().default("normal"), // "urgent" | "high" | "normal" | "low"
   status: text("status").notNull().default("pending"), // "pending" | "actioned" | "archived" | "snoozed"
+  isRead: boolean("is_read").notNull().default(false),
   receivedAt: timestamp("received_at", { mode: "date", withTimezone: true }).notNull(),
   createdAt: timestamp("created_at", { mode: "date", withTimezone: true }).notNull(),
-});
+  updatedAt: timestamp("updated_at", { mode: "date", withTimezone: true }).notNull(),
+  archivedAt: timestamp("archived_at", { mode: "date", withTimezone: true }),
+  snoozedUntil: timestamp("snoozed_until", { mode: "date", withTimezone: true }),
+}, (table) => [
+  index("idx_inbox_items_source").on(table.source),
+  index("idx_inbox_items_status").on(table.status),
+  index("idx_inbox_items_received_at").on(table.receivedAt),
+  index("idx_inbox_items_priority").on(table.priority),
+  index("idx_inbox_items_source_status").on(table.source, table.status),
+  index("idx_inbox_items_snoozed_until").on(table.snoozedUntil),
+]);
 
 // AI recommendations for inbox items
 export const inboxRecommendations = pgTable("inbox_recommendations", {
@@ -154,19 +165,27 @@ export const inboxRecommendations = pgTable("inbox_recommendations", {
   executedAt: timestamp("executed_at", { mode: "date", withTimezone: true }),
   executionResult: text("execution_result"),
   createdAt: timestamp("created_at", { mode: "date", withTimezone: true }).notNull(),
-});
+  updatedAt: timestamp("updated_at", { mode: "date", withTimezone: true }).notNull(),
+}, (table) => [
+  index("idx_inbox_recommendations_item").on(table.inboxItemId),
+  index("idx_inbox_recommendations_status").on(table.status),
+  index("idx_inbox_recommendations_confidence").on(table.confidence),
+]);
 
 // Action history / audit log for inbox
 export const inboxActionLog = pgTable("inbox_action_log", {
   id: text("id").primaryKey(),
-  recommendationId: text("recommendation_id").references(() => inboxRecommendations.id),
-  inboxItemId: text("inbox_item_id").references(() => inboxItems.id),
+  recommendationId: text("recommendation_id").references(() => inboxRecommendations.id, { onDelete: "set null" }),
+  inboxItemId: text("inbox_item_id").references(() => inboxItems.id, { onDelete: "set null" }),
   action: text("action").notNull(),
   executedBy: text("executed_by").notNull().default("user"), // "user" | "auto" | "dieter"
   result: text("result"),
   metadata: text("metadata"), // JSON
   createdAt: timestamp("created_at", { mode: "date", withTimezone: true }).notNull(),
-});
+}, (table) => [
+  index("idx_inbox_action_log_item").on(table.inboxItemId),
+  index("idx_inbox_action_log_created").on(table.createdAt),
+]);
 
 // Sync state for each source
 export const inboxSyncState = pgTable("inbox_sync_state", {
@@ -177,4 +196,7 @@ export const inboxSyncState = pgTable("inbox_sync_state", {
   lastMessageId: text("last_message_id"),
   cursor: text("cursor"), // For pagination
   metadata: text("metadata"), // JSON
-});
+  updatedAt: timestamp("updated_at", { mode: "date", withTimezone: true }).notNull(),
+}, (table) => [
+  index("idx_inbox_sync_state_source").on(table.source),
+]);

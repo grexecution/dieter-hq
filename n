@@ -1,0 +1,18 @@
+feat: screenshot upload API for subagents
+
+# Please enter the commit message for your changes. Lines starting
+# with '#' will be ignored, and an empty message aborts the commit.
+#
+# Committer: Dieter <dieter@Mac-mini-von-Dieter.local>
+#
+# interactive rebase in progress; onto 7f70014
+# Last command done (1 command done):
+#    pick 01a4ef3 feat: screenshot upload API for subagents
+# No commands remaining.
+# You are currently rebasing branch 'main' on '7f70014'.
+#
+# Changes to be committed:
+#	modified:   package-lock.json
+#	modified:   package.json
+#	new file:   src/app/api/artefacts/upload/route.ts
+#

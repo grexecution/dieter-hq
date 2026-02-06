@@ -69,6 +69,42 @@ export async function initDb() {
       sent_at TIMESTAMPTZ
     )
   `;
+
+  // --- Infinite Context System tables ---
+  await sql`
+    CREATE TABLE IF NOT EXISTS memory_snapshots (
+      id TEXT PRIMARY KEY,
+      thread_id TEXT NOT NULL,
+      summary TEXT NOT NULL,
+      key_points_json TEXT NOT NULL,
+      entities_json TEXT NOT NULL,
+      message_count INTEGER NOT NULL,
+      token_count INTEGER NOT NULL,
+      compressed_tokens INTEGER NOT NULL,
+      first_message_id TEXT NOT NULL,
+      last_message_id TEXT NOT NULL,
+      first_message_at TIMESTAMPTZ NOT NULL,
+      last_message_at TIMESTAMPTZ NOT NULL,
+      created_at TIMESTAMPTZ NOT NULL
+    )
+  `;
+
+  await sql`
+    CREATE TABLE IF NOT EXISTS context_state (
+      thread_id TEXT PRIMARY KEY,
+      total_tokens INTEGER NOT NULL DEFAULT 0,
+      active_message_count INTEGER NOT NULL DEFAULT 0,
+      snapshot_count INTEGER NOT NULL DEFAULT 0,
+      last_snapshot_at TIMESTAMPTZ,
+      updated_at TIMESTAMPTZ NOT NULL
+    )
+  `;
+
+  // Add indexes for efficient querying
+  await sql`
+    CREATE INDEX IF NOT EXISTS idx_memory_snapshots_thread 
+    ON memory_snapshots(thread_id, created_at DESC)
+  `;
 }
 
 // Auto-initialize on module load (runs once per cold start)

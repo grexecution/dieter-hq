@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { db } from "@/server/db";
 import { artefacts, messages } from "@/server/db/schema";
-import { asc, desc, eq, sql, inArray } from "drizzle-orm";
+import { asc, desc, eq, sql, inArray, like, or } from "drizzle-orm";
 import { logEvent } from "@/server/events/log";
 import { clearSessionCookie } from "@/server/auth/node";
 import { redirect } from "next/navigation";
@@ -11,11 +11,22 @@ import { ChatShell } from "../_ui/ChatShell";
 import { MultiChatView } from "./MultiChatView";
 import { CHAT_TAB_IDS, CHAT_TABS } from "./chat-config";
 
+// Helper to format message timestamps
+function formatMessageTimestamp(m: { createdAt: Date }) {
+  const ts = new Date(m.createdAt).getTime();
+  const label = new Intl.DateTimeFormat("de-AT", {
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: "Europe/Vienna",
+  }).format(new Date(ts));
+  return { ts, label };
+}
+
 export default async function ChatPage() {
-  // Get all supported thread IDs
+  // Get all supported thread IDs (fixed tabs)
   const supportedThreadIds = CHAT_TAB_IDS;
 
-  // Load threads with statistics
+  // Load threads with statistics (fixed tabs)
   const threads = await db
     .select({
       threadId: messages.threadId,
@@ -38,13 +49,7 @@ export default async function ChatPage() {
       .orderBy(asc(messages.createdAt));
 
     threadMessages[tabId] = messagesForThread.map((m) => {
-      const ts = new Date(m.createdAt).getTime();
-      const label = new Intl.DateTimeFormat("de-AT", {
-        hour: "2-digit",
-        minute: "2-digit",
-        timeZone: "Europe/Vienna",
-      }).format(new Date(ts));
-
+      const { ts, label } = formatMessageTimestamp(m);
       return {
         id: m.id,
         threadId: m.threadId,
@@ -58,6 +63,34 @@ export default async function ChatPage() {
         transcription: m.transcription ?? null,
       };
     });
+  }
+
+  // Also load workspace project messages (threads starting with "dev:")
+  const workspaceMessages = await db
+    .select()
+    .from(messages)
+    .where(like(messages.threadId, "dev:%"))
+    .orderBy(asc(messages.createdAt));
+
+  // Group workspace messages by threadId
+  for (const m of workspaceMessages) {
+    const { ts, label } = formatMessageTimestamp(m);
+    const formattedMsg = {
+      id: m.id,
+      threadId: m.threadId,
+      role: m.role,
+      content: m.content,
+      createdAt: ts,
+      createdAtLabel: label,
+      audioUrl: m.audioUrl ?? null,
+      audioDurationMs: m.audioDurationMs ?? null,
+      transcription: m.transcription ?? null,
+    };
+    
+    if (!threadMessages[m.threadId]) {
+      threadMessages[m.threadId] = [];
+    }
+    threadMessages[m.threadId].push(formattedMsg);
   }
 
   // Log event for the first thread with messages (or default to 'life')
@@ -91,7 +124,7 @@ export default async function ChatPage() {
     redirect("/login");
   }
 
-  // Load artefacts for all threads
+  // Load artefacts for all threads (fixed + workspace)
   const allArtefacts = await db
     .select({
       id: artefacts.id,
@@ -101,7 +134,12 @@ export default async function ChatPage() {
       sizeBytes: artefacts.sizeBytes,
     })
     .from(artefacts)
-    .where(inArray(artefacts.threadId, supportedThreadIds));
+    .where(
+      or(
+        inArray(artefacts.threadId, supportedThreadIds),
+        like(artefacts.threadId, "dev:%")
+      )
+    );
 
   const artefactsById = Object.fromEntries(allArtefacts.map((a) => [a.id, a]));
 

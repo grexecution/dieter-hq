@@ -76,3 +76,37 @@ export const pushSubscriptions = pgTable("push_subscriptions", {
   userId: text("user_id"),
   createdAt: timestamp("created_at", { mode: "date", withTimezone: true }).notNull(),
 });
+
+// --- Memory Snapshots (Infinite Context System) ---
+export const memorySnapshots = pgTable("memory_snapshots", {
+  id: text("id").primaryKey(),
+  threadId: text("thread_id").notNull(),
+  
+  // Summary content
+  summary: text("summary").notNull(),
+  keyPointsJson: text("key_points_json").notNull(), // JSON array of strings
+  entitiesJson: text("entities_json").notNull(),    // JSON array of entities
+  
+  // Metadata
+  messageCount: integer("message_count").notNull(),
+  tokenCount: integer("token_count").notNull(),       // Original tokens
+  compressedTokens: integer("compressed_tokens").notNull(), // Summary tokens
+  
+  // Range tracking
+  firstMessageId: text("first_message_id").notNull(),
+  lastMessageId: text("last_message_id").notNull(),
+  firstMessageAt: timestamp("first_message_at", { mode: "date", withTimezone: true }).notNull(),
+  lastMessageAt: timestamp("last_message_at", { mode: "date", withTimezone: true }).notNull(),
+  
+  createdAt: timestamp("created_at", { mode: "date", withTimezone: true }).notNull(),
+});
+
+// --- Context State (Track context utilization per thread) ---
+export const contextState = pgTable("context_state", {
+  threadId: text("thread_id").primaryKey(),
+  totalTokens: integer("total_tokens").notNull().default(0),
+  activeMessageCount: integer("active_message_count").notNull().default(0),
+  snapshotCount: integer("snapshot_count").notNull().default(0),
+  lastSnapshotAt: timestamp("last_snapshot_at", { mode: "date", withTimezone: true }),
+  updatedAt: timestamp("updated_at", { mode: "date", withTimezone: true }).notNull(),
+});

@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import dynamic from "next/dynamic";
-import { Menu, Send, Sparkles, User, Bot, MessageCircle, Dumbbell, Briefcase, Code } from "lucide-react";
+import { Menu, Send, Sparkles, User, Bot, MessageCircle, Dumbbell, Briefcase, Code, ChevronLeft } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -14,6 +14,7 @@ import { NowBar } from "./NowBar";
 import { OpenClawStatusSidebar } from "./OpenClawStatusSidebar";
 import { StatusBar } from "./_components/StatusBar";
 import { SubagentPanel } from "./_components/SubagentPanel";
+import { WorkspaceManager, type WorkspaceProject, loadProjects } from "./_components/WorkspaceManager";
 import { CHAT_TABS, type ChatTab } from "./chat-config";
 
 const VoiceRecorder = dynamic(
@@ -472,94 +473,180 @@ export function MultiChatView({
   const [drafts, setDrafts] = useState<Record<string, string>>({});
   const [sendingStates, setSendingStates] = useState<Record<string, boolean>>({});
   const [subagentPanelCollapsed, setSubagentPanelCollapsed] = useState(true);
+  
+  // Workspace state (for Dev tab)
+  const [activeProject, setActiveProject] = useState<WorkspaceProject | null>(null);
+  const [workspaceProjects, setWorkspaceProjects] = useState<WorkspaceProject[]>([]);
 
   const endRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  
+  // Ref to track last message timestamps for SSE subscriptions (avoids dependency on liveMessages)
+  const lastMessageTimestampsRef = useRef<Record<string, number>>({});
+  
+  // Ref to track pending send operation to avoid stale closure issues
+  const pendingSendRef = useRef<{ threadId: string; content: string } | null>(null);
+
+  // Load workspace projects on mount
+  useEffect(() => {
+    setWorkspaceProjects(loadProjects());
+  }, []);
 
   // Sync messages from props
   useEffect(() => {
     setLiveMessages(threadMessages);
   }, [threadMessages]);
 
-  // Get current tab data
-  const currentMessages = liveMessages[activeTab] || [];
-  const currentDraft = drafts[activeTab] || "";
-  const isSending = sendingStates[activeTab] || false;
+  // Check if current tab is a workspace tab
+  const currentTabConfig = CHAT_TABS.find(tab => tab.id === activeTab);
+  const isWorkspaceTab = currentTabConfig?.isWorkspace === true;
+
+  // For workspace tabs, use project's threadId; for others, use tab id directly
+  const effectiveThreadId = isWorkspaceTab && activeProject 
+    ? activeProject.threadId 
+    : activeTab;
+
+  // Get current messages based on effective thread
+  const currentMessages = liveMessages[effectiveThreadId] || [];
+  const currentDraft = drafts[effectiveThreadId] || "";
+  const isSending = sendingStates[effectiveThreadId] || false;
 
   // Calculate thread counts for tab navigation
   const threadCounts = useMemo(() => {
     const counts: Record<string, number> = {};
     for (const tab of CHAT_TABS) {
-      counts[tab.id] = liveMessages[tab.id]?.length || 0;
+      if (tab.isWorkspace) {
+        // For workspace tabs, count total messages across all projects
+        const projectThreadIds = workspaceProjects.map(p => p.threadId);
+        counts[tab.id] = projectThreadIds.reduce((sum, tid) => sum + (liveMessages[tid]?.length || 0), 0);
+      } else {
+        counts[tab.id] = liveMessages[tab.id]?.length || 0;
+      }
     }
     return counts;
-  }, [liveMessages]);
+  }, [liveMessages, workspaceProjects]);
 
   // Handle tab change
   const handleTabChange = (tabId: string) => {
     setActiveTab(tabId);
+    // Clear active project when switching to a non-workspace tab
+    const newTabConfig = CHAT_TABS.find(tab => tab.id === tabId);
+    if (!newTabConfig?.isWorkspace) {
+      setActiveProject(null);
+    }
   };
 
-  // Handle draft changes per tab
+  // Handle project selection
+  const handleProjectSelect = useCallback((project: WorkspaceProject | null) => {
+    setActiveProject(project);
+  }, []);
+
+  // Handle project creation
+  const handleProjectCreate = useCallback((project: WorkspaceProject) => {
+    setWorkspaceProjects(prev => [project, ...prev]);
+  }, []);
+
+  // Handle draft changes per thread
   const setDraft = (value: string) => {
-    setDrafts(prev => ({ ...prev, [activeTab]: value }));
+    setDrafts(prev => ({ ...prev, [effectiveThreadId]: value }));
   };
 
-  // Send message handler for current tab
+  // Send message handler for current thread
   const handleSend = async () => {
     const content = currentDraft.trim();
     if (!content || isSending) return;
 
-    setSendingStates(prev => ({ ...prev, [activeTab]: true }));
-    setDrafts(prev => ({ ...prev, [activeTab]: "" }));
+    // Capture threadId at send time to avoid stale closure issues
+    const sendThreadId = effectiveThreadId;
+    
+    // Store pending send info in ref for recovery
+    pendingSendRef.current = { threadId: sendThreadId, content };
+
+    setSendingStates(prev => ({ ...prev, [sendThreadId]: true }));
+    setDrafts(prev => ({ ...prev, [sendThreadId]: "" }));
 
     try {
       const r = await fetch("/api/chat/send", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ threadId: activeTab, content }),
+        body: JSON.stringify({ threadId: sendThreadId, content }),
       });
       if (!r.ok) throw new Error("send_failed");
       const data = (await r.json()) as { ok: boolean; item: MessageRow };
       if (data?.ok && data.item?.id) {
         setLiveMessages((prev) => ({
           ...prev,
-          [activeTab]: [
-            ...(prev[activeTab] || []),
+          [sendThreadId]: [
+            ...(prev[sendThreadId] || []),
             data.item
           ].filter((m, i, arr) => arr.findIndex(msg => msg.id === m.id) === i) // dedup
         }));
+        // Update timestamp ref for SSE
+        if (data.item.createdAt) {
+          lastMessageTimestampsRef.current[sendThreadId] = data.item.createdAt;
+        }
       }
+      // Clear pending send on success
+      pendingSendRef.current = null;
     } catch {
-      setDrafts(prev => ({ ...prev, [activeTab]: content })); // Restore on failure
+      // Restore draft on failure only if this is still the pending send
+      if (pendingSendRef.current?.threadId === sendThreadId) {
+        setDrafts(prev => ({ ...prev, [sendThreadId]: pendingSendRef.current!.content }));
+        pendingSendRef.current = null;
+      }
     } finally {
-      setSendingStates(prev => ({ ...prev, [activeTab]: false }));
+      setSendingStates(prev => ({ ...prev, [sendThreadId]: false }));
     }
   };
 
-  // SSE subscription for real-time messages per tab
+  // SSE subscription for real-time messages per tab + workspace projects
+  // Initialize timestamp refs from initial messages (runs once)
+  useEffect(() => {
+    const timestamps = lastMessageTimestampsRef.current;
+    for (const tab of CHAT_TABS) {
+      if (tab.isWorkspace) continue;
+      const messages = threadMessages[tab.id];
+      if (messages?.length) {
+        const lastTs = messages[messages.length - 1]?.createdAt || 0;
+        if (!timestamps[tab.id] || lastTs > timestamps[tab.id]) {
+          timestamps[tab.id] = lastTs;
+        }
+      }
+    }
+  }, [threadMessages]);
+
+  // SSE subscription - only recreate when workspaceProjects changes (rare)
   useEffect(() => {
     const eventSources: EventSource[] = [];
     
-    for (const tab of CHAT_TABS) {
-      const lastMessage = liveMessages[tab.id]?.[liveMessages[tab.id].length - 1];
-      const lastCreatedAt = lastMessage?.createdAt || 0;
+    // Helper to create SSE subscription for a thread
+    const subscribeToThread = (threadId: string) => {
+      // Use ref for timestamp to avoid stale closure, start from 0 if not set
+      const since = lastMessageTimestampsRef.current[threadId] || 0;
       
       const es = new EventSource(
-        `/api/stream?thread=${encodeURIComponent(tab.id)}&since=${encodeURIComponent(String(lastCreatedAt))}`
+        `/api/stream?thread=${encodeURIComponent(threadId)}&since=${encodeURIComponent(String(since))}`
       );
 
       const onMessage = (ev: MessageEvent) => {
         try {
           const item = JSON.parse(ev.data) as MessageRow;
-          if (!item?.id || item.threadId !== tab.id) return;
+          if (!item?.id || item.threadId !== threadId) return;
           
           setLiveMessages((prev) => {
-            const existing = prev[tab.id] || [];
+            const existing = prev[threadId] || [];
             if (existing.some((m) => m.id === item.id)) return prev;
+            
+            // Update timestamp ref for future reconnections
+            if (item.createdAt) {
+              const currentTs = lastMessageTimestampsRef.current[threadId] || 0;
+              if (item.createdAt > currentTs) {
+                lastMessageTimestampsRef.current[threadId] = item.createdAt;
+              }
+            }
             
             return {
               ...prev,
-              [tab.id]: [...existing, item]
+              [threadId]: [...existing, item]
             };
           });
         } catch {
@@ -569,6 +656,17 @@ export function MultiChatView({
 
       es.addEventListener("message", onMessage);
       eventSources.push(es);
+    };
+    
+    // Subscribe to regular tabs (non-workspace)
+    for (const tab of CHAT_TABS) {
+      if (tab.isWorkspace) continue;
+      subscribeToThread(tab.id);
+    }
+
+    // Subscribe to workspace project threads
+    for (const project of workspaceProjects) {
+      subscribeToThread(project.threadId);
     }
 
     return () => {
@@ -576,9 +674,13 @@ export function MultiChatView({
         es.close();
       });
     };
-  }, [liveMessages]);
+  }, [workspaceProjects]); // Only depends on workspaceProjects, NOT liveMessages
 
   const currentTab = CHAT_TABS.find(tab => tab.id === activeTab);
+  
+  // Determine what to show in the main area
+  const showWorkspaceManager = isWorkspaceTab && !activeProject;
+  const showChat = !isWorkspaceTab || (isWorkspaceTab && activeProject);
 
   return (
     <div className={cn(
@@ -638,6 +740,20 @@ export function MultiChatView({
               <Menu className="h-5 w-5" />
             </Button>
 
+            {/* Back button for workspace projects */}
+            {isWorkspaceTab && activeProject && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="h-9 w-9"
+                onClick={() => setActiveProject(null)}
+                title="Back to workspace"
+              >
+                <ChevronLeft className="h-5 w-5" />
+              </Button>
+            )}
+
             <div className="flex items-center gap-3">
               <div className="relative">
                 <Avatar className="h-10 w-10">
@@ -651,10 +767,13 @@ export function MultiChatView({
               </div>
               <div className="min-w-0">
                 <h1 className="truncate text-sm font-medium text-zinc-900 dark:text-zinc-100">
-                  Dieter {currentTab && `· ${currentTab.name}`}
+                  {isWorkspaceTab && activeProject 
+                    ? `Dieter · ${activeProject.name}`
+                    : `Dieter ${currentTab ? `· ${currentTab.name}` : ''}`
+                  }
                 </h1>
                 <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                  Online
+                  {isWorkspaceTab && activeProject ? 'Project Session' : 'Online'}
                 </p>
               </div>
             </div>
@@ -680,33 +799,48 @@ export function MultiChatView({
         {/* Now Bar */}
         <NowBar />
 
-        {/* Messages */}
-        <ChatContent 
-          activeTab={activeTab}
-          messages={currentMessages}
-          artefactsById={artefactsById}
-        />
+        {/* Workspace Manager (for Dev tab without project) */}
+        {showWorkspaceManager && (
+          <div className="flex-1 overflow-hidden">
+            <WorkspaceManager
+              activeProjectId={null}
+              onProjectSelect={handleProjectSelect}
+              onProjectCreate={handleProjectCreate}
+            />
+          </div>
+        )}
 
-        {/* Composer */}
-        <Composer
-          draft={currentDraft}
-          setDraft={setDraft}
-          isSending={isSending}
-          onSubmit={handleSend}
-          onVoiceTranscript={(transcript) => setDraft(transcript)}
-          onVoiceMessage={(message) => {
-            // Add voice message to chat immediately
-            setLiveMessages((prev) => ({
-              ...prev,
-              [activeTab]: [
-                ...(prev[activeTab] || []),
-                message
-              ].filter((m, i, arr) => arr.findIndex(msg => msg.id === m.id) === i) // dedup
-            }));
-          }}
-          threadId={activeTab}
-          activeTab={activeTab}
-        />
+        {/* Messages (for regular tabs or workspace with project) */}
+        {showChat && (
+          <>
+            <ChatContent 
+              activeTab={effectiveThreadId}
+              messages={currentMessages}
+              artefactsById={artefactsById}
+            />
+
+            {/* Composer */}
+            <Composer
+              draft={currentDraft}
+              setDraft={setDraft}
+              isSending={isSending}
+              onSubmit={handleSend}
+              onVoiceTranscript={(transcript) => setDraft(transcript)}
+              onVoiceMessage={(message) => {
+                // Add voice message to chat immediately
+                setLiveMessages((prev) => ({
+                  ...prev,
+                  [effectiveThreadId]: [
+                    ...(prev[effectiveThreadId] || []),
+                    message
+                  ].filter((m, i, arr) => arr.findIndex(msg => msg.id === m.id) === i) // dedup
+                }));
+              }}
+              threadId={effectiveThreadId}
+              activeTab={activeTab}
+            />
+          </>
+        )}
       </section>
 
       {/* Subagent Panel (desktop) */}

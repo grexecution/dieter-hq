@@ -7,6 +7,11 @@ import { artefacts, messages } from "@/server/db/schema";
 import { logEvent } from "@/server/events/log";
 import { artefactRelPath, artefactsBaseDir, ensureDirForFile } from "@/server/artefacts/storage";
 import { placeholderSvg } from "@/server/tools/image";
+import { 
+  processMessageWithInfiniteContext, 
+  recordAssistantResponse,
+  getContextStatus 
+} from "@/server/infinite-context";
 
 export const runtime = "nodejs";
 
@@ -116,9 +121,13 @@ export async function POST(req: NextRequest) {
     });
   }
 
-  // Call OpenClaw gateway with streaming
-  const supportedThreadIds = ["life", "sport", "work", "dev", "main"];
-  if (supportedThreadIds.includes(threadId)) {
+  // Call OpenClaw gateway with streaming + Infinite Context
+  // Support fixed threads + workspace project threads (dev:project-name)
+  const fixedThreadIds = ["life", "sport", "work", "dev", "main"];
+  const isWorkspaceThread = threadId.startsWith("dev:");
+  const isSupported = fixedThreadIds.includes(threadId) || isWorkspaceThread;
+  
+  if (isSupported) {
     const contextPrefixes: Record<string, string> = {
       life: "[Life Context] ",
       sport: "[Sport Context] ",
@@ -126,14 +135,36 @@ export async function POST(req: NextRequest) {
       dev: "[Dev Context] ",
       main: ""
     };
-    const contextPrefix = contextPrefixes[threadId] || "";
+    // For workspace projects, extract project name for context
+    let contextPrefix = contextPrefixes[threadId] || "";
+    if (isWorkspaceThread) {
+      const projectSlug = threadId.replace("dev:", "");
+      contextPrefix = `[Dev Project: ${projectSlug}] `;
+    }
     const contextualMessage = contextPrefix + content;
+
+    // 🧠 INFINITE CONTEXT: Process message with memory injection
+    let infiniteContextResult;
+    try {
+      infiniteContextResult = await processMessageWithInfiniteContext(threadId, contextualMessage);
+      if (infiniteContextResult.summarizationTriggered) {
+        console.log(`[InfiniteContext] Auto-summarization triggered for thread ${threadId}`);
+      }
+    } catch (err) {
+      console.error('[InfiniteContext] Error processing context:', err);
+      // Fallback: just use the user message
+      infiniteContextResult = {
+        contextMessages: [{ role: 'user', content: contextualMessage }],
+        contextState: { contextUtilization: 0 },
+        summarizationTriggered: false,
+      };
+    }
 
     // Create SSE stream for frontend
     const encoder = new TextEncoder();
     const stream = new ReadableStream({
       async start(controller) {
-        // First, send the user message confirmation
+        // First, send the user message confirmation (with context status)
         controller.enqueue(encoder.encode(`data: ${JSON.stringify({
           type: "user_confirmed",
           item: {
@@ -143,6 +174,10 @@ export async function POST(req: NextRequest) {
             content,
             createdAt: now.getTime(),
             createdAtLabel: fmtLabel(now),
+          },
+          contextStatus: {
+            utilization: Math.round(infiniteContextResult.contextState.contextUtilization),
+            summarized: infiniteContextResult.summarizationTriggered,
           }
         })}\n\n`));
 
@@ -150,6 +185,7 @@ export async function POST(req: NextRequest) {
         const assistantMsgId = crypto.randomUUID();
 
         // Thread → Agent Mapping
+        // Workspace project threads (dev:*) use the coder agent
         const threadToAgent: Record<string, string> = {
           'main': 'main',
           'life': 'main',
@@ -157,9 +193,10 @@ export async function POST(req: NextRequest) {
           'sport': 'sport',
           'work': 'work',
         };
-        const agentId = threadToAgent[threadId] || 'main';
+        const agentId = isWorkspaceThread ? 'coder' : (threadToAgent[threadId] || 'main');
 
         try {
+          // 🧠 INFINITE CONTEXT: Send full context to OpenClaw
           const response = await fetch(`${GATEWAY_HTTP_URL}/v1/chat/completions`, {
             method: 'POST',
             headers: {
@@ -171,9 +208,8 @@ export async function POST(req: NextRequest) {
             },
             body: JSON.stringify({
               model: `openclaw:${agentId}`,
-              messages: [
-                { role: 'user', content: contextualMessage }
-              ],
+              // Use the full context from infinite context system
+              messages: infiniteContextResult.contextMessages,
               user: `dieter-hq:${threadId}`,
               stream: true,
             }),
@@ -245,6 +281,13 @@ export async function POST(req: NextRequest) {
           content: fullContent || "No response",
           createdAt: assistantCreatedAt,
         });
+
+        // 🧠 INFINITE CONTEXT: Track assistant response tokens
+        try {
+          await recordAssistantResponse(threadId, fullContent || "");
+        } catch (err) {
+          console.error('[InfiniteContext] Error recording response:', err);
+        }
 
         await logEvent({
           threadId,

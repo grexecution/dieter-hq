@@ -28,25 +28,17 @@ export type SessionsResponse = {
 };
 
 function isSubagent(session: SessionData): boolean {
-  // Subagent sessions have "subagent" in the key
   return session.key.includes("subagent");
 }
 
 function extractLabel(key: string): string {
-  // Format: agent:coder:subagent:uuid or agent:main:subagent:uuid
-  // Try to extract a label from the key
   const parts = key.split(":");
-  
-  // Check if there's a label suffix (e.g., agent:coder:subagent:uuid:my-label)
   if (parts.length > 4) {
     return parts.slice(4).join(":");
   }
-  
-  // Otherwise use the agent name + short uuid
   const agentName = parts[1] || "agent";
   const uuid = parts[3] || "";
   const shortUuid = uuid.slice(0, 8);
-  
   return `${agentName}-${shortUuid}`;
 }
 
@@ -58,37 +50,74 @@ function calculateRuntime(createdAt?: string, updatedAt?: string): number {
 }
 
 export async function GET() {
+  // If no password configured, return empty gracefully (feature not available)
   if (!OPENCLAW_GATEWAY_PASSWORD) {
-    return NextResponse.json(
-      { ok: false, sessions: [], subagents: [], error: "Gateway password not configured" },
-      { status: 500 }
-    );
+    return NextResponse.json({
+      ok: true,
+      sessions: [],
+      subagents: [],
+      totalCount: 0,
+      subagentCount: 0,
+      note: "Gateway password not configured",
+    });
   }
 
   try {
+    // Note: OpenClaw Gateway doesn't expose a sessions HTTP endpoint by default.
+    // The /sessions path returns the Control UI HTML, not JSON data.
+    // We handle this gracefully by detecting HTML responses.
+    
     const response = await fetch(`${OPENCLAW_GATEWAY_URL}/sessions`, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${OPENCLAW_GATEWAY_PASSWORD}`,
         "Content-Type": "application/json",
+        Accept: "application/json",
       },
       cache: "no-store",
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      return NextResponse.json(
-        {
-          ok: false,
-          sessions: [],
-          subagents: [],
-          error: `Gateway returned ${response.status}: ${errorText}`,
-        },
-        { status: response.status }
-      );
+    const contentType = response.headers.get("content-type") || "";
+    
+    // If we get HTML back, the endpoint isn't available as JSON API
+    if (contentType.includes("text/html")) {
+      return NextResponse.json({
+        ok: true,
+        sessions: [],
+        subagents: [],
+        totalCount: 0,
+        subagentCount: 0,
+        note: "Gateway sessions endpoint not available via HTTP",
+      });
     }
 
-    const data = await response.json();
+    if (!response.ok) {
+      // Return gracefully with empty data instead of error status
+      return NextResponse.json({
+        ok: true,
+        sessions: [],
+        subagents: [],
+        totalCount: 0,
+        subagentCount: 0,
+        note: `Gateway returned ${response.status}`,
+      });
+    }
+
+    // Try to parse JSON
+    let data;
+    try {
+      data = await response.json();
+    } catch {
+      // If JSON parsing fails, return empty gracefully
+      return NextResponse.json({
+        ok: true,
+        sessions: [],
+        subagents: [],
+        totalCount: 0,
+        subagentCount: 0,
+        note: "Failed to parse gateway response",
+      });
+    }
     
     // The gateway returns sessions in various formats, normalize them
     let sessions: SessionData[] = [];
@@ -120,10 +149,15 @@ export async function GET() {
       subagentCount: subagents.length,
     });
   } catch (error) {
+    // Network errors or other issues - return empty gracefully
     const message = error instanceof Error ? error.message : "Unknown error";
-    return NextResponse.json(
-      { ok: false, sessions: [], subagents: [], error: message },
-      { status: 500 }
-    );
+    return NextResponse.json({
+      ok: true,
+      sessions: [],
+      subagents: [],
+      totalCount: 0,
+      subagentCount: 0,
+      note: `Connection error: ${message}`,
+    });
   }
 }

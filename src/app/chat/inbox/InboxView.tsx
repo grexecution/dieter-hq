@@ -36,7 +36,7 @@ export function InboxView() {
   const [expandedItemId, setExpandedItemId] = useState<string | null>(null);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [showKeyboardHints, setShowKeyboardHints] = useState(false);
-  const [undoStack, setUndoStack] = useState<UndoAction[]>([]);
+  const [, setUndoStack] = useState<UndoAction[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
   
   const [filters, setFilters] = useState<FiltersType>({
@@ -149,7 +149,7 @@ export function InboxView() {
         ));
         toast.error("Fehler beim Aktualisieren");
       }
-    } catch (err) {
+    } catch {
       // Revert on error
       setItems(prev => prev.map(i => 
         i.id === id ? { ...i, status: undoAction.previousStatus } : i

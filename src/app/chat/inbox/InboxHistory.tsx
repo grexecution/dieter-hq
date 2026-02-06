@@ -288,7 +288,8 @@ export function InboxHistory({ className }: InboxHistoryProps) {
                       const isExecute = entry.action.startsWith("execute:");
                       const actionType = isExecute ? entry.action.split(":")[1] : entry.action;
                       const actionConfig = ACTION_TYPE_CONFIG[actionType as keyof typeof ACTION_TYPE_CONFIG];
-                      const ActionIcon = ACTION_ICONS[actionType] || ACTION_ICONS.default;
+                      // Icon for timeline (future enhancement)
+                      const _ActionIcon = ACTION_ICONS[actionType] || ACTION_ICONS.default;
 
                       const sourceConfig = entry.inboxItem?.source 
                         ? SOURCE_CONFIG[entry.inboxItem.source]

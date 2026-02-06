@@ -87,7 +87,7 @@ export function InboxFilters({
   const [isExpanded, setIsExpanded] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [savedPresets, setSavedPresets] = useState<FilterPreset[]>(DEFAULT_PRESETS);
-  const [showDateFilter, setShowDateFilter] = useState(false);
+  const [showDateFilter] = useState(false);
 
   // Count active filters
   const activeFilterCount = useMemo(() => {

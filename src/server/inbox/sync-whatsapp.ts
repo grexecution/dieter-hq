@@ -13,7 +13,7 @@ import type { SyncResult, WacliResponse } from "./types";
 
 const execAsync = promisify(exec);
 
-const WACLI = "wacli";
+const WACLI = "/opt/homebrew/bin/wacli";
 const DEFAULT_LIMIT = 100;
 
 /**

@@ -13,7 +13,7 @@ import type { SyncResult, GogEmailResponse } from "./types";
 
 const execAsync = promisify(exec);
 
-const GOG_CLI = "gog";
+const GOG_CLI = "/opt/homebrew/bin/gog";
 const DEFAULT_MAX_RESULTS = 50;
 
 /**

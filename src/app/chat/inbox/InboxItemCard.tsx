@@ -75,7 +75,8 @@ export function InboxItemCard({
   const rightActionScale = useTransform(x, [-SWIPE_THRESHOLD, 0], [1, 0.8]);
 
   const sourceConfig = SOURCE_CONFIG[item.source];
-  const priorityConfig = PRIORITY_CONFIG[item.priority];
+  // Priority config for future use
+  const _priorityConfig = PRIORITY_CONFIG[item.priority];
   const SourceIcon = SOURCE_ICONS[item.source];
   
   const timeLabel = formatInboxTime(item.receivedAt);

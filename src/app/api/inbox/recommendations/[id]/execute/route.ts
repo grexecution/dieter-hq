@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/server/db";
 import { inboxRecommendations, inboxItems, inboxActionLog } from "@/server/db/schema";
 import { eq } from "drizzle-orm";
+import { sendWhatsAppMessage } from "@/lib/messaging";
 
 export const runtime = "nodejs";
 
@@ -64,12 +65,57 @@ export async function POST(
           ? JSON.parse(recommendation.actionPayload)
           : {};
       
-      // TODO: Implement actual action execution via OpenClaw
-      // For now, just mark as executed and update inbox item status
+      // Get the inbox item for context (sender, source, etc.)
+      const inboxItemRows = await db
+        .select()
+        .from(inboxItems)
+        .where(eq(inboxItems.id, recommendation.inboxItemId))
+        .limit(1);
+      
+      const inboxItem = inboxItemRows[0];
+      
       switch (recommendation.actionType) {
-        case "reply":
-          executionResult = `Reply queued: ${payload.draftText?.slice(0, 100) || "(no draft)"}`;
+        case "reply": {
+          // Get the draft text
+          const draftText = payload.draft || payload.draftText || payload.message || payload.text;
+          
+          if (!draftText) {
+            return NextResponse.json(
+              { ok: false, error: "no_draft_text" },
+              { status: 400 }
+            );
+          }
+          
+          if (!inboxItem) {
+            return NextResponse.json(
+              { ok: false, error: "inbox_item_not_found" },
+              { status: 404 }
+            );
+          }
+          
+          // Send based on source
+          if (inboxItem.source === "whatsapp") {
+            const result = await sendWhatsAppMessage(
+              inboxItem.sender,
+              draftText,
+              inboxItem.sourceId // reply to original message
+            );
+            
+            if (!result.ok) {
+              console.error("[execute] WhatsApp send failed:", result.error);
+              return NextResponse.json(
+                { ok: false, error: `send_failed: ${result.error}` },
+                { status: 500 }
+              );
+            }
+            
+            executionResult = `WhatsApp sent to ${inboxItem.senderName || inboxItem.sender}: "${draftText.slice(0, 100)}${draftText.length > 100 ? '...' : ''}"`;
+          } else {
+            // For other sources, mark as not implemented yet
+            executionResult = `Reply for ${inboxItem.source} not yet implemented. Draft: ${draftText.slice(0, 100)}`;
+          }
           break;
+        }
         case "archive":
           await db
             .update(inboxItems)

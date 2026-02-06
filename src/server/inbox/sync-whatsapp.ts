@@ -150,9 +150,12 @@ export async function syncWhatsAppInbox(): Promise<SyncResult> {
     // Fetch messages
     const response = await fetchMessages(afterDate);
 
+    console.log(`[WhatsAppSync] Response: success=${response.success}, hasData=${!!response.data}, hasMessages=${!!response.data?.messages}, messageCount=${response.data?.messages?.length ?? 0}`);
+
     if (!response.success || !response.data?.messages) {
       const errorMsg = response.error || "Unknown error from wacli";
       console.error(`[WhatsAppSync] API error: ${errorMsg}`);
+      console.error(`[WhatsAppSync] Full response:`, JSON.stringify(response, null, 2));
       result.errors.push(errorMsg);
       return result;
     }

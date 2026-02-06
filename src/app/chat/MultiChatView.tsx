@@ -990,9 +990,9 @@ export function MultiChatView({
               onSubmit={handleSend}
               onVoiceTranscript={(transcript) => setDraft(transcript)}
               onVoiceMessage={async (message) => {
-                console.log("[Voice] onVoiceMessage called:", { id: message.id, transcription: message.transcription?.slice(0, 50), threadId: effectiveThreadId });
+                console.log("[Voice] onVoiceMessage called:", { id: message.id, hasAudioUrl: !!message.audioUrl, transcription: message.transcription?.slice(0, 50), threadId: effectiveThreadId });
                 
-                // Add voice message to chat immediately
+                // Add voice message to chat IMMEDIATELY (user sees playable audio right away!)
                 const threadIdAtSend = effectiveThreadId;
                 setLiveMessages((prev) => ({
                   ...prev,
@@ -1002,24 +1002,21 @@ export function MultiChatView({
                   ].filter((m, i, arr) => arr.findIndex(msg => msg.id === m.id) === i) // dedup
                 }));
                 
-                // If transcription exists, send it to get assistant response
-                if (message.transcription) {
-                  console.log("[Voice] Transcription found, sending to assistant...");
+                // Helper to trigger assistant response
+                const triggerAssistantResponse = async (transcription: string) => {
+                  console.log("[Voice] Triggering assistant with transcription:", transcription.slice(0, 50));
                   setSendingStates(prev => ({ ...prev, [threadIdAtSend]: true }));
                   
                   try {
-                    console.log("[Voice] Calling /api/chat/send...");
                     const r = await fetch("/api/chat/send", {
                       method: "POST",
                       headers: { "Content-Type": "application/json" },
                       body: JSON.stringify({ 
                         threadId: threadIdAtSend, 
-                        content: message.transcription,
+                        content: transcription,
                         skipUserMessage: true // User message already added as voice message
                       }),
                     });
-
-                    console.log("[Voice] /api/chat/send response:", r.status, r.ok);
 
                     if (r.ok && r.body) {
                       const reader = r.body.getReader();
@@ -1028,10 +1025,7 @@ export function MultiChatView({
 
                       while (true) {
                         const { done, value } = await reader.read();
-                        if (done) {
-                          console.log("[Voice] SSE stream done");
-                          break;
-                        }
+                        if (done) break;
 
                         buffer += decoder.decode(value, { stream: true });
                         const lines = buffer.split("\n");
@@ -1044,9 +1038,7 @@ export function MultiChatView({
 
                           try {
                             const event = JSON.parse(payload);
-                            console.log("[Voice] SSE event:", event.type);
                             if (event.type === "done" && event.item) {
-                              console.log("[Voice] Got assistant response:", event.item.content?.slice(0, 50));
                               setLiveMessages((prev) => ({
                                 ...prev,
                                 [threadIdAtSend]: [
@@ -1063,17 +1055,60 @@ export function MultiChatView({
                           }
                         }
                       }
-                    } else {
-                      console.error("[Voice] Response not ok:", r.status);
                     }
                   } catch (err) {
-                    console.error("[Voice] Voice message assistant response failed:", err);
+                    console.error("[Voice] Assistant response failed:", err);
                   } finally {
-                    console.log("[Voice] Done, resetting sending state");
                     setSendingStates(prev => ({ ...prev, [threadIdAtSend]: false }));
                   }
+                };
+                
+                // If transcription exists immediately, trigger assistant
+                if (message.transcription) {
+                  await triggerAssistantResponse(message.transcription);
                 } else {
-                  console.log("[Voice] No transcription, skipping assistant call");
+                  // Transcription is processing in background - poll for it
+                  console.log("[Voice] No transcription yet, polling for background transcription...");
+                  
+                  // Poll for transcription (max 30 seconds, every 500ms)
+                  const pollForTranscription = async () => {
+                    const maxAttempts = 60; // 30 seconds
+                    const pollInterval = 500;
+                    
+                    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+                      await new Promise(resolve => setTimeout(resolve, pollInterval));
+                      
+                      try {
+                        const res = await fetch(`/api/chat/voice-message/${message.id}`);
+                        if (res.ok) {
+                          const data = await res.json();
+                          if (data.transcription) {
+                            console.log("[Voice] Background transcription received:", data.transcription.slice(0, 50));
+                            
+                            // Update local message with transcription
+                            setLiveMessages((prev) => ({
+                              ...prev,
+                              [threadIdAtSend]: (prev[threadIdAtSend] || []).map(m => 
+                                m.id === message.id 
+                                  ? { ...m, transcription: data.transcription, content: data.transcription }
+                                  : m
+                              )
+                            }));
+                            
+                            // Trigger assistant response
+                            await triggerAssistantResponse(data.transcription);
+                            return;
+                          }
+                        }
+                      } catch (err) {
+                        console.error("[Voice] Poll error:", err);
+                      }
+                    }
+                    console.log("[Voice] Transcription polling timed out after 30s");
+                  };
+                  
+                  // Start polling (don't await - let it run in background)
+                  pollForTranscription().catch(err => console.error("[Voice] Polling failed:", err));
                 }
               }}
               onTranscriptionStart={() => {

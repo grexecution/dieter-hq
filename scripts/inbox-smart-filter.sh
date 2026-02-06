@@ -167,5 +167,185 @@ curl -s "$DIETER_API?status=pending&limit=100" | jq -c '.data.items[]? | select(
   fi
 done
 
+# ============================================
+# 10. CLICKUP TASK NOTIFICATIONS (archive - tasks are in ClickUp)
+# ============================================
+echo ""
+echo "🔍 Archiving ClickUp task email notifications..."
+
+curl -s "$DIETER_API?status=pending&limit=100" | jq -r '.data.items[]? | select(.sender | test("tasks.clickup.com"; "i")) | .id' | while read -r ID; do
+  [ -z "$ID" ] && continue
+  echo "   Archiving ClickUp notification: $ID"
+  curl -s -X PATCH "$DIETER_API/$ID" -H "Content-Type: application/json" -d '{"status":"archived"}' > /dev/null
+done
+
+# ============================================
+# 11. DEPENDABOT PRs (low priority, review later)
+# ============================================
+echo ""
+echo "🔍 Marking Dependabot PRs as low priority..."
+
+curl -s "$DIETER_API?status=pending&limit=100" | jq -r '.data.items[]? | select(.senderName | test("dependabot"; "i")) | .id' | while read -r ID; do
+  [ -z "$ID" ] && continue
+  echo "   Marking Dependabot as low: $ID"
+  curl -s -X PATCH "$DIETER_API/$ID" -H "Content-Type: application/json" -d '{"priority":"low"}' > /dev/null
+done
+
+# ============================================
+# 12. WORDPRESS PLUGIN UPDATES (archive)
+# ============================================
+echo ""
+echo "🔍 Archiving WordPress plugin update emails..."
+
+curl -s "$DIETER_API?status=pending&limit=100" | jq -r '.data.items[]? | select(.preview | test("Some plugins were automatically updated|plugins and themes have been updated"; "i")) | .id' | while read -r ID; do
+  [ -z "$ID" ] && continue
+  echo "   Archiving WP plugin update: $ID"
+  curl -s -X PATCH "$DIETER_API/$ID" -H "Content-Type: application/json" -d '{"status":"archived"}' > /dev/null
+done
+
+# ============================================
+# 13. BILLING RECEIPTS (OpenAI, Vercel, etc)
+# ============================================
+echo ""
+echo "🔍 Archiving billing receipts..."
+
+curl -s "$DIETER_API?status=pending&limit=100" | jq -r '.data.items[]? | select(.preview | test("has been funded|Payment receipt|Invoice paid"; "i")) | .id' | while read -r ID; do
+  [ -z "$ID" ] && continue
+  echo "   Archiving billing receipt: $ID"
+  curl -s -X PATCH "$DIETER_API/$ID" -H "Content-Type: application/json" -d '{"status":"archived"}' > /dev/null
+done
+
+# ============================================
+# 14. PASSWORD CHANGED NOTIFICATIONS (archive)
+# ============================================
+echo ""
+echo "🔍 Archiving password changed notifications..."
+
+curl -s "$DIETER_API?status=pending&limit=100" | jq -r '.data.items[]? | select(.preview | test("Password Changed|Passwort geändert"; "i")) | .id' | while read -r ID; do
+  [ -z "$ID" ] && continue
+  echo "   Archiving password change: $ID"
+  curl -s -X PATCH "$DIETER_API/$ID" -H "Content-Type: application/json" -d '{"status":"archived"}' > /dev/null
+done
+
+# ============================================
+# 15. WELCOME EMAILS (archive)
+# ============================================
+echo ""
+echo "🔍 Archiving welcome emails..."
+
+curl -s "$DIETER_API?status=pending&limit=100" | jq -r '.data.items[]? | select(.preview | test("welcome to|willkommen bei"; "i")) | .id' | while read -r ID; do
+  [ -z "$ID" ] && continue
+  echo "   Archiving welcome email: $ID"
+  curl -s -X PATCH "$DIETER_API/$ID" -H "Content-Type: application/json" -d '{"status":"archived"}' > /dev/null
+done
+
+# ============================================
+# 16. AUTO-REPLIES (info only)
+# ============================================
+echo ""
+echo "🔍 Archiving auto-reply emails..."
+
+curl -s "$DIETER_API?status=pending&limit=100" | jq -r '.data.items[]? | select(.preview | test("Automatische Antwort|Out of Office|Auto-Reply"; "i")) | .id' | while read -r ID; do
+  [ -z "$ID" ] && continue
+  echo "   Archiving auto-reply: $ID"
+  curl -s -X PATCH "$DIETER_API/$ID" -H "Content-Type: application/json" -d '{"status":"archived"}' > /dev/null
+done
+
+# ============================================
+# 17. KINSTA/HOSTING VULNERABILITY DIGESTS (low priority)
+# ============================================
+echo ""
+echo "🔍 Marking hosting vulnerability digests as low priority..."
+
+curl -s "$DIETER_API?status=pending&limit=100" | jq -r '.data.items[]? | select(.preview | test("vulnerability digest"; "i")) | .id' | while read -r ID; do
+  [ -z "$ID" ] && continue
+  echo "   Marking as low priority: $ID"
+  curl -s -X PATCH "$DIETER_API/$ID" -H "Content-Type: application/json" -d '{"priority":"low"}' > /dev/null
+done
+
+# ============================================
+# 18. PHISHING WARNING NEWSLETTERS (archive)
+# ============================================
+echo ""
+echo "🔍 Archiving generic security newsletters..."
+
+curl -s "$DIETER_API?status=pending&limit=100" | jq -r '.data.items[]? | select(.preview | test("Phishing-Versuche|So erkennen Sie"; "i")) | .id' | while read -r ID; do
+  [ -z "$ID" ] && continue
+  echo "   Archiving security newsletter: $ID"
+  curl -s -X PATCH "$DIETER_API/$ID" -H "Content-Type: application/json" -d '{"status":"archived"}' > /dev/null
+done
+
+# ============================================
+# 19. GITHUB NOTIFICATIONS (OAuth, stars, etc)
+# ============================================
+echo ""
+echo "🔍 Archiving GitHub informational notifications..."
+
+curl -s "$DIETER_API?status=pending&limit=100" | jq -r '.data.items[]? | select(.preview | test("third-party OAuth|Someone has starred|dependabot\\[bot\\]"; "i")) | .id' | while read -r ID; do
+  [ -z "$ID" ] && continue
+  echo "   Archiving GitHub notification: $ID"
+  curl -s -X PATCH "$DIETER_API/$ID" -H "Content-Type: application/json" -d '{"status":"archived"}' > /dev/null
+done
+
+# ============================================
+# 20. SUCCESSFUL SIGN-IN NOTIFICATIONS (info only)
+# ============================================
+echo ""
+echo "🔍 Archiving successful sign-in notifications..."
+
+curl -s "$DIETER_API?status=pending&limit=100" | jq -r '.data.items[]? | select(.preview | test("Successful sign-in|Neue Anmeldung|New device accessing"; "i")) | .id' | while read -r ID; do
+  [ -z "$ID" ] && continue
+  echo "   Archiving sign-in notification: $ID"
+  curl -s -X PATCH "$DIETER_API/$ID" -H "Content-Type: application/json" -d '{"status":"archived"}' > /dev/null
+done
+
+# ============================================
+# 21. DAILY SALES REPORTS (low priority)
+# ============================================
+echo ""
+echo "🔍 Marking daily sales reports as low priority..."
+
+curl -s "$DIETER_API?status=pending&limit=100" | jq -r '.data.items[]? | select(.preview | test("Daily Sales Report"; "i")) | .id' | while read -r ID; do
+  [ -z "$ID" ] && continue
+  echo "   Marking as low: $ID"
+  curl -s -X PATCH "$DIETER_API/$ID" -H "Content-Type: application/json" -d '{"priority":"low"}' > /dev/null
+done
+
+# ============================================
+# 22. MARKETING NEWSLETTERS (archive)
+# ============================================
+echo ""
+echo "🔍 Archiving marketing newsletters..."
+
+curl -s "$DIETER_API?status=pending&limit=100" | jq -r '.data.items[]? | select(.preview | test("Optimize your website|Elementor|newsletter|unsubscribe"; "i")) | .id' | while read -r ID; do
+  [ -z "$ID" ] && continue
+  echo "   Archiving newsletter: $ID"
+  curl -s -X PATCH "$DIETER_API/$ID" -H "Content-Type: application/json" -d '{"status":"archived"}' > /dev/null
+done
+
+# ============================================
+# 23. CALENDAR ACCEPTS (Zugesagt, Angenommen)
+# ============================================
+echo ""
+echo "🔍 Archiving calendar accept notifications..."
+
+curl -s "$DIETER_API?status=pending&limit=100" | jq -r '.data.items[]? | select(.preview | test("Zugesagt:|Angenommen:|has accepted"; "i")) | .id' | while read -r ID; do
+  [ -z "$ID" ] && continue
+  echo "   Archiving calendar accept: $ID"
+  curl -s -X PATCH "$DIETER_API/$ID" -H "Content-Type: application/json" -d '{"status":"archived"}' > /dev/null
+done
+
+# ============================================
+# 24. OLIVADIS ORDER CANCELLATIONS (low priority)
+# ============================================
+echo ""
+echo "🔍 Marking Olivadis cancellations as low priority..."
+
+curl -s "$DIETER_API?status=pending&limit=100" | jq -r '.data.items[]? | select(.preview | test("Bestellung.*wurde abgebrochen"; "i")) | .id' | while read -r ID; do
+  [ -z "$ID" ] && continue
+  echo "   Marking as low: $ID"
+  curl -s -X PATCH "$DIETER_API/$ID" -H "Content-Type: application/json" -d '{"priority":"low"}' > /dev/null
+done
+
 echo ""
 echo "✅ Smart filter complete!"

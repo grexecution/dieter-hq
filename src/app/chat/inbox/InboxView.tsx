@@ -223,6 +223,28 @@ export function InboxView() {
     }
   };
 
+  // Handle custom reply
+  const handleSendCustomReply = async (id: string, message: string) => {
+    try {
+      const res = await fetch(`/api/inbox/${id}/reply`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message }),
+      });
+      if (res.ok) {
+        toast.success("Nachricht gesendet");
+        // Archive the item after successful reply
+        await handleStatusChange(id, "archived");
+      } else {
+        const data = await res.json();
+        toast.error(data.error || "Fehler beim Senden");
+      }
+    } catch (err) {
+      console.error("Error sending reply:", err);
+      toast.error("Fehler beim Senden");
+    }
+  };
+
   // Handle sync
   const handleSync = async () => {
     setIsSyncing(true);
@@ -451,6 +473,7 @@ export function InboxView() {
                         item={item}
                         onStatusChange={handleStatusChange}
                         onExecuteRecommendation={handleExecuteRecommendation}
+                        onSendCustomReply={handleSendCustomReply}
                         isExpanded={expandedItemId === item.id}
                         isSelected={selectedIndex === index}
                         onToggleExpand={() => setExpandedItemId(

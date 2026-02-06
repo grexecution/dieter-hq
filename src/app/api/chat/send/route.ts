@@ -7,6 +7,49 @@ import { artefacts, messages } from "@/server/db/schema";
 import { logEvent } from "@/server/events/log";
 import { artefactRelPath, artefactsBaseDir, ensureDirForFile } from "@/server/artefacts/storage";
 import { placeholderSvg } from "@/server/tools/image";
+
+// Helper: Extract and save base64 images from content, return modified content with URLs
+async function processImagesInContent(content: string, threadId: string): Promise<string> {
+  // Match base64 image patterns: data:image/xxx;base64,... or just raw base64 after "Read image file"
+  const base64Pattern = /data:image\/(png|jpeg|jpg|gif|webp);base64,([A-Za-z0-9+/=]+)/g;
+  
+  let result = content;
+  let match;
+  
+  while ((match = base64Pattern.exec(content)) !== null) {
+    const [fullMatch, imageType, base64Data] = match;
+    
+    try {
+      const imgId = crypto.randomUUID();
+      const createdAt = new Date();
+      const ext = imageType === 'jpeg' ? 'jpg' : imageType;
+      const buffer = Buffer.from(base64Data, 'base64');
+      
+      const rel = artefactRelPath({ date: createdAt, id: imgId, ext });
+      const abs = path.join(artefactsBaseDir(), rel);
+      await ensureDirForFile(abs);
+      await fs.writeFile(abs, buffer);
+      
+      await db.insert(artefacts).values({
+        id: imgId,
+        threadId,
+        originalName: `image-${imgId}.${ext}`,
+        mimeType: `image/${imageType}`,
+        sizeBytes: buffer.byteLength,
+        storagePath: rel,
+        createdAt,
+      });
+      
+      const url = `/api/artefacts/${encodeURIComponent(imgId)}`;
+      // Replace inline base64 with markdown image pointing to artefact
+      result = result.replace(fullMatch, `![Image](${url})`);
+    } catch (err) {
+      console.error('Error saving inline image:', err);
+    }
+  }
+  
+  return result;
+}
 // TODO: Re-enable when Infinite Context is stable
 // import { 
 //   processMessageWithInfiniteContext, 
@@ -272,12 +315,14 @@ export async function POST(req: NextRequest) {
         }
 
         // Save complete assistant response to DB
+        // Process any inline base64 images and save them as artefacts
+        const processedContent = await processImagesInContent(fullContent || "No response", threadId);
         const assistantCreatedAt = new Date();
         await db.insert(messages).values({
           id: assistantMsgId,
           threadId,
           role: "assistant",
-          content: fullContent || "No response",
+          content: processedContent,
           createdAt: assistantCreatedAt,
         });
 
@@ -294,14 +339,14 @@ export async function POST(req: NextRequest) {
           payload: { channel: "dieter-hq", context: threadId },
         });
 
-        // Send completion signal
+        // Send completion signal with processed content (images converted to artefact URLs)
         controller.enqueue(encoder.encode(`data: ${JSON.stringify({
           type: "done",
           item: {
             id: assistantMsgId,
             threadId,
             role: "assistant",
-            content: fullContent || "No response",
+            content: processedContent,
             createdAt: assistantCreatedAt.getTime(),
             createdAtLabel: fmtLabel(assistantCreatedAt),
           }

@@ -39,7 +39,7 @@ async function sendWhatsApp(to: string, message: string): Promise<{ ok: boolean;
     // Ensure JID format
     const jid = escapedTo.includes("@") ? escapedTo : `${escapedTo}@s.whatsapp.net`;
     
-    const cmd = `/opt/homebrew/bin/wacli send '${jid}' '${escapedMessage}'`;
+    const cmd = `/opt/homebrew/bin/wacli send text --to '${jid}' --message '${escapedMessage}'`;
     
     console.log(`[relay] Sending to ${jid}: ${message.slice(0, 50)}...`);
     

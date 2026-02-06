@@ -10,7 +10,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 
 import { ChatComposer } from "./ChatComposer";
-import { NowBar } from "./NowBar";
+// import { NowBar } from "./NowBar"; // TODO: make functional before re-enabling
 import { OpenClawStatusSidebar } from "./OpenClawStatusSidebar";
 import { StatusBar } from "./_components/StatusBar";
 import { SubagentPanel } from "./_components/SubagentPanel";
@@ -559,9 +559,15 @@ export function MultiChatView({
 
   // Handle tab change
   const handleTabChange = (tabId: string) => {
+    // If clicking the same workspace tab while in a project, go back to workspace view
+    const newTabConfig = CHAT_TABS.find(tab => tab.id === tabId);
+    if (newTabConfig?.isWorkspace && tabId === activeTab && activeProject) {
+      setActiveProject(null);
+      return;
+    }
+    
     setActiveTab(tabId);
     // Clear active project when switching to a non-workspace tab
-    const newTabConfig = CHAT_TABS.find(tab => tab.id === tabId);
     if (!newTabConfig?.isWorkspace) {
       setActiveProject(null);
     }
@@ -933,8 +939,8 @@ export function MultiChatView({
           threadCounts={threadCounts}
         />
 
-        {/* Now Bar */}
-        <NowBar />
+        {/* Now Bar - hidden on mobile, TODO: make functional */}
+        {/* <NowBar /> */}
 
         {/* Workspace Manager (for Dev tab without project) */}
         {showWorkspaceManager && (

@@ -82,47 +82,85 @@ function DesktopHeader({ active }: { active?: string }) {
 }
 
 // ============================================
-// Mobile Bottom Tab Bar - Clean, minimal
+// Mobile Bottom Tab Bar - Modern Floating Design
 // ============================================
 
 function MobileTabBar({ active }: { active?: string }) {
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 md:hidden">
-      <div className="border-t border-zinc-200 bg-white/95 pb-safe backdrop-blur-lg dark:border-zinc-800 dark:bg-zinc-900/95">
-        <div className="flex items-center justify-around px-2 py-2">
-          {NAV_ITEMS.map((item) => {
-            const isActive =
-              active === item.id || (item.id === "home" && !active);
+    <nav className="fixed bottom-0 left-0 right-0 z-50 pb-safe md:hidden">
+      <div className="px-4 pb-4">
+        {/* Floating Pill Container */}
+        <div className="relative mx-auto max-w-sm overflow-hidden rounded-2xl border border-white/20 bg-zinc-900/80 shadow-2xl shadow-black/40 backdrop-blur-2xl dark:border-white/10 dark:bg-zinc-950/90">
+          {/* Subtle gradient overlay */}
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-white/[0.02] to-white/[0.08]" />
+          
+          <div className="relative flex items-center justify-around px-2 py-3">
+            {NAV_ITEMS.map((item) => {
+              const isActive =
+                active === item.id || (item.id === "home" && !active);
 
-            return (
-              <Link
-                key={item.id}
-                href={item.href}
-                className={cn(
-                  "flex min-w-[64px] flex-col items-center gap-1 rounded-lg px-3 py-2 transition-colors",
-                  isActive
-                    ? "text-indigo-600 dark:text-indigo-400"
-                    : "text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"
-                )}
-              >
-                <item.icon
-                  className={cn(
-                    "h-5 w-5 transition-transform",
-                    isActive && "scale-110"
-                  )}
-                  strokeWidth={isActive ? 2.5 : 2}
-                />
-                <span
-                  className={cn(
-                    "text-[10px]",
-                    isActive ? "font-semibold" : "font-medium"
-                  )}
+              return (
+                <Link
+                  key={item.id}
+                  href={item.href}
+                  className="group relative flex flex-col items-center"
                 >
-                  {item.label}
-                </span>
-              </Link>
-            );
-          })}
+                  {/* Active Glow Background */}
+                  <div
+                    className={cn(
+                      "absolute -inset-2 rounded-xl transition-all duration-300",
+                      isActive
+                        ? "bg-indigo-500/20 blur-md"
+                        : "bg-transparent"
+                    )}
+                  />
+                  
+                  {/* Active Background Pill */}
+                  <div
+                    className={cn(
+                      "relative flex flex-col items-center gap-1 rounded-xl px-4 py-2 transition-all duration-300",
+                      isActive
+                        ? "bg-indigo-500/20"
+                        : "hover:bg-white/5"
+                    )}
+                  >
+                    {/* Icon */}
+                    <item.icon
+                      className={cn(
+                        "h-5 w-5 transition-all duration-300",
+                        isActive
+                          ? "text-indigo-400 drop-shadow-[0_0_8px_rgba(129,140,248,0.5)]"
+                          : "text-zinc-400 group-hover:text-zinc-200"
+                      )}
+                      strokeWidth={isActive ? 2.5 : 2}
+                    />
+                    
+                    {/* Label */}
+                    <span
+                      className={cn(
+                        "text-[10px] font-medium transition-all duration-300",
+                        isActive
+                          ? "text-indigo-300"
+                          : "text-zinc-500 group-hover:text-zinc-300"
+                      )}
+                    >
+                      {item.label}
+                    </span>
+                    
+                    {/* Active Indicator Dot */}
+                    <div
+                      className={cn(
+                        "absolute -bottom-0.5 h-1 w-1 rounded-full bg-indigo-400 transition-all duration-300",
+                        isActive
+                          ? "scale-100 opacity-100"
+                          : "scale-0 opacity-0"
+                      )}
+                    />
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
         </div>
       </div>
     </nav>
@@ -150,8 +188,8 @@ export function AppShell({ children, active }: AppShellProps) {
       <main
         className={cn(
           "mx-auto w-full max-w-6xl px-4 md:px-6",
-          // Mobile: bottom padding for tab bar
-          "pb-24 pt-6",
+          // Mobile: bottom padding for floating tab bar
+          "pb-28 pt-6",
           // Desktop: top padding for header
           "md:pb-8 md:pt-24"
         )}

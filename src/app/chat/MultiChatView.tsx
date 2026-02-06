@@ -363,7 +363,7 @@ interface ComposerProps {
   activeTab: string;
 }
 
-function Composer({ draft, setDraft, isSending, onSubmit, onVoiceTranscript, threadId, activeTab }: ComposerProps) {
+function Composer({ draft, setDraft, isSending, onSubmit, onVoiceTranscript, onVoiceMessage, threadId, activeTab }: ComposerProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const currentTab = CHAT_TABS.find(tab => tab.id === activeTab);
 
@@ -396,7 +396,12 @@ function Composer({ draft, setDraft, isSending, onSubmit, onVoiceTranscript, thr
           {/* Attachment & Voice - Left side */}
           <div className="flex items-center gap-1">
             <ChatComposer threadId={threadId} disabled={isSending} />
-            <VoiceRecorder threadId={threadId} onTranscript={onVoiceTranscript} disabled={isSending} />
+            <VoiceRecorder
+              threadId={threadId}
+              onTranscript={onVoiceTranscript}
+              onVoiceMessage={onVoiceMessage}
+              disabled={isSending}
+            />
           </div>
 
           {/* Text Input */}
@@ -689,6 +694,16 @@ export function MultiChatView({
           isSending={isSending}
           onSubmit={handleSend}
           onVoiceTranscript={(transcript) => setDraft(transcript)}
+          onVoiceMessage={(message) => {
+            // Add voice message to chat immediately
+            setLiveMessages((prev) => ({
+              ...prev,
+              [activeTab]: [
+                ...(prev[activeTab] || []),
+                message
+              ].filter((m, i, arr) => arr.findIndex(msg => msg.id === m.id) === i) // dedup
+            }));
+          }}
           threadId={activeTab}
           activeTab={activeTab}
         />

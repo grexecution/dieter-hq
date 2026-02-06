@@ -13,6 +13,7 @@ import { ChatComposer } from "./ChatComposer";
 import { NowBar } from "./NowBar";
 import { OpenClawStatusSidebar } from "./OpenClawStatusSidebar";
 import { StatusBar } from "./_components/StatusBar";
+import { SubagentPanel } from "./_components/SubagentPanel";
 import { CHAT_TABS, type ChatTab } from "./chat-config";
 
 const VoiceRecorder = dynamic(
@@ -419,6 +420,7 @@ export function MultiChatView({
   const [mobileHudOpen, setMobileHudOpen] = useState(false);
   const [drafts, setDrafts] = useState<Record<string, string>>({});
   const [sendingStates, setSendingStates] = useState<Record<string, boolean>>({});
+  const [subagentPanelCollapsed, setSubagentPanelCollapsed] = useState(true);
 
   const endRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
@@ -528,7 +530,12 @@ export function MultiChatView({
   const currentTab = CHAT_TABS.find(tab => tab.id === activeTab);
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
+    <div className={cn(
+      "grid gap-6",
+      subagentPanelCollapsed 
+        ? "lg:grid-cols-[320px_1fr_auto]" 
+        : "lg:grid-cols-[320px_1fr_280px]"
+    )}>
       {/* Sidebar (desktop) */}
       <aside className="hidden lg:block lg:sticky lg:top-20 lg:h-[calc(100vh-6rem)] lg:self-start">
         <OpenClawStatusSidebar logoutAction={logoutAction} />
@@ -640,6 +647,15 @@ export function MultiChatView({
           activeTab={activeTab}
         />
       </section>
+
+      {/* Subagent Panel (desktop) */}
+      <aside className="hidden lg:block lg:sticky lg:top-20 lg:h-[calc(100vh-6rem)] lg:self-start">
+        <SubagentPanel
+          collapsed={subagentPanelCollapsed}
+          onToggleCollapse={() => setSubagentPanelCollapsed((prev) => !prev)}
+          className="h-full"
+        />
+      </aside>
     </div>
   );
 }

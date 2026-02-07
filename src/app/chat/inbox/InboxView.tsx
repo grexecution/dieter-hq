@@ -109,6 +109,56 @@ export function InboxView() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filters]);
 
+  // Auto-sync every 30 seconds when tab is visible
+  useEffect(() => {
+    const SYNC_INTERVAL = 30 * 1000; // 30 seconds
+    let intervalId: NodeJS.Timeout | null = null;
+    let lastSyncTime = Date.now();
+
+    const doAutoSync = async () => {
+      // Skip if already syncing or if we synced recently (debounce)
+      if (isSyncing || Date.now() - lastSyncTime < 10000) return;
+      
+      // Only sync if tab is visible
+      if (document.visibilityState !== 'visible') return;
+      
+      console.log('[Inbox] Auto-sync triggered');
+      lastSyncTime = Date.now();
+      
+      try {
+        // Silent sync - no toast, just refresh data
+        await fetch("/api/inbox/sync", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ source: "all" }),
+        });
+        await loadItems(true);
+      } catch (err) {
+        console.error('[Inbox] Auto-sync failed:', err);
+      }
+    };
+
+    // Start interval
+    intervalId = setInterval(doAutoSync, SYNC_INTERVAL);
+
+    // Also sync when tab becomes visible after being hidden
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        // Check if it's been more than 1 minute since last sync
+        if (Date.now() - lastSyncTime > 60000) {
+          doAutoSync();
+        }
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      if (intervalId) clearInterval(intervalId);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [isSyncing, loadItems]);
+
   // Pull to refresh
   const { ref: pullRef, pullDistance, isRefreshing, isTriggered } = usePullToRefresh<HTMLDivElement>({
     onRefresh: async () => {

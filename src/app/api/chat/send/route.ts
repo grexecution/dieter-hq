@@ -67,12 +67,12 @@ async function processImagesInContent(content: string, threadId: string): Promis
   
   return result;
 }
-// TODO: Re-enable when Infinite Context is stable
-// import { 
-//   processMessageWithInfiniteContext, 
-//   recordAssistantResponse,
-//   getContextStatus 
-// } from "@/server/infinite-context";
+// Infinite Context System - enables endless conversations
+import { 
+  processMessageWithInfiniteContext, 
+  recordAssistantResponse,
+  getContextStatus 
+} from "@/server/infinite-context";
 
 export const runtime = "nodejs";
 
@@ -210,12 +210,20 @@ export async function POST(req: NextRequest) {
     }
     const contextualMessage = contextPrefix + content;
 
-    // 🧠 INFINITE CONTEXT: Temporarily disabled - just use the user message
-    const infiniteContextResult = {
-      contextMessages: [{ role: 'user', content: contextualMessage }],
-      contextState: { contextUtilization: 0 },
-      summarizationTriggered: false,
-    };
+    // 🧠 INFINITE CONTEXT: Process message with memory management
+    let infiniteContextResult;
+    try {
+      infiniteContextResult = await processMessageWithInfiniteContext(threadId, contextualMessage);
+      console.log(`[InfiniteContext] Thread ${threadId}: ${infiniteContextResult.contextState.contextUtilization.toFixed(1)}% utilized, ${infiniteContextResult.summarizationTriggered ? 'summarized' : 'no summary'}`);
+    } catch (err) {
+      console.error('[InfiniteContext] Error processing context:', err);
+      // Fallback to simple message if infinite context fails
+      infiniteContextResult = {
+        contextMessages: [{ role: 'user', content: contextualMessage }],
+        contextState: { contextUtilization: 0 },
+        summarizationTriggered: false,
+      };
+    }
 
     // Create SSE stream for frontend
     const encoder = new TextEncoder();
@@ -375,12 +383,12 @@ export async function POST(req: NextRequest) {
           console.error('[Chat Send] Push notification failed:', pushErr);
         }
 
-        // 🧠 INFINITE CONTEXT: Temporarily disabled
-        // try {
-        //   await recordAssistantResponse(threadId, fullContent || "");
-        // } catch (err) {
-        //   console.error('[InfiniteContext] Error recording response:', err);
-        // }
+        // 🧠 INFINITE CONTEXT: Record assistant response for token tracking
+        try {
+          await recordAssistantResponse(threadId, fullContent || "");
+        } catch (err) {
+          console.error('[InfiniteContext] Error recording response:', err);
+        }
 
         await logEvent({
           threadId,

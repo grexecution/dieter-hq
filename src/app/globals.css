@@ -608,3 +608,65 @@ p {
   height: 100vh;
   height: 100dvh; /* Dynamic viewport height */
 }
+
+/* ============================================
+   iOS PWA Status Bar & Safe Area
+   ============================================ */
+
+/* iOS PWA: Status bar background color */
+@supports (padding-top: env(safe-area-inset-top)) {
+  /* When in standalone mode (PWA), add colored status bar area */
+  @media (display-mode: standalone) {
+    body::before {
+      content: "";
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: env(safe-area-inset-top);
+      background: hsl(var(--background));
+      z-index: 9999;
+    }
+    
+    /* Ensure body has padding for status bar */
+    body {
+      padding-top: env(safe-area-inset-top);
+    }
+  }
+}
+
+/* Dark mode status bar */
+.dark body::before {
+  background: hsl(var(--background));
+}
+
+/* iOS PWA: Bottom safe area for home indicator */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  @media (display-mode: standalone) {
+    .bottom-nav,
+    .fixed-bottom,
+    [data-fixed-bottom] {
+      padding-bottom: calc(0.5rem + env(safe-area-inset-bottom));
+    }
+  }
+}
+
+/* Prevent iOS from zooming on input focus */
+@media screen and (-webkit-min-device-pixel-ratio: 0) {
+  input[type="text"],
+  input[type="email"],
+  input[type="search"],
+  input[type="password"],
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
+}
+
+/* iOS rubber-band scrolling fix */
+@media (display-mode: standalone) {
+  html, body {
+    overscroll-behavior: none;
+    -webkit-overflow-scrolling: touch;
+  }
+}

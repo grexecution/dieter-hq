@@ -62,8 +62,8 @@ export async function sendPushToAll(payload: PushNotificationPayload): Promise<{
       // Store last error for debugging
       lastPushError = { statusCode, message: errorMessage, subscriptionId: sub.id };
       
-      // Remove invalid subscriptions (410 Gone or 404 Not Found)
-      if (statusCode === 410 || statusCode === 404) {
+      // Remove invalid subscriptions (410 Gone, 404 Not Found, or 401/403 JWT errors)
+      if (statusCode === 410 || statusCode === 404 || statusCode === 401 || statusCode === 403) {
         try {
           const { eq } = await import('drizzle-orm');
           await db.delete(pushSubscriptions).where(eq(pushSubscriptions.id, sub.id));

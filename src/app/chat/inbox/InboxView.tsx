@@ -109,44 +109,40 @@ export function InboxView() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filters]);
 
-  // Auto-sync every 30 seconds when tab is visible
+  // Auto-refresh items from DB every 30 seconds when tab is visible
+  // (Actual sync runs via cron job on Mac mini every 30 min)
   useEffect(() => {
-    const SYNC_INTERVAL = 30 * 1000; // 30 seconds
+    const REFRESH_INTERVAL = 30 * 1000; // 30 seconds
     let intervalId: NodeJS.Timeout | null = null;
-    let lastSyncTime = Date.now();
+    let lastRefreshTime = Date.now();
 
-    const doAutoSync = async () => {
-      // Skip if already syncing or if we synced recently (debounce)
-      if (isSyncing || Date.now() - lastSyncTime < 10000) return;
+    const doAutoRefresh = async () => {
+      // Skip if already syncing/loading or if we refreshed recently (debounce)
+      if (isSyncing || isLoading || Date.now() - lastRefreshTime < 10000) return;
       
-      // Only sync if tab is visible
+      // Only refresh if tab is visible
       if (document.visibilityState !== 'visible') return;
       
-      console.log('[Inbox] Auto-sync triggered');
-      lastSyncTime = Date.now();
+      console.log('[Inbox] Auto-refresh triggered');
+      lastRefreshTime = Date.now();
       
       try {
-        // Silent sync - no toast, just refresh data
-        await fetch("/api/inbox/sync", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ source: "all" }),
-        });
+        // Just reload items from DB (cron job fills the DB)
         await loadItems(true);
       } catch (err) {
-        console.error('[Inbox] Auto-sync failed:', err);
+        console.error('[Inbox] Auto-refresh failed:', err);
       }
     };
 
     // Start interval
-    intervalId = setInterval(doAutoSync, SYNC_INTERVAL);
+    intervalId = setInterval(doAutoRefresh, REFRESH_INTERVAL);
 
-    // Also sync when tab becomes visible after being hidden
+    // Also refresh when tab becomes visible after being hidden
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
-        // Check if it's been more than 1 minute since last sync
-        if (Date.now() - lastSyncTime > 60000) {
-          doAutoSync();
+        // Check if it's been more than 1 minute since last refresh
+        if (Date.now() - lastRefreshTime > 60000) {
+          doAutoRefresh();
         }
       }
     };
@@ -157,7 +153,7 @@ export function InboxView() {
       if (intervalId) clearInterval(intervalId);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, [isSyncing, loadItems]);
+  }, [isSyncing, isLoading, loadItems]);
 
   // Pull to refresh
   const { ref: pullRef, pullDistance, isRefreshing, isTriggered } = usePullToRefresh<HTMLDivElement>({
@@ -300,22 +296,40 @@ export function InboxView() {
     }
   };
 
-  // Handle sync
+  // Handle sync - triggers local sync via OpenClaw gateway webhook
   const handleSync = async () => {
     setIsSyncing(true);
     try {
-      // Sync all sources at once
-      await fetch("/api/inbox/sync", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ source: "all" }),
-      });
+      // Try to trigger sync via OpenClaw gateway webhook (runs on Mac mini)
+      const gatewayUrl = process.env.NEXT_PUBLIC_OPENCLAW_GATEWAY_URL || 'http://127.0.0.1:18789';
       
+      // First try the gateway webhook
+      try {
+        const webhookRes = await fetch(`${gatewayUrl}/webhook/inbox-sync`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          signal: AbortSignal.timeout(5000), // 5s timeout
+        });
+        
+        if (webhookRes.ok) {
+          toast.success("Sync gestartet auf Mac mini...");
+          // Wait a bit then refresh
+          await new Promise(r => setTimeout(r, 3000));
+          await loadItems(true);
+          toast.success("Inbox aktualisiert");
+          return;
+        }
+      } catch {
+        // Gateway not reachable, fallback to just refreshing
+        console.log("[Inbox] Gateway not reachable, just refreshing items");
+      }
+      
+      // Fallback: just refresh the items from DB
       await loadItems(true);
-      toast.success("Synchronisation abgeschlossen");
+      toast.info("Inbox aktualisiert (Auto-Sync läuft alle 30 Min auf Mac mini)");
     } catch (err) {
       console.error("Error syncing:", err);
-      toast.error("Synchronisation fehlgeschlagen");
+      toast.error("Fehler beim Aktualisieren");
     } finally {
       setIsSyncing(false);
     }

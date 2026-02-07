@@ -117,13 +117,19 @@ async function listCronJobsSummary(): Promise<{ enabled: number; nextRunAtMs: nu
   return { enabled: enabled.length, nextRunAtMs: nextRunAtMs ?? null };
 }
 
-async function listSessionsSummary(): Promise<{ totalRecent: number; active: number }> {
+async function listSessionsSummary(): Promise<{ 
+  totalRecent: number; 
+  active: number; 
+  isWorking: boolean;
+  lastActivityMs: number | null;
+  currentSessionId: string | null;
+}> {
   const dir = path.join(OPENCLAW_ROOT, "agents", "main", "sessions");
   let entries: string[] = [];
   try {
     entries = await fs.readdir(dir);
   } catch {
-    return { totalRecent: 0, active: 0 };
+    return { totalRecent: 0, active: 0, isWorking: false, lastActivityMs: null, currentSessionId: null };
   }
 
   const files = entries.filter((f) => f.endsWith(".jsonl"));
@@ -134,20 +140,36 @@ async function listSessionsSummary(): Promise<{ totalRecent: number; active: num
       const fp = path.join(dir, f);
       try {
         const st = await fs.stat(fp);
-        return st.mtimeMs;
+        return { file: f, mtimeMs: st.mtimeMs };
       } catch {
         return null;
       }
     }),
   );
 
-  const mtimes = stats.filter((x): x is number => typeof x === "number");
+  const validStats = stats.filter((x): x is { file: string; mtimeMs: number } => x !== null);
+  const mtimes = validStats.map(s => s.mtimeMs);
+  
+  // Find most recent session
+  const sorted = validStats.sort((a, b) => b.mtimeMs - a.mtimeMs);
+  const mostRecent = sorted[0] ?? null;
+  
+  // "Working" = session modified in last 60 seconds (agent is actively responding)
+  const isWorking = mostRecent ? (now - mostRecent.mtimeMs < 60 * 1000) : false;
+  
+  // "Active" = session modified in last 30 minutes
   const active = mtimes.filter((ms) => now - ms < 30 * 60 * 1000).length;
 
   // Keep this number bounded so it stays stable as the directory grows.
   const totalRecent = mtimes.filter((ms) => now - ms < 24 * 60 * 60 * 1000).length;
 
-  return { totalRecent, active };
+  return { 
+    totalRecent, 
+    active, 
+    isWorking,
+    lastActivityMs: mostRecent?.mtimeMs ?? null,
+    currentSessionId: mostRecent?.file.replace('.jsonl', '') ?? null,
+  };
 }
 
 export async function GET() {

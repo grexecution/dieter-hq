@@ -23,7 +23,13 @@ type StatusPayload = {
     summary: string;
   }>;
   details?: {
-    sessions?: { totalRecent: number; active: number };
+    sessions?: { 
+      totalRecent: number; 
+      active: number;
+      isWorking?: boolean;
+      lastActivityMs?: number | null;
+      currentSessionId?: string | null;
+    };
     cron?: { enabled: number; nextRunAtMs: number | null };
   };
   source?: {
@@ -98,11 +104,15 @@ export function OpenClawStatusSidebar({
 
   const headerMeta = useMemo(() => {
     const active = data?.details?.sessions?.active ?? 0;
+    const isWorking = data?.details?.sessions?.isWorking ?? false;
+    const lastActivityMs = data?.details?.sessions?.lastActivityMs ?? null;
     const cronEnabled = data?.details?.cron?.enabled ?? 0;
     return {
-      sessionsLabel: active ? `${active} active` : "idle",
+      sessionsLabel: isWorking ? "working..." : (active ? `${active} active` : "idle"),
       cronLabel: cronEnabled ? `${cronEnabled} cron` : "no cron",
       nextCronIn: formatIn(data?.details?.cron?.nextRunAtMs),
+      isWorking,
+      lastActivity: formatRelative(lastActivityMs),
     };
   }, [data?.details]);
 
@@ -111,21 +121,42 @@ export function OpenClawStatusSidebar({
   const sinceMs = data?.live?.sinceMs ?? null;
   const updatedAtMs = data?.live?.updatedAtMs ?? null;
 
+  const isWorking = headerMeta.isWorking;
+
   return (
-    <aside className="h-[calc(100dvh-100px)] rounded-2xl border border-zinc-200/70 bg-white/60 p-4 shadow-sm backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/40">
+    <aside className={cn(
+      "h-[calc(100dvh-100px)] rounded-2xl border p-4 shadow-sm backdrop-blur transition-all duration-500",
+      isWorking 
+        ? "border-amber-400/70 bg-amber-50/60 dark:border-amber-500/50 dark:bg-amber-950/20 shadow-amber-200/50 dark:shadow-amber-900/30" 
+        : "border-zinc-200/70 bg-white/60 dark:border-zinc-800 dark:bg-zinc-950/40"
+    )}>
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="flex items-center gap-2">
-            <div className="text-sm font-semibold leading-tight">OpenClaw Live</div>
+            <div className={cn(
+              "text-sm font-semibold leading-tight transition-colors",
+              isWorking && "text-amber-700 dark:text-amber-400"
+            )}>
+              {isWorking ? "🔥 Working" : "OpenClaw"}
+            </div>
             <span className="relative inline-flex h-2.5 w-2.5">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-500/50" />
-              <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-500" />
+              <span className={cn(
+                "absolute inline-flex h-full w-full rounded-full",
+                isWorking ? "animate-ping bg-amber-500/50" : "animate-ping bg-emerald-500/50"
+              )} />
+              <span className={cn(
+                "relative inline-flex h-2.5 w-2.5 rounded-full",
+                isWorking ? "bg-amber-500" : "bg-emerald-500"
+              )} />
             </span>
           </div>
-          <div className="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">
+          <div className={cn(
+            "mt-0.5 text-xs transition-colors",
+            isWorking ? "text-amber-600 dark:text-amber-400/80" : "text-zinc-500 dark:text-zinc-400"
+          )}>
             {headerMeta.sessionsLabel} • {headerMeta.cronLabel}
             {headerMeta.nextCronIn !== "—" ? ` • next ${headerMeta.nextCronIn}` : ""}
-            {data?.source?.adapter ? ` • ${data.source.adapter}` : ""}
+            {headerMeta.lastActivity !== "—" ? ` • ${headerMeta.lastActivity}` : ""}
           </div>
         </div>
         <form action={logoutAction}>

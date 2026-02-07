@@ -12,6 +12,7 @@ import { cn } from "@/lib/utils";
 import { ChatComposer } from "./ChatComposer";
 // import { NowBar } from "./NowBar"; // TODO: make functional before re-enabling
 import { OpenClawStatusSidebar } from "./OpenClawStatusSidebar";
+import { DieterAvatar } from "./DieterAvatar";
 import { StatusBar } from "./_components/StatusBar";
 import { SubagentPanel } from "./_components/SubagentPanel";
 import { WorkspaceManager, type WorkspaceProject } from "./_components/WorkspaceManager";
@@ -238,20 +239,15 @@ function MessageBubble({ message, artefact, url }: MessageBubbleProps) {
         )}
       >
         {/* Avatar */}
-        <Avatar className="h-7 w-7 md:h-8 md:w-8 shrink-0 flex-none">
-          {isUser ? (
+        {isUser ? (
+          <Avatar className="h-7 w-7 md:h-8 md:w-8 shrink-0 flex-none">
             <AvatarFallback className="bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 text-[10px] md:text-xs font-medium">
               <User className="h-3.5 w-3.5" />
             </AvatarFallback>
-          ) : (
-            <>
-              <AvatarImage src="/dieter-avatar.png" alt={author} />
-              <AvatarFallback className="bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 text-[10px] md:text-xs font-medium">
-                <Bot className="h-3.5 w-3.5" />
-              </AvatarFallback>
-            </>
-          )}
-        </Avatar>
+          </Avatar>
+        ) : (
+          <DieterAvatar size="sm" />
+        )}
 
         <VoiceMessageBubble
           audioUrl={message.audioUrl}
@@ -272,20 +268,15 @@ function MessageBubble({ message, artefact, url }: MessageBubbleProps) {
       )}
     >
       {/* Avatar */}
-      <Avatar className="h-7 w-7 md:h-8 md:w-8 shrink-0 flex-none">
-        {isUser ? (
+      {isUser ? (
+        <Avatar className="h-7 w-7 md:h-8 md:w-8 shrink-0 flex-none">
           <AvatarFallback className="bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 text-[10px] md:text-xs font-medium">
             <User className="h-3.5 w-3.5" />
           </AvatarFallback>
-        ) : (
-          <>
-            <AvatarImage src="/dieter-avatar.png" alt={author} />
-            <AvatarFallback className="bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 text-[10px] md:text-xs font-medium">
-              <Bot className="h-3.5 w-3.5" />
-            </AvatarFallback>
-          </>
-        )}
-      </Avatar>
+        </Avatar>
+      ) : (
+        <DieterAvatar size="sm" />
+      )}
 
       {/* Bubble */}
       <div
@@ -1137,14 +1128,7 @@ export function MultiChatView({
         <form action={newThreadAction} className="hidden" aria-hidden="true" />
       </aside>
 
-      {/* Mobile Activity Floating Button */}
-      <button
-        onClick={() => setMobileActivityOpen(true)}
-        className="fixed bottom-20 right-4 z-50 flex h-12 w-12 items-center justify-center rounded-full bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 shadow-lg lg:hidden"
-        title="Agent Activity"
-      >
-        <Bot className="h-5 w-5" />
-      </button>
+      {/* Mobile Activity Button removed - use DieterAvatar in chat instead */}
 
       {/* Mobile Activity Modal */}
       {mobileActivityOpen && (

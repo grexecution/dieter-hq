@@ -1284,7 +1284,7 @@ export function MultiChatView({
         </header>
 
         {/* Live Status Bar - always shows what Dieter is doing */}
-        <StatusBar agentActivity={currentAgentActivity} />
+        <StatusBar agentActivity={currentAgentActivity} threadId={effectiveThreadId} />
 
         {/* Tab Navigation */}
         <TabNavigation 

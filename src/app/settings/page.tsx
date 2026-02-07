@@ -1,18 +1,24 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { 
   ChevronLeft, 
   RefreshCw, 
   Trash2, 
   Bell, 
+  BellOff,
+  BellRing,
   Moon, 
   Sun,
   Database,
   Wifi,
   HardDrive,
-  AlertTriangle
+  AlertTriangle,
+  Send,
+  CheckCircle2,
+  XCircle,
+  Loader2
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
@@ -21,10 +27,214 @@ import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
+// Helper to convert VAPID key
+function urlBase64ToUint8Array(base64String: string): Uint8Array {
+  const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
+  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+  const rawData = window.atob(base64);
+  const outputArray = new Uint8Array(rawData.length);
+  for (let i = 0; i < rawData.length; ++i) {
+    outputArray[i] = rawData.charCodeAt(i);
+  }
+  return outputArray;
+}
+
+type PushStatus = {
+  permission: NotificationPermission | 'unsupported' | 'loading';
+  isSubscribed: boolean;
+  subscription: PushSubscription | null;
+  serviceWorkerActive: boolean;
+  vapidKeyConfigured: boolean;
+};
+
 export default function SettingsPage() {
   const { theme, setTheme } = useTheme();
   const [isClearing, setIsClearing] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isSendingTest, setIsSendingTest] = useState(false);
+  const [isSubscribing, setIsSubscribing] = useState(false);
+  
+  const [pushStatus, setPushStatus] = useState<PushStatus>({
+    permission: 'loading',
+    isSubscribed: false,
+    subscription: null,
+    serviceWorkerActive: false,
+    vapidKeyConfigured: false,
+  });
+
+  // Check push notification status
+  const checkPushStatus = useCallback(async () => {
+    // Check basic support
+    if (!('serviceWorker' in navigator) || !('PushManager' in window) || !('Notification' in window)) {
+      setPushStatus(prev => ({ ...prev, permission: 'unsupported' }));
+      return;
+    }
+
+    try {
+      // Check VAPID key
+      const vapidKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+      
+      // Check service worker
+      const registration = await navigator.serviceWorker.getRegistration();
+      const swActive = !!registration?.active;
+      
+      // Check subscription
+      let subscription: PushSubscription | null = null;
+      if (registration) {
+        subscription = await registration.pushManager.getSubscription();
+      }
+
+      setPushStatus({
+        permission: Notification.permission,
+        isSubscribed: !!subscription,
+        subscription,
+        serviceWorkerActive: swActive,
+        vapidKeyConfigured: !!vapidKey,
+      });
+    } catch (error) {
+      console.error('[Settings] Error checking push status:', error);
+      setPushStatus(prev => ({ ...prev, permission: 'default' }));
+    }
+  }, []);
+
+  useEffect(() => {
+    checkPushStatus();
+  }, [checkPushStatus]);
+
+  // Subscribe to push notifications
+  const handleSubscribe = async () => {
+    setIsSubscribing(true);
+    try {
+      // Request permission
+      const permission = await Notification.requestPermission();
+      if (permission !== 'granted') {
+        toast.error(`Berechtigung verweigert: ${permission}`);
+        await checkPushStatus();
+        setIsSubscribing(false);
+        return;
+      }
+
+      // Get VAPID key
+      const vapidKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+      if (!vapidKey) {
+        toast.error('VAPID Key nicht konfiguriert');
+        setIsSubscribing(false);
+        return;
+      }
+
+      // Get service worker registration
+      const registration = await navigator.serviceWorker.ready;
+      
+      // Subscribe
+      const subscription = await registration.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(vapidKey) as BufferSource,
+      });
+
+      // Save to server
+      const response = await fetch('/api/push/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ subscription: subscription.toJSON() }),
+      });
+
+      if (response.ok) {
+        toast.success('Push-Benachrichtigungen aktiviert!');
+        await checkPushStatus();
+      } else {
+        const data = await response.json();
+        toast.error(`Fehler: ${data.error}`);
+      }
+    } catch (error) {
+      console.error('[Settings] Subscribe error:', error);
+      toast.error(`Fehler beim Aktivieren: ${error instanceof Error ? error.message : 'Unbekannt'}`);
+    }
+    setIsSubscribing(false);
+  };
+
+  // Unsubscribe from push notifications
+  const handleUnsubscribe = async () => {
+    setIsSubscribing(true);
+    try {
+      const registration = await navigator.serviceWorker.getRegistration();
+      const subscription = await registration?.pushManager.getSubscription();
+      
+      if (subscription) {
+        await subscription.unsubscribe();
+        
+        // Remove from server
+        await fetch('/api/push/unsubscribe', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ endpoint: subscription.endpoint }),
+        });
+        
+        toast.success('Push-Benachrichtigungen deaktiviert');
+      }
+      
+      await checkPushStatus();
+    } catch (error) {
+      console.error('[Settings] Unsubscribe error:', error);
+      toast.error('Fehler beim Deaktivieren');
+    }
+    setIsSubscribing(false);
+  };
+
+  // Send test notification
+  const handleSendTest = async () => {
+    setIsSendingTest(true);
+    try {
+      const response = await fetch('/api/push/send', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          title: '🔔 Test Notification',
+          body: `Test um ${new Date().toLocaleTimeString('de-DE')} - Push funktioniert!`,
+          tag: 'test',
+          url: '/settings',
+        }),
+      });
+
+      const data = await response.json();
+      
+      if (response.ok) {
+        toast.success(`Gesendet! ${data.sent} erfolgreich, ${data.failed} fehlgeschlagen`);
+      } else {
+        toast.error(`Fehler: ${data.error}`);
+      }
+    } catch (error) {
+      console.error('[Settings] Test notification error:', error);
+      toast.error('Fehler beim Senden');
+    }
+    setIsSendingTest(false);
+  };
+
+  // Get status display info
+  const getPushStatusDisplay = () => {
+    if (pushStatus.permission === 'loading') {
+      return { icon: Loader2, text: 'Lädt...', color: 'text-zinc-500', spin: true };
+    }
+    if (pushStatus.permission === 'unsupported') {
+      return { icon: XCircle, text: 'Nicht unterstützt', color: 'text-red-500', spin: false };
+    }
+    if (pushStatus.permission === 'denied') {
+      return { icon: BellOff, text: 'Blockiert', color: 'text-red-500', spin: false };
+    }
+    if (!pushStatus.serviceWorkerActive) {
+      return { icon: AlertTriangle, text: 'Service Worker inaktiv', color: 'text-amber-500', spin: false };
+    }
+    if (!pushStatus.vapidKeyConfigured) {
+      return { icon: AlertTriangle, text: 'VAPID nicht konfiguriert', color: 'text-amber-500', spin: false };
+    }
+    if (pushStatus.isSubscribed) {
+      return { icon: CheckCircle2, text: 'Aktiv', color: 'text-emerald-500', spin: false };
+    }
+    return { icon: Bell, text: 'Nicht aktiviert', color: 'text-zinc-500', spin: false };
+  };
+
+  const statusDisplay = getPushStatusDisplay();
 
   const handleHardRefresh = async () => {
     setIsRefreshing(true);
@@ -164,24 +374,108 @@ export default function SettingsPage() {
               <CardDescription>Push-Benachrichtigungen verwalten</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
+              {/* Status Display */}
+              <div className="flex items-center justify-between p-3 rounded-lg bg-zinc-100 dark:bg-zinc-800">
+                <div className="flex items-center gap-3">
+                  <statusDisplay.icon className={`h-5 w-5 ${statusDisplay.color} ${statusDisplay.spin ? 'animate-spin' : ''}`} />
+                  <div>
+                    <p className="font-medium">Status</p>
+                    <p className={`text-sm ${statusDisplay.color}`}>{statusDisplay.text}</p>
+                  </div>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={checkPushStatus}
+                >
+                  <RefreshCw className="h-4 w-4" />
+                </Button>
+              </div>
+
+              {/* Debug Info */}
+              <div className="text-xs text-zinc-500 space-y-1 p-2 bg-zinc-50 dark:bg-zinc-900 rounded">
+                <p>Permission: {pushStatus.permission}</p>
+                <p>Service Worker: {pushStatus.serviceWorkerActive ? '✅' : '❌'}</p>
+                <p>VAPID Key: {pushStatus.vapidKeyConfigured ? '✅' : '❌'}</p>
+                <p>Subscribed: {pushStatus.isSubscribed ? '✅' : '❌'}</p>
+                {pushStatus.subscription && (
+                  <p className="truncate">Endpoint: {pushStatus.subscription.endpoint.slice(0, 50)}...</p>
+                )}
+              </div>
+
+              {/* Subscribe/Unsubscribe */}
               <div className="flex items-center justify-between">
                 <div>
                   <p className="font-medium">Push Notifications</p>
-                  <p className="text-sm text-zinc-500">Benachrichtigungen im Browser</p>
+                  <p className="text-sm text-zinc-500">
+                    {pushStatus.isSubscribed 
+                      ? 'Benachrichtigungen sind aktiv' 
+                      : 'Benachrichtigungen aktivieren'}
+                  </p>
+                </div>
+                {pushStatus.isSubscribed ? (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleUnsubscribe}
+                    disabled={isSubscribing}
+                  >
+                    {isSubscribing ? (
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    ) : (
+                      <BellOff className="h-4 w-4 mr-2" />
+                    )}
+                    Deaktivieren
+                  </Button>
+                ) : (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleSubscribe}
+                    disabled={isSubscribing || pushStatus.permission === 'denied' || pushStatus.permission === 'unsupported'}
+                  >
+                    {isSubscribing ? (
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    ) : (
+                      <Bell className="h-4 w-4 mr-2" />
+                    )}
+                    Aktivieren
+                  </Button>
+                )}
+              </div>
+
+              {/* Test Notification */}
+              <div className="flex items-center justify-between p-3 rounded-lg bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800">
+                <div>
+                  <p className="font-medium text-blue-700 dark:text-blue-300">Test Push senden</p>
+                  <p className="text-sm text-blue-600/70 dark:text-blue-400/70">
+                    Sendet eine Test-Benachrichtigung an alle Geräte
+                  </p>
                 </div>
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={async () => {
-                    if ("Notification" in window) {
-                      const permission = await Notification.requestPermission();
-                      toast.info(`Berechtigung: ${permission}`);
-                    }
-                  }}
+                  onClick={handleSendTest}
+                  disabled={isSendingTest || !pushStatus.isSubscribed}
+                  className="border-blue-300 hover:bg-blue-100 dark:border-blue-700 dark:hover:bg-blue-900/30"
                 >
-                  Aktivieren
+                  {isSendingTest ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <Send className="h-4 w-4 mr-2" />
+                  )}
+                  Test senden
                 </Button>
               </div>
+
+              {/* Permission blocked hint */}
+              {pushStatus.permission === 'denied' && (
+                <div className="p-3 rounded-lg bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800">
+                  <p className="text-sm text-red-700 dark:text-red-300">
+                    ⚠️ Benachrichtigungen wurden blockiert. Bitte in den Browser-Einstellungen aktivieren.
+                  </p>
+                </div>
+              )}
             </CardContent>
           </Card>
         </motion.div>

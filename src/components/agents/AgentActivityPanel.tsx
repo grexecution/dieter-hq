@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Bot, 
@@ -11,48 +11,48 @@ import {
   Clock,
   Cpu,
   Activity,
-  XCircle
+  XCircle,
+  Brain
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { AgentStatusBadge, AgentStatusDot, type AgentStatusType } from "./AgentStatusBadge";
+import { AgentStatusDot, type AgentStatusType } from "./AgentStatusBadge";
 
 // ============================================
-// Types
+// Types (matching /api/agents/activity response)
 // ============================================
 
-export type AgentActivityItem = {
-  sessionKey: string;
-  agentId: string;
-  label: string;
-  model: string;
-  status: AgentStatusType;
+type AgentSession = {
+  key: string;
   workspace?: string;
-  task?: string;
-  tokens: {
-    input: number;
-    output: number;
-    total: number;
-  };
-  runtimeMs: number;
-  createdAt: string;
   updatedAt: string;
-  isSubagent: boolean;
-  parentSession?: string;
+};
+
+type SubAgent = {
+  label: string;
+  status: string;
+  lastMessage?: string;
+};
+
+type Agent = {
+  id: string;
+  name: string;
+  status: AgentStatusType;
+  lastActiveAt: string;
+  lastMessage?: string;
+  model: string;
+  tokens: { used: number; total: number };
+  sessions: AgentSession[];
+  subAgents?: SubAgent[];
 };
 
 type ActivityResponse = {
   ok: boolean;
-  agents: AgentActivityItem[];
-  summary: {
-    total: number;
-    active: number;
-    idle: number;
-    error: number;
-    totalTokens: number;
-  };
+  agents: Agent[];
+  updatedAt?: string;
+  cache?: { hit: boolean; ageMs: number };
   error?: string;
 };
 
@@ -64,18 +64,6 @@ function formatTokens(tokens: number): string {
   if (tokens < 1000) return String(tokens);
   if (tokens < 1000000) return `${(tokens / 1000).toFixed(1)}K`;
   return `${(tokens / 1000000).toFixed(2)}M`;
-}
-
-function formatRuntime(ms: number): string {
-  if (ms < 1000) return "<1s";
-  const seconds = Math.floor(ms / 1000);
-  if (seconds < 60) return `${seconds}s`;
-  const minutes = Math.floor(seconds / 60);
-  const remainingSeconds = seconds % 60;
-  if (minutes < 60) return `${minutes}m ${remainingSeconds}s`;
-  const hours = Math.floor(minutes / 60);
-  const remainingMinutes = minutes % 60;
-  return `${hours}h ${remainingMinutes}m`;
 }
 
 function formatRelativeTime(dateStr: string): string {
@@ -101,17 +89,48 @@ function extractModelName(model: string): string {
 }
 
 // ============================================
+// Sub-Agent Card Component
+// ============================================
+
+interface SubAgentItemProps {
+  subAgent: SubAgent;
+}
+
+function SubAgentItem({ subAgent }: SubAgentItemProps) {
+  const status = (subAgent.status === "active" ? "active" : 
+                  subAgent.status === "error" ? "error" : "idle") as AgentStatusType;
+  
+  return (
+    <div className="flex items-center gap-2 rounded-lg bg-zinc-50/80 px-2 py-1.5 dark:bg-zinc-800/50">
+      <AgentStatusDot status={status} size="sm" />
+      <div className="min-w-0 flex-1">
+        <span className="text-xs font-medium text-zinc-700 dark:text-zinc-300">
+          {subAgent.label}
+        </span>
+        {subAgent.lastMessage && (
+          <div className="truncate text-[10px] text-zinc-500 dark:text-zinc-400">
+            {subAgent.lastMessage.slice(0, 60)}...
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ============================================
 // Agent Card Component
 // ============================================
 
 interface AgentCardProps {
-  agent: AgentActivityItem;
+  agent: Agent;
   expanded: boolean;
   onToggle: () => void;
 }
 
 function AgentCard({ agent, expanded, onToggle }: AgentCardProps) {
   const modelName = extractModelName(agent.model);
+  const subAgentCount = agent.subAgents?.length || 0;
+  const sessionCount = agent.sessions.length;
 
   return (
     <motion.div
@@ -141,11 +160,11 @@ function AgentCard({ agent, expanded, onToggle }: AgentCardProps) {
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
               <span className="truncate text-sm font-medium text-zinc-900 dark:text-zinc-100">
-                {agent.label}
+                {agent.name}
               </span>
-              {agent.isSubagent && (
+              {subAgentCount > 0 && (
                 <span className="shrink-0 rounded bg-indigo-100 px-1 py-0.5 text-[10px] font-medium text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300">
-                  SUB
+                  +{subAgentCount} sub
                 </span>
               )}
             </div>
@@ -153,7 +172,7 @@ function AgentCard({ agent, expanded, onToggle }: AgentCardProps) {
               <Cpu className="h-3 w-3" />
               <span>{modelName}</span>
               <span className="text-zinc-300 dark:text-zinc-600">·</span>
-              <span>{formatRelativeTime(agent.updatedAt)}</span>
+              <span>{formatRelativeTime(agent.lastActiveAt)}</span>
             </div>
           </div>
         </div>
@@ -161,7 +180,7 @@ function AgentCard({ agent, expanded, onToggle }: AgentCardProps) {
         <div className="flex shrink-0 items-center gap-2">
           <div className="flex items-center gap-1 text-xs text-zinc-500 dark:text-zinc-400">
             <Zap className="h-3 w-3 text-amber-500" />
-            <span>{formatTokens(agent.tokens.total)}</span>
+            <span>{formatTokens(agent.tokens.used)}</span>
           </div>
           {expanded ? (
             <ChevronUp className="h-4 w-4 text-zinc-400" />
@@ -181,53 +200,76 @@ function AgentCard({ agent, expanded, onToggle }: AgentCardProps) {
             transition={{ duration: 0.2 }}
             className="overflow-hidden"
           >
-            <div className="border-t border-zinc-200/50 px-3 pb-3 pt-2 dark:border-zinc-800/50">
-              {/* Task */}
-              {agent.task && (
-                <div className="mb-2 text-xs text-zinc-600 dark:text-zinc-300">
-                  {agent.task}
+            <div className="border-t border-zinc-200/50 px-3 pb-3 pt-2 dark:border-zinc-800/50 space-y-3">
+              {/* Last Message */}
+              {agent.lastMessage && (
+                <div className="text-xs text-zinc-600 dark:text-zinc-300">
+                  <span className="text-zinc-400 dark:text-zinc-500">Letzte Nachricht: </span>
+                  {agent.lastMessage.slice(0, 100)}{agent.lastMessage.length > 100 && "..."}
                 </div>
               )}
 
-              {/* Stats Grid */}
-              <div className="grid grid-cols-3 gap-2 text-[11px]">
+              {/* Stats */}
+              <div className="grid grid-cols-2 gap-2 text-[11px]">
                 <div className="rounded-lg bg-zinc-100/80 px-2 py-1.5 dark:bg-zinc-800/50">
-                  <div className="text-zinc-500 dark:text-zinc-400">Input</div>
+                  <div className="text-zinc-500 dark:text-zinc-400">Tokens</div>
                   <div className="font-medium text-zinc-800 dark:text-zinc-200">
-                    {formatTokens(agent.tokens.input)}
+                    {formatTokens(agent.tokens.used)} / {formatTokens(agent.tokens.total)}
                   </div>
                 </div>
                 <div className="rounded-lg bg-zinc-100/80 px-2 py-1.5 dark:bg-zinc-800/50">
-                  <div className="text-zinc-500 dark:text-zinc-400">Output</div>
+                  <div className="text-zinc-500 dark:text-zinc-400">Sessions</div>
                   <div className="font-medium text-zinc-800 dark:text-zinc-200">
-                    {formatTokens(agent.tokens.output)}
-                  </div>
-                </div>
-                <div className="rounded-lg bg-zinc-100/80 px-2 py-1.5 dark:bg-zinc-800/50">
-                  <div className="text-zinc-500 dark:text-zinc-400">Laufzeit</div>
-                  <div className="font-medium text-zinc-800 dark:text-zinc-200">
-                    {formatRuntime(agent.runtimeMs)}
+                    {sessionCount}
                   </div>
                 </div>
               </div>
 
-              {/* Workspace */}
-              {agent.workspace && (
-                <div className="mt-2 flex items-center gap-1.5 text-[11px] text-zinc-500 dark:text-zinc-400">
-                  <Activity className="h-3 w-3" />
-                  <span>Workspace: {agent.workspace}</span>
+              {/* Sub-Agents */}
+              {agent.subAgents && agent.subAgents.length > 0 && (
+                <div className="space-y-1.5">
+                  <div className="flex items-center gap-1.5 text-[11px] text-zinc-500 dark:text-zinc-400">
+                    <Brain className="h-3 w-3" />
+                    <span>Sub-Agents ({agent.subAgents.length})</span>
+                  </div>
+                  <div className="space-y-1">
+                    {agent.subAgents.map((sub, idx) => (
+                      <SubAgentItem key={idx} subAgent={sub} />
+                    ))}
+                  </div>
                 </div>
               )}
 
-              {/* Session Key */}
-              <details className="mt-2">
-                <summary className="cursor-pointer text-[10px] text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300">
-                  Session ID
-                </summary>
-                <code className="mt-1 block truncate rounded bg-zinc-100 px-2 py-1 text-[10px] text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400">
-                  {agent.sessionKey}
-                </code>
-              </details>
+              {/* Sessions (collapsed) */}
+              {sessionCount > 0 && (
+                <details className="text-[11px]">
+                  <summary className="cursor-pointer text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300">
+                    Sessions ({sessionCount})
+                  </summary>
+                  <div className="mt-1 space-y-1">
+                    {agent.sessions.slice(0, 5).map((session) => (
+                      <div 
+                        key={session.key}
+                        className="flex items-center justify-between rounded bg-zinc-100/80 px-2 py-1 dark:bg-zinc-800/50"
+                      >
+                        <code className="truncate text-[10px] text-zinc-600 dark:text-zinc-400 max-w-[150px]">
+                          {session.key.split(":").pop()}
+                        </code>
+                        {session.workspace && (
+                          <span className="shrink-0 text-[10px] text-indigo-600 dark:text-indigo-400">
+                            {session.workspace}
+                          </span>
+                        )}
+                      </div>
+                    ))}
+                    {sessionCount > 5 && (
+                      <div className="text-center text-zinc-400">
+                        +{sessionCount - 5} mehr
+                      </div>
+                    )}
+                  </div>
+                </details>
+              )}
             </div>
           </motion.div>
         )}
@@ -241,10 +283,22 @@ function AgentCard({ agent, expanded, onToggle }: AgentCardProps) {
 // ============================================
 
 interface SummaryBarProps {
-  summary: ActivityResponse["summary"];
+  agents: Agent[];
 }
 
-function SummaryBar({ summary }: SummaryBarProps) {
+function SummaryBar({ agents }: SummaryBarProps) {
+  const summary = useMemo(() => {
+    return agents.reduce(
+      (acc, agent) => ({
+        active: acc.active + (agent.status === "active" ? 1 : 0),
+        idle: acc.idle + (agent.status === "idle" ? 1 : 0),
+        error: acc.error + (agent.status === "error" ? 1 : 0),
+        totalTokens: acc.totalTokens + agent.tokens.used,
+      }),
+      { active: 0, idle: 0, error: 0, totalTokens: 0 }
+    );
+  }, [agents]);
+
   return (
     <div className="flex flex-wrap items-center gap-3 text-xs">
       <div className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400">
@@ -263,7 +317,7 @@ function SummaryBar({ summary }: SummaryBarProps) {
       )}
       <div className="ml-auto flex items-center gap-1 text-amber-600 dark:text-amber-400">
         <Zap className="h-3 w-3" />
-        <span>{formatTokens(summary.totalTokens)} tokens</span>
+        <span>{formatTokens(summary.totalTokens)}</span>
       </div>
     </div>
   );
@@ -286,18 +340,16 @@ export function AgentActivityPanel({
   onToggleCollapse,
   pollIntervalMs = 15000,
 }: AgentActivityPanelProps) {
-  const [agents, setAgents] = useState<AgentActivityItem[]>([]);
-  const [summary, setSummary] = useState<ActivityResponse["summary"]>({
-    total: 0,
-    active: 0,
-    idle: 0,
-    error: 0,
-    totalTokens: 0,
-  });
+  const [agents, setAgents] = useState<Agent[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
   const [lastRefresh, setLastRefresh] = useState<number>(Date.now());
+
+  // Calculate summary
+  const activeCount = useMemo(() => 
+    agents.filter(a => a.status === "active").length
+  , [agents]);
 
   // Fetch activity data
   const fetchActivity = useCallback(async () => {
@@ -316,7 +368,6 @@ export function AgentActivityPanel({
       }
 
       setAgents(data.agents || []);
-      setSummary(data.summary);
       setError(null);
       setLastRefresh(Date.now());
     } catch (err) {
@@ -327,13 +378,13 @@ export function AgentActivityPanel({
   }, []);
 
   // Toggle expanded state
-  const toggleExpanded = useCallback((sessionKey: string) => {
+  const toggleExpanded = useCallback((agentId: string) => {
     setExpandedIds((prev) => {
       const next = new Set(prev);
-      if (next.has(sessionKey)) {
-        next.delete(sessionKey);
+      if (next.has(agentId)) {
+        next.delete(agentId);
       } else {
-        next.add(sessionKey);
+        next.add(agentId);
       }
       return next;
     });
@@ -357,17 +408,17 @@ export function AgentActivityPanel({
           "transition-all hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-950/40 dark:hover:bg-zinc-900",
           className
         )}
-        title={`${summary.active} active agents`}
+        title={`${activeCount} active agents`}
       >
         <div className="relative">
           <Bot className="h-5 w-5 text-zinc-600 dark:text-zinc-400" />
-          {summary.active > 0 && (
+          {activeCount > 0 && (
             <motion.span
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               className="absolute -right-1.5 -top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-emerald-500 text-[10px] font-bold text-white"
             >
-              {summary.active}
+              {activeCount}
             </motion.span>
           )}
         </div>
@@ -391,9 +442,9 @@ export function AgentActivityPanel({
           <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
             Agent Activity
           </span>
-          {summary.total > 0 && (
+          {agents.length > 0 && (
             <span className="rounded-full bg-zinc-100 px-1.5 py-0.5 text-[10px] font-medium text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400">
-              {summary.total}
+              {agents.length}
             </span>
           )}
         </div>
@@ -424,7 +475,7 @@ export function AgentActivityPanel({
       {/* Summary */}
       {!loading && !error && agents.length > 0 && (
         <div className="border-b border-zinc-200/50 px-4 py-2 dark:border-zinc-800/50">
-          <SummaryBar summary={summary} />
+          <SummaryBar agents={agents} />
         </div>
       )}
 
@@ -461,10 +512,10 @@ export function AgentActivityPanel({
             <AnimatePresence mode="popLayout">
               {agents.map((agent) => (
                 <AgentCard
-                  key={agent.sessionKey}
+                  key={agent.id}
                   agent={agent}
-                  expanded={expandedIds.has(agent.sessionKey)}
-                  onToggle={() => toggleExpanded(agent.sessionKey)}
+                  expanded={expandedIds.has(agent.id)}
+                  onToggle={() => toggleExpanded(agent.id)}
                 />
               ))}
             </AnimatePresence>

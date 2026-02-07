@@ -1,8 +1,14 @@
 /**
  * Agent Activity Cache
- * In-memory cache for OpenClaw agent activity data
- * Updated via cron job every 10 seconds
+ * Uses DB for persistence (Vercel serverless compatible)
  */
+
+import { db } from "@/server/db";
+import { inboxSyncState } from "@/server/db/schema";
+import { eq } from "drizzle-orm";
+
+const CACHE_ID = "agent-activity";
+const STALE_THRESHOLD_MS = 30_000; // 30 seconds
 
 export interface AgentSession {
   key: string;
@@ -21,106 +27,108 @@ export interface AgentActivityData {
   updatedAt: string;
 }
 
-interface CacheEntry {
-  data: AgentActivityData;
-  timestamp: number;
-}
+/**
+ * Get cached activity data from DB
+ */
+export async function getActivityCache(): Promise<AgentActivityData | null> {
+  try {
+    const result = await db
+      .select()
+      .from(inboxSyncState)
+      .where(eq(inboxSyncState.id, CACHE_ID))
+      .limit(1);
 
-const TTL_MS = 15_000; // 15 seconds
-const STALE_THRESHOLD_MS = 30_000; // Consider stale after 30 seconds
-
-class AgentActivityCache {
-  private static instance: AgentActivityCache | null = null;
-  private cache: CacheEntry | null = null;
-
-  private constructor() {}
-
-  static getInstance(): AgentActivityCache {
-    if (!AgentActivityCache.instance) {
-      AgentActivityCache.instance = new AgentActivityCache();
-    }
-    return AgentActivityCache.instance;
-  }
-
-  /**
-   * Store activity data in cache
-   */
-  set(data: AgentActivityData): void {
-    this.cache = {
-      data: {
-        ...data,
-        updatedAt: new Date().toISOString(),
-      },
-      timestamp: Date.now(),
-    };
-  }
-
-  /**
-   * Get cached activity data
-   * Returns null if cache is empty or expired
-   */
-  get(): AgentActivityData | null {
-    if (!this.cache) {
+    if (result.length === 0 || !result[0].metadata) {
       return null;
     }
 
-    const age = Date.now() - this.cache.timestamp;
-    
-    // Return null if cache is too old (missed several updates)
+    const entry = result[0];
+    const age = entry.lastSyncAt ? Date.now() - entry.lastSyncAt.getTime() : Infinity;
+
+    // Return null if too stale
     if (age > STALE_THRESHOLD_MS) {
       return null;
     }
 
-    return this.cache.data;
-  }
-
-  /**
-   * Check if cache is stale (needs refresh)
-   */
-  isStale(): boolean {
-    if (!this.cache) return true;
-    return Date.now() - this.cache.timestamp > TTL_MS;
-  }
-
-  /**
-   * Check if cache has any data (even if stale)
-   */
-  hasData(): boolean {
-    return this.cache !== null;
-  }
-
-  /**
-   * Get cache age in milliseconds
-   */
-  getAge(): number | null {
-    if (!this.cache) return null;
-    return Date.now() - this.cache.timestamp;
-  }
-
-  /**
-   * Clear the cache
-   */
-  clear(): void {
-    this.cache = null;
-  }
-
-  /**
-   * Get cache stats for debugging
-   */
-  getStats(): {
-    hasData: boolean;
-    isStale: boolean;
-    ageMs: number | null;
-    sessionCount: number;
-  } {
-    return {
-      hasData: this.hasData(),
-      isStale: this.isStale(),
-      ageMs: this.getAge(),
-      sessionCount: this.cache?.data.sessions.length ?? 0,
-    };
+    const data = JSON.parse(entry.metadata) as AgentActivityData;
+    return data;
+  } catch (error) {
+    console.error('[agent-activity-cache] Get error:', error);
+    return null;
   }
 }
 
-// Export singleton instance
-export const agentActivityCache = AgentActivityCache.getInstance();
+/**
+ * Store activity data in DB cache
+ */
+export async function setActivityCache(data: AgentActivityData): Promise<void> {
+  try {
+    const now = new Date();
+    const metadata = JSON.stringify(data);
+
+    await db
+      .insert(inboxSyncState)
+      .values({
+        id: CACHE_ID,
+        source: "openclaw",
+        account: null,
+        lastSyncAt: now,
+        lastMessageId: null,
+        metadata,
+        updatedAt: now,
+      })
+      .onConflictDoUpdate({
+        target: inboxSyncState.id,
+        set: {
+          lastSyncAt: now,
+          metadata,
+          updatedAt: now,
+        },
+      });
+  } catch (error) {
+    console.error('[agent-activity-cache] Set error:', error);
+    throw error;
+  }
+}
+
+/**
+ * Get cache stats
+ */
+export async function getCacheStats(): Promise<{
+  hasData: boolean;
+  isStale: boolean;
+  ageMs: number | null;
+  sessionCount: number;
+}> {
+  try {
+    const result = await db
+      .select()
+      .from(inboxSyncState)
+      .where(eq(inboxSyncState.id, CACHE_ID))
+      .limit(1);
+
+    if (result.length === 0 || !result[0].metadata) {
+      return { hasData: false, isStale: true, ageMs: null, sessionCount: 0 };
+    }
+
+    const entry = result[0];
+    const ageMs = entry.lastSyncAt ? Date.now() - entry.lastSyncAt.getTime() : null;
+    const data = JSON.parse(entry.metadata) as AgentActivityData;
+
+    return {
+      hasData: true,
+      isStale: ageMs !== null && ageMs > STALE_THRESHOLD_MS,
+      ageMs,
+      sessionCount: data.sessions?.length ?? 0,
+    };
+  } catch {
+    return { hasData: false, isStale: true, ageMs: null, sessionCount: 0 };
+  }
+}
+
+// Legacy exports for compatibility
+export const agentActivityCache = {
+  get: getActivityCache,
+  set: setActivityCache,
+  getStats: getCacheStats,
+};

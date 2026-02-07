@@ -1,16 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { agentActivityCache, AgentSession } from '@/lib/agent-activity-cache';
+import { setActivityCache, getCacheStats, AgentSession } from '@/lib/agent-activity-cache';
 
 /**
  * POST /api/agents/activity/update
- * Receives activity data from OpenClaw cron job and stores in cache
- * 
- * Expected payload from cron:
- * {
- *   sessions: [
- *     { key, updatedAt, model, totalTokens, contextTokens, abortedLastRun, label?, lastMessage? }
- *   ]
- * }
+ * Receives activity data from OpenClaw cron job and stores in DB cache
  */
 export async function POST(request: NextRequest) {
   try {
@@ -27,7 +20,7 @@ export async function POST(request: NextRequest) {
       sessions = body.data;
     }
 
-    // Normalize sessions - handle any input format
+    // Normalize sessions
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const normalizedSessions: AgentSession[] = sessions.map((s: any) => ({
       key: s.key || s.sessionKey || '',
@@ -41,8 +34,8 @@ export async function POST(request: NextRequest) {
       lastMessage: s.lastMessage || extractLastMessage(s),
     }));
 
-    // Store in cache
-    agentActivityCache.set({
+    // Store in DB cache
+    await setActivityCache({
       sessions: normalizedSessions,
       updatedAt: new Date().toISOString(),
     });
@@ -94,7 +87,7 @@ function extractLastMessage(session: Record<string, unknown>): string | undefine
 
 // Health check / cache stats
 export async function GET() {
-  const stats = agentActivityCache.getStats();
+  const stats = await getCacheStats();
   
   return NextResponse.json({
     ok: true,

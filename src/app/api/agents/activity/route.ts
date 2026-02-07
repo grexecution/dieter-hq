@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { agentActivityCache } from '@/lib/agent-activity-cache';
+import { getActivityCache, getCacheStats } from '@/lib/agent-activity-cache';
 
 export interface AgentActivityItem {
   sessionKey: string;
@@ -92,8 +92,8 @@ function getStatus(updatedAt: number, abortedLastRun?: boolean): 'active' | 'idl
  */
 export async function GET() {
   try {
-    const activityData = agentActivityCache.get();
-    const cacheStats = agentActivityCache.getStats();
+    const activityData = await getActivityCache();
+    const cacheStats = await getCacheStats();
     
     if (!activityData) {
       return NextResponse.json({
@@ -118,10 +118,7 @@ export async function GET() {
       const { agentId, isSubagent, workspace, label } = parseSessionKey(session.key);
       const status = getStatus(session.updatedAt, session.abortedLastRun);
       
-      // Extract model name
       const model = session.model || 'unknown';
-      
-      // Calculate runtime (rough estimate from updatedAt)
       const runtimeMs = session.updatedAt ? Date.now() - session.updatedAt : 0;
       
       const item: AgentActivityItem = {
@@ -132,7 +129,7 @@ export async function GET() {
         status,
         workspace,
         tokens: {
-          input: 0, // Not tracked separately in cache
+          input: 0,
           output: 0,
           total: session.totalTokens || 0,
         },
@@ -145,7 +142,6 @@ export async function GET() {
 
       agents.push(item);
       
-      // Update summary
       summary.total++;
       summary.totalTokens += session.totalTokens || 0;
       if (status === 'active') summary.active++;

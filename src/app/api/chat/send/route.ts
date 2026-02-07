@@ -274,12 +274,15 @@ export async function POST(req: NextRequest) {
           });
 
           if (!response.ok) {
+            const errorText = await response.text().catch(() => 'unknown');
+            console.error(`[Chat Send] Gateway error ${response.status}: ${errorText}`);
             fullContent = `⚠️ Gateway error (${response.status}).`;
             controller.enqueue(encoder.encode(`data: ${JSON.stringify({
               type: "delta",
               content: fullContent,
             })}\n\n`));
           } else if (!response.body) {
+            console.error(`[Chat Send] No response body from gateway`);
             fullContent = "⚠️ No response body from gateway.";
             controller.enqueue(encoder.encode(`data: ${JSON.stringify({
               type: "delta",
@@ -337,17 +340,24 @@ export async function POST(req: NextRequest) {
             }
           }
         } catch (err) {
-          console.error('OpenClaw gateway error:', err);
+          console.error('[Chat Send] OpenClaw gateway error:', err);
           fullContent = fullContent || '⚠️ Cannot reach OpenClaw gateway.';
           controller.enqueue(encoder.encode(`data: ${JSON.stringify({
             type: "delta",
             content: fullContent,
           })}\n\n`));
         }
+        
+        // Log final content length for debugging
+        console.log(`[Chat Send] Thread ${threadId}, agent ${agentId}: response length = ${fullContent.length} chars`);
 
         // Save complete assistant response to DB
         // Process any inline base64 images and save them as artefacts
-        const processedContent = await processImagesInContent(fullContent || "No response", threadId);
+        // Log if we got an empty response - this helps debug "no response" issues
+        if (!fullContent || fullContent.trim() === "") {
+          console.error(`[Chat Send] Empty response from gateway for thread ${threadId}, agent ${agentId}`);
+        }
+        const processedContent = await processImagesInContent(fullContent || "⏳ Dieter ist gerade beschäftigt. Bitte nochmal versuchen.", threadId);
         const assistantCreatedAt = new Date();
         await db.insert(messages).values({
           id: assistantMsgId,

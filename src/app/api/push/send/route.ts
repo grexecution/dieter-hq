@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { sendPushToAll } from '@/lib/push';
+import { sendPushToAll, getLastPushError } from '@/lib/push';
 
 // Simple API key auth for external requests (OpenClaw)
 // Internal requests (same origin) don't need auth
@@ -38,10 +38,16 @@ export async function POST(request: NextRequest) {
       data: url ? { url } : undefined,
     });
 
+    const lastError = result.failed > 0 ? getLastPushError() : null;
+    
     return NextResponse.json({
       ok: true,
       sent: result.sent,
       failed: result.failed,
+      lastError: lastError ? {
+        statusCode: lastError.statusCode,
+        message: lastError.message,
+      } : undefined,
     });
   } catch (error) {
     console.error('[Push Send] Error:', error);

@@ -200,7 +200,13 @@ export default function SettingsPage() {
       const data = await response.json();
       
       if (response.ok) {
-        toast.success(`Gesendet! ${data.sent} erfolgreich, ${data.failed} fehlgeschlagen`);
+        if (data.failed > 0 && data.lastError) {
+          toast.error(`Push fehlgeschlagen: ${data.lastError.message || 'Unbekannter Fehler'} (Status: ${data.lastError.statusCode || 'N/A'})`);
+        } else if (data.sent > 0) {
+          toast.success(`Push gesendet! ✅`);
+        } else {
+          toast.info('Keine Push-Abonnements vorhanden');
+        }
       } else {
         toast.error(`Fehler: ${data.error}`);
       }

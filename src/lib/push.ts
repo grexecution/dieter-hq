@@ -11,6 +11,13 @@ if (VAPID_PUBLIC_KEY && VAPID_PRIVATE_KEY) {
   webpush.setVapidDetails(VAPID_SUBJECT, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY);
 }
 
+// Store last error for debugging
+let lastPushError: { statusCode?: number; message: string; subscriptionId: string } | null = null;
+
+export function getLastPushError() {
+  return lastPushError;
+}
+
 export interface PushNotificationPayload {
   title: string;
   body: string;
@@ -47,8 +54,13 @@ export async function sendPushToAll(payload: PushNotificationPayload): Promise<{
       );
       sent++;
     } catch (error: unknown) {
-      const statusCode = (error as { statusCode?: number })?.statusCode;
-      console.error('[Push] Failed to send to subscription:', sub.id, error);
+      const err = error as { statusCode?: number; body?: string; message?: string };
+      const statusCode = err?.statusCode;
+      const errorMessage = err?.body || err?.message || String(error);
+      console.error('[Push] Failed to send to subscription:', sub.id, 'Status:', statusCode, 'Error:', errorMessage);
+      
+      // Store last error for debugging
+      lastPushError = { statusCode, message: errorMessage, subscriptionId: sub.id };
       
       // Remove invalid subscriptions (410 Gone or 404 Not Found)
       if (statusCode === 410 || statusCode === 404) {

@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import dynamic from "next/dynamic";
-import { Menu, Send, Sparkles, User, Bot, MessageCircle, Dumbbell, Briefcase, Code, ChevronLeft, RotateCcw } from "lucide-react";
+import { Menu, Send, Sparkles, User, Bot, MessageCircle, Dumbbell, Briefcase, Code, ChevronLeft, ChevronRight, RotateCcw } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -18,6 +18,7 @@ import { WorkspaceManager, type WorkspaceProject } from "./_components/Workspace
 import { ChatSuggestions, type ChatSuggestion } from "./_components/ChatSuggestions";
 import { InboxView } from "./inbox";
 import { CHAT_TABS, type ChatTab } from "./chat-config";
+import { AgentActivityPanel } from "@/components/agents";
 
 const VoiceRecorder = dynamic(
   () => import("./_components/VoiceRecorder").then((m) => m.VoiceRecorder),
@@ -700,6 +701,7 @@ export function MultiChatView({
   const [sendingStates, setSendingStates] = useState<Record<string, boolean>>({});
   const [messageQueue, setMessageQueue] = useState<Record<string, string[]>>({});
   const [subagentPanelCollapsed, setSubagentPanelCollapsed] = useState(true);
+  const [rightPanelView, setRightPanelView] = useState<"activity" | "subagents">("activity");
   
   // Voice transcription status per thread
   const [transcribingStates, setTranscribingStates] = useState<Record<string, boolean>>({});
@@ -1444,13 +1446,78 @@ export function MultiChatView({
         )}
       </section>
 
-      {/* Subagent Panel (desktop) */}
+      {/* Right Panel: Agent Activity / Subagents (desktop) */}
       <aside className="hidden lg:block lg:sticky lg:top-16 lg:h-[calc(100vh-5rem)] lg:self-start">
-        <SubagentPanel
-          collapsed={subagentPanelCollapsed}
-          onToggleCollapse={() => setSubagentPanelCollapsed((prev) => !prev)}
-          className="h-full"
-        />
+        {subagentPanelCollapsed ? (
+          // Collapsed: Show mini toggle buttons
+          <div className="flex flex-col gap-2">
+            <AgentActivityPanel
+              collapsed={true}
+              onToggleCollapse={() => {
+                setSubagentPanelCollapsed(false);
+                setRightPanelView("activity");
+              }}
+            />
+            <SubagentPanel
+              collapsed={true}
+              onToggleCollapse={() => {
+                setSubagentPanelCollapsed(false);
+                setRightPanelView("subagents");
+              }}
+              className="h-auto"
+            />
+          </div>
+        ) : (
+          // Expanded: Show panel with tabs
+          <div className="flex h-full flex-col rounded-2xl border border-zinc-200/70 bg-white/60 shadow-sm backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/40">
+            {/* Tab Switcher */}
+            <div className="flex items-center gap-1 border-b border-zinc-200/70 px-2 py-1.5 dark:border-zinc-800">
+              <button
+                onClick={() => setRightPanelView("activity")}
+                className={cn(
+                  "flex-1 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors",
+                  rightPanelView === "activity"
+                    ? "bg-zinc-100 text-zinc-900 dark:bg-zinc-800 dark:text-zinc-100"
+                    : "text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200"
+                )}
+              >
+                🤖 Activity
+              </button>
+              <button
+                onClick={() => setRightPanelView("subagents")}
+                className={cn(
+                  "flex-1 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors",
+                  rightPanelView === "subagents"
+                    ? "bg-zinc-100 text-zinc-900 dark:bg-zinc-800 dark:text-zinc-100"
+                    : "text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200"
+                )}
+              >
+                🧠 Subagents
+              </button>
+              <button
+                onClick={() => setSubagentPanelCollapsed(true)}
+                className="ml-1 rounded-lg p-1.5 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600 dark:hover:bg-zinc-800 dark:hover:text-zinc-300"
+                title="Minimieren"
+              >
+                <ChevronRight className="h-3.5 w-3.5" />
+              </button>
+            </div>
+
+            {/* Panel Content */}
+            <div className="flex-1 overflow-hidden">
+              {rightPanelView === "activity" ? (
+                <AgentActivityPanel
+                  className="h-full border-0 rounded-none shadow-none bg-transparent"
+                  pollIntervalMs={15000}
+                />
+              ) : (
+                <SubagentPanel
+                  className="h-full border-0 rounded-none shadow-none bg-transparent"
+                />
+              )}
+            </div>
+          </div>
+        )}
       </aside>
     </div>
   );

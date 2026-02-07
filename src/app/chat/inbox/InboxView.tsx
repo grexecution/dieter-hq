@@ -300,29 +300,9 @@ export function InboxView() {
   const handleSync = async () => {
     setIsSyncing(true);
     try {
-      // Try to trigger sync via backend API (which calls Mac mini via Tailscale Funnel)
-      try {
-        const syncRes = await fetch('/api/inbox/trigger-sync', {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          signal: AbortSignal.timeout(60000), // 60s timeout for sync
-        });
-        
-        if (syncRes.ok) {
-          const result = await syncRes.json();
-          if (result.ok) {
-            toast.success(`Sync abgeschlossen: ${result.whatsapp || 0} WhatsApp, ${result.email || 0} Emails`);
-            await loadItems(true);
-            return;
-          }
-        }
-      } catch (err) {
-        console.log("[Inbox] Sync trigger failed, refreshing from DB:", err);
-      }
-      
-      // Fallback: just refresh the items from DB
+      // Refresh items from DB (real sync runs via cron every 30 min on Mac mini)
       await loadItems(true);
-      toast.info("Inbox aktualisiert");
+      toast.success("Inbox aktualisiert");
     } catch (err) {
       console.error("Error syncing:", err);
       toast.error("Fehler beim Aktualisieren");

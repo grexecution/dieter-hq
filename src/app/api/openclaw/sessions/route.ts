@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 export const runtime = "nodejs";
 
 const OPENCLAW_GATEWAY_URL =
+  process.env.OPENCLAW_GATEWAY_HTTP_URL ||
   process.env.OPENCLAW_GATEWAY_URL ||
   "https://mac-mini-von-dieter.tail954ecb.ts.net";
 const OPENCLAW_GATEWAY_PASSWORD = process.env.OPENCLAW_GATEWAY_PASSWORD || "";

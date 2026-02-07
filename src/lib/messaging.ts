@@ -14,7 +14,7 @@ interface SendMessageResult {
 }
 
 // Gateway configuration
-const OPENCLAW_GATEWAY_URL = process.env.OPENCLAW_GATEWAY_URL;
+const OPENCLAW_GATEWAY_URL = process.env.OPENCLAW_GATEWAY_HTTP_URL || process.env.OPENCLAW_GATEWAY_URL;
 const OPENCLAW_GATEWAY_PASSWORD = process.env.OPENCLAW_GATEWAY_PASSWORD;
 
 /**

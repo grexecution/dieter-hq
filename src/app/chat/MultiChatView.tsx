@@ -338,16 +338,45 @@ function MessageBubble({ message, artefact, url }: MessageBubbleProps) {
 // Chat Content Component
 // ============================================
 
+// ============================================
+// Streaming Response Bubble
+// ============================================
+
+function StreamingBubble({ text }: { text: string }) {
+  const isThinking = text === "";
+
+  return (
+    <div className="flex items-end gap-2.5 md:gap-3 min-w-0 w-full flex-row animate-fade-in">
+      <DieterAvatar size="sm" />
+      <div className="max-w-[85%] md:max-w-[70%] min-w-0 rounded-2xl px-3.5 py-2.5 md:px-4 md:py-3 bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800">
+        {isThinking ? (
+          <div className="flex items-center gap-1.5 py-1 px-1">
+            <span className="h-1.5 w-1.5 rounded-full bg-zinc-400 dark:bg-zinc-500 animate-bounce [animation-delay:0ms]" />
+            <span className="h-1.5 w-1.5 rounded-full bg-zinc-400 dark:bg-zinc-500 animate-bounce [animation-delay:150ms]" />
+            <span className="h-1.5 w-1.5 rounded-full bg-zinc-400 dark:bg-zinc-500 animate-bounce [animation-delay:300ms]" />
+          </div>
+        ) : (
+          <div className="text-[13px] md:text-[14.5px] leading-relaxed [word-break:break-word] [overflow-wrap:break-word] whitespace-pre-wrap">
+            {text}
+            <span className="inline-block w-0.5 h-4 bg-zinc-400 dark:bg-zinc-500 ml-0.5 animate-pulse align-text-bottom" />
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 interface ChatContentProps {
   activeTab: string;
   messages: MessageRow[];
   artefactsById: Record<string, ArtefactRow>;
   isTranscribing?: boolean;
   isSending?: boolean;
+  streamingText?: string;
   onSuggestionClick?: (suggestion: ChatSuggestion) => void;
 }
 
-function ChatContent({ activeTab, messages, artefactsById, isTranscribing, isSending, onSuggestionClick }: ChatContentProps) {
+function ChatContent({ activeTab, messages, artefactsById, isTranscribing, isSending, streamingText, onSuggestionClick }: ChatContentProps) {
   const endRef = useRef<HTMLDivElement | null>(null);
   const scrollAreaRef = useRef<HTMLDivElement | null>(null);
   const currentTab = CHAT_TABS.find(tab => tab.id === activeTab);
@@ -376,6 +405,13 @@ function ChatContent({ activeTab, messages, artefactsById, isTranscribing, isSen
   useEffect(() => {
     scrollToBottom(false);
   }, [messages.length, scrollToBottom]);
+
+  // Scroll to bottom as streaming text grows
+  useEffect(() => {
+    if (streamingText) {
+      scrollToBottom(false);
+    }
+  }, [streamingText, scrollToBottom]);
 
   return (
     <ScrollArea className="flex-1" ref={scrollAreaRef}>
@@ -419,11 +455,16 @@ function ChatContent({ activeTab, messages, artefactsById, isTranscribing, isSen
             </div>
           )}
 
-        {/* Transcription/Sending status indicator */}
-        {(isTranscribing || isSending) && (
+        {/* Streaming response bubble */}
+        {isSending && streamingText !== undefined && (
+          <StreamingBubble text={streamingText} />
+        )}
+
+        {/* Transcription indicator */}
+        {isTranscribing && !isSending && (
           <div className="flex items-center gap-2.5 rounded-xl bg-indigo-50 dark:bg-indigo-950/30 px-4 py-2.5 text-sm text-indigo-600 dark:text-indigo-400">
             <div className="h-4 w-4 animate-spin rounded-full border-2 border-indigo-400 border-t-transparent" />
-            <span>{isTranscribing ? "Transkribiere..." : "Dieter schreibt..."}</span>
+            <span>Transkribiere...</span>
           </div>
         )}
 
@@ -690,6 +731,7 @@ export function MultiChatView({
   const [mobileHudOpen, setMobileHudOpen] = useState(false);
   const [drafts, setDrafts] = useState<Record<string, string>>({});
   const [sendingStates, setSendingStates] = useState<Record<string, boolean>>({});
+  const [streamingText, setStreamingText] = useState<Record<string, string>>({});
   const [messageQueue, setMessageQueue] = useState<Record<string, string[]>>({});
   const [subagentPanelCollapsed, setSubagentPanelCollapsed] = useState(true);
   const [rightPanelView, setRightPanelView] = useState<"activity" | "subagents">("activity");
@@ -895,6 +937,8 @@ export function MultiChatView({
             if (event.type === "user_confirmed" && event.item) {
               // User message confirmed - Dieter is now typing response
               setAgentActivityStates(prev => ({ ...prev, [threadId]: "typing" }));
+              // Initialize streaming bubble (empty = thinking dots)
+              setStreamingText(prev => ({ ...prev, [threadId]: "" }));
               // Add user message to chat
               setLiveMessages((prev) => ({
                 ...prev,
@@ -906,8 +950,19 @@ export function MultiChatView({
               if (event.item.createdAt) {
                 lastMessageTimestampsRef.current[threadId] = event.item.createdAt;
               }
+            } else if (event.type === "delta" && event.content) {
+              // Accumulate streaming text
+              setStreamingText(prev => ({
+                ...prev,
+                [threadId]: (prev[threadId] || "") + event.content
+              }));
             } else if (event.type === "done" && event.item) {
-              // Response complete - back to idle
+              // Response complete - clear streaming, show final message
+              setStreamingText(prev => {
+                const next = { ...prev };
+                delete next[threadId];
+                return next;
+              });
               setAgentActivityStates(prev => ({ ...prev, [threadId]: "idle" }));
               // Add complete assistant message
               setLiveMessages((prev) => ({
@@ -928,6 +983,12 @@ export function MultiChatView({
       }
     } catch (err) {
       console.error("Send failed:", err);
+      // Clear streaming text on error
+      setStreamingText(prev => {
+        const next = { ...prev };
+        delete next[threadId];
+        return next;
+      });
       // Set stuck state on error
       setAgentActivityStates(prev => ({ ...prev, [threadId]: "stuck" }));
       // Auto-recover to idle after 5 seconds
@@ -1194,7 +1255,7 @@ export function MultiChatView({
       )}
 
       {/* Main Chat Area */}
-      <section className="flex h-[calc(100dvh-3rem)] flex-col overflow-hidden md:rounded-2xl md:border md:border-zinc-200/80 md:dark:border-zinc-800/80 md:bg-white md:dark:bg-zinc-950 md:shadow-sm lg:h-[calc(100dvh-4.5rem)]">
+      <section className="flex h-[calc(100dvh-3.5rem-env(safe-area-inset-top))] flex-col overflow-hidden md:rounded-2xl md:border md:border-zinc-200/80 md:dark:border-zinc-800/80 md:bg-white md:dark:bg-zinc-950 md:shadow-sm lg:h-[calc(100dvh-4.5rem)]">
         {/* Header */}
         <header className="hidden md:flex items-center justify-between gap-4 border-b border-zinc-200 dark:border-zinc-800 px-5 py-3.5">
           <div className="flex min-w-0 items-center gap-3">
@@ -1319,12 +1380,13 @@ export function MultiChatView({
         {/* Messages (for regular tabs or workspace with project) */}
         {showChat && (
           <>
-            <ChatContent 
+            <ChatContent
               activeTab={effectiveThreadId}
               messages={currentMessages}
               artefactsById={artefactsById}
               isTranscribing={transcribingStates[effectiveThreadId]}
               isSending={isSending}
+              streamingText={streamingText[effectiveThreadId]}
               onSuggestionClick={handleSuggestionClick}
             />
 

@@ -1,12 +1,16 @@
 "use client";
 
+import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Home,
   MessageCircle,
   Calendar,
   LayoutGrid,
+  Settings,
+  X,
 } from "lucide-react";
 
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -21,9 +25,202 @@ const NAV_ITEMS = [
   { href: "/kanban", icon: LayoutGrid, label: "Tasks", id: "kanban" },
 ] as const;
 
+const MENU_ITEMS = [
+  { href: "/", icon: Home, label: "Home", id: "home" },
+  { href: "/chat", icon: MessageCircle, label: "Chat", id: "chat" },
+  { href: "/calendar", icon: Calendar, label: "Kalender", id: "calendar" },
+  { href: "/kanban", icon: LayoutGrid, label: "Tasks", id: "kanban" },
+  { type: "divider" as const },
+  { href: "/settings", icon: Settings, label: "Settings", id: "settings" },
+] as const;
+
 interface AppShellProps {
   children: React.ReactNode;
   active?: "chat" | "kanban" | "calendar" | "events" | "home";
+}
+
+// ============================================
+// Animated Burger Icon
+// ============================================
+
+function BurgerIcon({ isOpen }: { isOpen: boolean }) {
+  return (
+    <div className="relative h-5 w-6">
+      <motion.span
+        className="absolute left-0 top-0 h-0.5 w-full rounded-full bg-current"
+        animate={{
+          rotate: isOpen ? 45 : 0,
+          y: isOpen ? 9 : 0,
+        }}
+        transition={{ duration: 0.25, ease: "easeInOut" }}
+      />
+      <motion.span
+        className="absolute left-0 top-[9px] h-0.5 w-full rounded-full bg-current"
+        animate={{
+          opacity: isOpen ? 0 : 1,
+          scaleX: isOpen ? 0 : 1,
+        }}
+        transition={{ duration: 0.2, ease: "easeInOut" }}
+      />
+      <motion.span
+        className="absolute bottom-0 left-0 h-0.5 w-full rounded-full bg-current"
+        animate={{
+          rotate: isOpen ? -45 : 0,
+          y: isOpen ? -9 : 0,
+        }}
+        transition={{ duration: 0.25, ease: "easeInOut" }}
+      />
+    </div>
+  );
+}
+
+// ============================================
+// Slide-out Menu Panel
+// ============================================
+
+function MobileMenu({
+  isOpen,
+  onClose,
+  active,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  active?: string;
+}) {
+  // Close on escape key
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    if (isOpen) {
+      document.addEventListener("keydown", handleEscape);
+      // Prevent body scroll when menu is open
+      document.body.style.overflow = "hidden";
+    }
+    return () => {
+      document.removeEventListener("keydown", handleEscape);
+      document.body.style.overflow = "";
+    };
+  }, [isOpen, onClose]);
+
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <>
+          {/* Backdrop with blur */}
+          <motion.div
+            className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.25 }}
+            onClick={onClose}
+            aria-hidden="true"
+          />
+
+          {/* Menu Panel */}
+          <motion.nav
+            className={cn(
+              "fixed right-0 top-0 z-50 h-full w-72",
+              // Futuristic glass effect
+              "border-l border-white/10 bg-zinc-900/95 backdrop-blur-xl",
+              // Subtle glow on the edge
+              "shadow-[-8px_0_32px_rgba(99,102,241,0.15)]"
+            )}
+            initial={{ x: "100%" }}
+            animate={{ x: 0 }}
+            exit={{ x: "100%" }}
+            transition={{ type: "spring", damping: 30, stiffness: 300 }}
+            aria-label="Mobile navigation menu"
+          >
+            {/* Menu Header */}
+            <div className="flex h-14 items-center justify-between border-b border-white/5 px-5 pt-safe">
+              <span className="text-sm font-medium text-zinc-400">Menu</span>
+              <button
+                onClick={onClose}
+                className="flex h-10 w-10 items-center justify-center rounded-lg text-zinc-400 transition-colors hover:bg-white/5 hover:text-white"
+                aria-label="Close menu"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            {/* Menu Items */}
+            <div className="flex flex-col gap-1 p-4">
+              {MENU_ITEMS.map((item, index) => {
+                if ("type" in item && item.type === "divider") {
+                  return (
+                    <div
+                      key={`divider-${index}`}
+                      className="my-2 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent"
+                    />
+                  );
+                }
+
+                if (!("href" in item)) return null;
+
+                const isActive = active === item.id;
+                const Icon = item.icon;
+
+                return (
+                  <Link
+                    key={item.id}
+                    href={item.href}
+                    onClick={onClose}
+                    className={cn(
+                      // Base styles
+                      "group relative flex items-center gap-3 rounded-xl px-4 py-3.5 text-sm font-medium transition-all duration-200",
+                      // Active state - futuristic glow
+                      isActive
+                        ? "bg-indigo-500/15 text-indigo-400"
+                        : "text-zinc-300 hover:bg-white/5 hover:text-white active:scale-[0.98]"
+                    )}
+                  >
+                    {/* Active indicator glow */}
+                    {isActive && (
+                      <motion.div
+                        className="absolute inset-0 rounded-xl bg-indigo-500/10"
+                        layoutId="activeMenuItem"
+                        transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                      />
+                    )}
+                    
+                    {/* Icon with subtle glow when active */}
+                    <span
+                      className={cn(
+                        "relative z-10 transition-all",
+                        isActive && "drop-shadow-[0_0_8px_rgba(99,102,241,0.5)]"
+                      )}
+                    >
+                      <Icon className="h-5 w-5" strokeWidth={isActive ? 2.25 : 1.75} />
+                    </span>
+                    
+                    <span className="relative z-10">{item.label}</span>
+
+                    {/* Active line indicator */}
+                    {isActive && (
+                      <motion.div
+                        className="absolute left-0 top-1/2 h-6 w-0.5 -translate-y-1/2 rounded-full bg-indigo-400 shadow-[0_0_12px_rgba(99,102,241,0.8)]"
+                        layoutId="activeIndicator"
+                      />
+                    )}
+                  </Link>
+                );
+              })}
+            </div>
+
+            {/* Footer with Theme Toggle */}
+            <div className="absolute bottom-0 left-0 right-0 border-t border-white/5 p-4 pb-safe">
+              <div className="flex items-center justify-between rounded-xl bg-white/5 px-4 py-3">
+                <span className="text-sm text-zinc-400">Erscheinungsbild</span>
+                <ThemeToggle />
+              </div>
+            </div>
+          </motion.nav>
+        </>
+      )}
+    </AnimatePresence>
+  );
 }
 
 // ============================================
@@ -80,74 +277,101 @@ function DesktopHeader({ active }: { active?: string }) {
 }
 
 // ============================================
-// Mobile Header - Clean top navigation
+// Mobile Header - Futuristic with Burger Menu
 // ============================================
 
 export function MobileHeader({ active }: { active?: string }) {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const pathname = usePathname();
+
+  const toggleMenu = useCallback(() => {
+    setIsMenuOpen((prev) => !prev);
+  }, []);
+
+  const closeMenu = useCallback(() => {
+    setIsMenuOpen(false);
+  }, []);
+
+  // Close menu on route change
+  useEffect(() => {
+    setIsMenuOpen(false);
+  }, [pathname]);
+
   return (
-    <header className="fixed left-0 right-0 top-0 z-50 md:hidden">
-      {/* Safe area + header container */}
-      <div className="border-b border-zinc-200/80 bg-white/90 pt-safe backdrop-blur-lg dark:border-zinc-800/80 dark:bg-zinc-950/90">
-        <nav className="flex h-12 items-center justify-between px-2">
-          {/* Logo - compact */}
-          <Link
-            href="/"
-            className="flex min-w-[44px] items-center justify-center px-2"
-          >
-            <span className="text-lg">🐕</span>
-          </Link>
+    <>
+      <header className="fixed left-0 right-0 top-0 z-50 md:hidden">
+        {/* Safe area + header container with futuristic styling */}
+        <div
+          className={cn(
+            "pt-safe",
+            // Futuristic glass morphism
+            "border-b border-white/10 bg-zinc-950/80 backdrop-blur-xl",
+            // Subtle bottom glow
+            "shadow-[0_1px_0_rgba(99,102,241,0.1),0_4px_20px_rgba(0,0,0,0.3)]"
+          )}
+        >
+          <nav className="flex h-14 items-center justify-between px-4">
+            {/* Logo + Brand - Left Side */}
+            <Link
+              href="/"
+              className="group flex items-center gap-2.5 transition-all active:scale-95"
+            >
+              {/* Logo with subtle glow */}
+              <span
+                className={cn(
+                  "text-xl transition-all",
+                  "drop-shadow-[0_0_8px_rgba(99,102,241,0.4)]",
+                  "group-hover:drop-shadow-[0_0_12px_rgba(99,102,241,0.6)]"
+                )}
+              >
+                🐕
+              </span>
+              {/* Brand text with gradient */}
+              <span
+                className={cn(
+                  "text-base font-bold tracking-tight",
+                  // Futuristic gradient text
+                  "bg-gradient-to-r from-white via-zinc-200 to-zinc-400 bg-clip-text text-transparent",
+                  // Subtle text glow
+                  "drop-shadow-[0_0_12px_rgba(255,255,255,0.15)]"
+                )}
+              >
+                Dieter HQ
+              </span>
+            </Link>
 
-          {/* Nav Items - centered */}
-          <div className="flex flex-1 items-center justify-center gap-1">
-            {NAV_ITEMS.map((item) => {
-              const isActive =
-                active === item.id || (item.id === "home" && !active);
+            {/* Burger Menu Button - Right Side */}
+            <button
+              onClick={toggleMenu}
+              className={cn(
+                "relative flex h-11 w-11 items-center justify-center rounded-xl transition-all",
+                // Futuristic button style
+                isMenuOpen
+                  ? "bg-indigo-500/20 text-indigo-400"
+                  : "text-zinc-400 hover:bg-white/5 hover:text-white active:scale-95"
+              )}
+              aria-label={isMenuOpen ? "Close menu" : "Open menu"}
+              aria-expanded={isMenuOpen}
+              aria-controls="mobile-menu"
+            >
+              {/* Subtle glow ring when active */}
+              {isMenuOpen && (
+                <motion.div
+                  className="absolute inset-0 rounded-xl ring-1 ring-indigo-500/30"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                />
+              )}
+              <BurgerIcon isOpen={isMenuOpen} />
+            </button>
+          </nav>
+        </div>
+      </header>
 
-              return (
-                <Link
-                  key={item.id}
-                  href={item.href}
-                  className={cn(
-                    // Base: touch-friendly tap target
-                    "relative flex min-h-[44px] min-w-[44px] flex-col items-center justify-center rounded-lg px-3 transition-colors",
-                    // Active state
-                    isActive
-                      ? "text-indigo-600 dark:text-indigo-400"
-                      : "text-zinc-500 active:bg-zinc-100 dark:text-zinc-400 dark:active:bg-zinc-800"
-                  )}
-                >
-                  <item.icon
-                    className="h-5 w-5"
-                    strokeWidth={isActive ? 2.25 : 1.75}
-                  />
-                  {/* Label - hidden on very small screens */}
-                  <span
-                    className={cn(
-                      "mt-0.5 text-[10px] font-medium leading-none",
-                      "hidden xs:block",
-                      isActive
-                        ? "text-indigo-600 dark:text-indigo-400"
-                        : "text-zinc-500 dark:text-zinc-400"
-                    )}
-                  >
-                    {item.label}
-                  </span>
-                  {/* Active indicator line */}
-                  {isActive && (
-                    <span className="absolute -bottom-0.5 left-1/2 h-0.5 w-6 -translate-x-1/2 rounded-full bg-indigo-500 dark:bg-indigo-400" />
-                  )}
-                </Link>
-              );
-            })}
-          </div>
-
-          {/* Actions - compact */}
-          <div className="flex min-w-[44px] items-center justify-center">
-            <ThemeToggle />
-          </div>
-        </nav>
-      </div>
-    </header>
+      {/* Mobile Menu */}
+      <MobileMenu isOpen={isMenuOpen} onClose={closeMenu} active={active} />
+    </>
   );
 }
 
@@ -175,8 +399,8 @@ export function AppShell({ children, active }: AppShellProps) {
       <main
         className={cn(
           "mx-auto w-full max-w-6xl px-4 md:px-6",
-          // Mobile: top padding for mobile header (h-12 + safe-area)
-          "pt-[calc(3rem+env(safe-area-inset-top))] pb-6",
+          // Mobile: top padding for mobile header (h-14 + safe-area)
+          "pt-[calc(3.5rem+env(safe-area-inset-top))] pb-6",
           // Desktop: top padding for desktop header
           "md:pb-8 md:pt-24"
         )}

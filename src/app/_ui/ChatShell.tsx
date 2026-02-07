@@ -88,8 +88,8 @@ export function ChatShell({ children }: ChatShellProps) {
       <main
         className={cn(
           "flex flex-1 flex-col",
-          // Mobile: top padding for mobile header
-          "pt-[calc(3rem+env(safe-area-inset-top))]",
+          // Mobile: top padding for mobile header (h-14 + safe-area)
+          "pt-[calc(3.5rem+env(safe-area-inset-top))]",
           // Desktop: top padding for desktop header
           "md:pt-20"
         )}

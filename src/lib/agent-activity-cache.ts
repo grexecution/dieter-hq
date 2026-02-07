@@ -8,7 +8,7 @@ import { inboxSyncState } from "@/server/db/schema";
 import { eq } from "drizzle-orm";
 
 const CACHE_ID = "agent-activity";
-const STALE_THRESHOLD_MS = 30_000; // 30 seconds
+const STALE_THRESHOLD_MS = 600_000; // 10 minutes - synced by launchd every 30 min
 
 export interface AgentSession {
   key: string;

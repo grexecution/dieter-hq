@@ -21,8 +21,6 @@ const NAV_ITEMS = [
   { href: "/kanban", icon: LayoutGrid, label: "Tasks", id: "kanban" },
 ] as const;
 
-type NavId = (typeof NAV_ITEMS)[number]["id"];
-
 interface AppShellProps {
   children: React.ReactNode;
   active?: "chat" | "kanban" | "calendar" | "events" | "home";
@@ -82,19 +80,25 @@ function DesktopHeader({ active }: { active?: string }) {
 }
 
 // ============================================
-// Mobile Bottom Tab Bar - Modern Floating Design
+// Mobile Header - Clean top navigation
 // ============================================
 
-function MobileTabBar({ active }: { active?: string }) {
+export function MobileHeader({ active }: { active?: string }) {
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 pb-safe md:hidden">
-      <div className="px-4 pb-4">
-        {/* Floating Pill Container */}
-        <div className="relative mx-auto max-w-sm overflow-hidden rounded-2xl border border-white/20 bg-zinc-900/80 shadow-2xl shadow-black/40 backdrop-blur-2xl dark:border-white/10 dark:bg-zinc-950/90">
-          {/* Subtle gradient overlay */}
-          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-white/[0.02] to-white/[0.08]" />
-          
-          <div className="relative flex items-center justify-around px-2 py-3">
+    <header className="fixed left-0 right-0 top-0 z-50 md:hidden">
+      {/* Safe area + header container */}
+      <div className="border-b border-zinc-200/80 bg-white/90 pt-safe backdrop-blur-lg dark:border-zinc-800/80 dark:bg-zinc-950/90">
+        <nav className="flex h-12 items-center justify-between px-2">
+          {/* Logo - compact */}
+          <Link
+            href="/"
+            className="flex min-w-[44px] items-center justify-center px-2"
+          >
+            <span className="text-lg">🐕</span>
+          </Link>
+
+          {/* Nav Items - centered */}
+          <div className="flex flex-1 items-center justify-center gap-1">
             {NAV_ITEMS.map((item) => {
               const isActive =
                 active === item.id || (item.id === "home" && !active);
@@ -103,67 +107,47 @@ function MobileTabBar({ active }: { active?: string }) {
                 <Link
                   key={item.id}
                   href={item.href}
-                  className="group relative flex flex-col items-center"
+                  className={cn(
+                    // Base: touch-friendly tap target
+                    "relative flex min-h-[44px] min-w-[44px] flex-col items-center justify-center rounded-lg px-3 transition-colors",
+                    // Active state
+                    isActive
+                      ? "text-indigo-600 dark:text-indigo-400"
+                      : "text-zinc-500 active:bg-zinc-100 dark:text-zinc-400 dark:active:bg-zinc-800"
+                  )}
                 >
-                  {/* Active Glow Background */}
-                  <div
-                    className={cn(
-                      "absolute -inset-2 rounded-xl transition-all duration-300",
-                      isActive
-                        ? "bg-indigo-500/20 blur-md"
-                        : "bg-transparent"
-                    )}
+                  <item.icon
+                    className="h-5 w-5"
+                    strokeWidth={isActive ? 2.25 : 1.75}
                   />
-                  
-                  {/* Active Background Pill */}
-                  <div
+                  {/* Label - hidden on very small screens */}
+                  <span
                     className={cn(
-                      "relative flex flex-col items-center gap-1 rounded-xl px-4 py-2 transition-all duration-300",
+                      "mt-0.5 text-[10px] font-medium leading-none",
+                      "hidden xs:block",
                       isActive
-                        ? "bg-indigo-500/20"
-                        : "hover:bg-white/5"
+                        ? "text-indigo-600 dark:text-indigo-400"
+                        : "text-zinc-500 dark:text-zinc-400"
                     )}
                   >
-                    {/* Icon */}
-                    <item.icon
-                      className={cn(
-                        "h-5 w-5 transition-all duration-300",
-                        isActive
-                          ? "text-indigo-400 drop-shadow-[0_0_8px_rgba(129,140,248,0.5)]"
-                          : "text-zinc-400 group-hover:text-zinc-200"
-                      )}
-                      strokeWidth={isActive ? 2.5 : 2}
-                    />
-                    
-                    {/* Label */}
-                    <span
-                      className={cn(
-                        "text-[10px] font-medium transition-all duration-300",
-                        isActive
-                          ? "text-indigo-300"
-                          : "text-zinc-500 group-hover:text-zinc-300"
-                      )}
-                    >
-                      {item.label}
-                    </span>
-                    
-                    {/* Active Indicator Dot */}
-                    <div
-                      className={cn(
-                        "absolute -bottom-0.5 h-1 w-1 rounded-full bg-indigo-400 transition-all duration-300",
-                        isActive
-                          ? "scale-100 opacity-100"
-                          : "scale-0 opacity-0"
-                      )}
-                    />
-                  </div>
+                    {item.label}
+                  </span>
+                  {/* Active indicator line */}
+                  {isActive && (
+                    <span className="absolute -bottom-0.5 left-1/2 h-0.5 w-6 -translate-x-1/2 rounded-full bg-indigo-500 dark:bg-indigo-400" />
+                  )}
                 </Link>
               );
             })}
           </div>
-        </div>
+
+          {/* Actions - compact */}
+          <div className="flex min-w-[44px] items-center justify-center">
+            <ThemeToggle />
+          </div>
+        </nav>
       </div>
-    </nav>
+    </header>
   );
 }
 
@@ -184,21 +168,21 @@ export function AppShell({ children, active }: AppShellProps) {
       {/* Desktop Header */}
       <DesktopHeader active={resolvedActive} />
 
+      {/* Mobile Header */}
+      <MobileHeader active={resolvedActive} />
+
       {/* Main Content */}
       <main
         className={cn(
           "mx-auto w-full max-w-6xl px-4 md:px-6",
-          // Mobile: bottom padding for floating tab bar
-          "pb-28 pt-6",
-          // Desktop: top padding for header
+          // Mobile: top padding for mobile header (h-12 + safe-area)
+          "pt-[calc(3rem+env(safe-area-inset-top))] pb-6",
+          // Desktop: top padding for desktop header
           "md:pb-8 md:pt-24"
         )}
       >
         {children}
       </main>
-
-      {/* Mobile Tab Bar */}
-      <MobileTabBar active={resolvedActive} />
     </div>
   );
 }

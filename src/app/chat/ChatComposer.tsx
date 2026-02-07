@@ -67,10 +67,10 @@ function FilePreviewItem({ file, onRemove }: { file: FilePreview; onRemove: (id:
       
       {/* File info */}
       <div className="min-w-0 flex-1">
-        <p className="truncate text-[11px] font-medium text-zinc-700 dark:text-zinc-200 max-w-[100px]">
+        <p className="truncate text-[11px] md:text-xs font-medium text-zinc-700 dark:text-zinc-200 max-w-[100px] md:max-w-[160px]">
           {file.name}
         </p>
-        <p className="text-[9px] text-zinc-500 dark:text-zinc-400">
+        <p className="text-[10px] md:text-xs text-zinc-500 dark:text-zinc-400">
           {formatFileSize(file.size)}
           {file.status === "uploading" && ` · ${file.progress}%`}
           {file.status === "complete" && " · ✓"}

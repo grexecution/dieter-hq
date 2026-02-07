@@ -197,7 +197,7 @@ export function OpenClawStatusSidebar({
                           </div>
                         )}
                       </div>
-                      <div className="shrink-0 text-[11px] text-amber-600 dark:text-amber-400">
+                      <div className="shrink-0 text-[11px] md:text-xs text-amber-600 dark:text-amber-400">
                         {formatTokens(agent.tokens.total)}
                       </div>
                     </div>
@@ -213,7 +213,7 @@ export function OpenClawStatusSidebar({
               <div className="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
                 Recent
               </div>
-              <div className="text-[11px] text-zinc-400 dark:text-zinc-500">
+              <div className="text-[11px] md:text-xs text-zinc-400 dark:text-zinc-500">
                 {data?.cache?.ageMs ? `${Math.round(data.cache.ageMs / 1000)}s ago` : "—"}
               </div>
             </div>
@@ -241,7 +241,7 @@ export function OpenClawStatusSidebar({
                         </div>
                       )}
                     </div>
-                    <div className="shrink-0 text-[11px] text-zinc-500 dark:text-zinc-400">
+                    <div className="shrink-0 text-[11px] md:text-xs text-zinc-500 dark:text-zinc-400">
                       {formatRelative(new Date(agent.updatedAt).getTime())}
                     </div>
                   </div>

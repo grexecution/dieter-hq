@@ -254,7 +254,7 @@ export function VoiceMessageBubble({
       {timestamp && (
         <div
           className={cn(
-            "mt-1 text-[10px] text-zinc-400 dark:text-zinc-500",
+            "mt-1 text-[10px] md:text-xs text-zinc-400 dark:text-zinc-500",
             isUser ? "text-right" : "text-left"
           )}
         >

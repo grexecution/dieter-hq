@@ -206,7 +206,7 @@ export function StatusBar({
 
           {/* Subagent count badge */}
           {liveStatus && liveStatus.subagents.length > 0 && effectiveActivity !== "subagents" && (
-            <span className="flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 text-[10px] font-medium">
+            <span className="flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 text-[10px] md:text-xs font-medium">
               <Users className="h-2.5 w-2.5" />
               {liveStatus.subagents.length}
             </span>
@@ -214,7 +214,7 @@ export function StatusBar({
 
           {/* Subagent labels when expanded in title */}
           {effectiveActivity === "subagents" && liveStatus && liveStatus.subagents.length > 0 && (
-            <span className="text-zinc-500 dark:text-zinc-400 text-[10px] truncate max-w-[150px]">
+            <span className="text-zinc-500 dark:text-zinc-400 text-[10px] md:text-xs truncate max-w-[150px] md:max-w-[200px]">
               {liveStatus.subagents.slice(0, 2).map(s => s.label).join(", ")}
               {liveStatus.subagents.length > 2 && ` +${liveStatus.subagents.length - 2}`}
             </span>
@@ -225,7 +225,7 @@ export function StatusBar({
         <div className="flex items-center gap-2">
           {/* Token usage indicator (if available) */}
           {liveStatus?.mainSession && (
-            <span className="text-[10px] text-zinc-400 hidden sm:inline">
+            <span className="text-[10px] md:text-xs text-zinc-400 hidden sm:inline">
               {formatTokens(liveStatus.mainSession.tokens)}/{formatTokens(liveStatus.mainSession.maxTokens)}
             </span>
           )}
@@ -248,7 +248,7 @@ export function StatusBar({
                 <Cpu className="h-3.5 w-3.5" />
                 <span className="font-medium">Haupt-Session</span>
               </div>
-              <div className="grid grid-cols-2 gap-2 text-[11px]">
+              <div className="grid grid-cols-2 gap-2 text-[11px] md:text-xs">
                 <div className="flex justify-between">
                   <span className="text-zinc-400">Model:</span>
                   <span className="font-mono text-zinc-600 dark:text-zinc-300">
@@ -302,7 +302,7 @@ export function StatusBar({
                         {agent.label}
                       </span>
                     </div>
-                    <span className="text-[10px] text-purple-500 dark:text-purple-400">
+                    <span className="text-[10px] md:text-xs text-purple-500 dark:text-purple-400">
                       {agent.isActive ? "arbeitet..." : formatTimeAgo(agent.lastActiveMs)}
                     </span>
                   </div>

@@ -108,7 +108,7 @@ function SubAgentItem({ subAgent }: SubAgentItemProps) {
           {subAgent.label}
         </span>
         {subAgent.lastMessage && (
-          <div className="truncate text-[10px] text-zinc-500 dark:text-zinc-400">
+          <div className="truncate text-[10px] md:text-xs text-zinc-500 dark:text-zinc-400">
             {subAgent.lastMessage.slice(0, 60)}...
           </div>
         )}
@@ -163,12 +163,12 @@ function AgentCard({ agent, expanded, onToggle }: AgentCardProps) {
                 {agent.name}
               </span>
               {subAgentCount > 0 && (
-                <span className="shrink-0 rounded bg-indigo-100 px-1 py-0.5 text-[10px] font-medium text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300">
+                <span className="shrink-0 rounded bg-indigo-100 px-1 py-0.5 text-[10px] md:text-xs font-medium text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300">
                   +{subAgentCount} sub
                 </span>
               )}
             </div>
-            <div className="flex items-center gap-1.5 text-[11px] text-zinc-500 dark:text-zinc-400">
+            <div className="flex items-center gap-1.5 text-[11px] md:text-xs text-zinc-500 dark:text-zinc-400">
               <Cpu className="h-3 w-3" />
               <span>{modelName}</span>
               <span className="text-zinc-300 dark:text-zinc-600">·</span>
@@ -210,7 +210,7 @@ function AgentCard({ agent, expanded, onToggle }: AgentCardProps) {
               )}
 
               {/* Stats */}
-              <div className="grid grid-cols-2 gap-2 text-[11px]">
+              <div className="grid grid-cols-2 gap-2 text-[11px] md:text-xs">
                 <div className="rounded-lg bg-zinc-100/80 px-2 py-1.5 dark:bg-zinc-800/50">
                   <div className="text-zinc-500 dark:text-zinc-400">Tokens</div>
                   <div className="font-medium text-zinc-800 dark:text-zinc-200">
@@ -228,7 +228,7 @@ function AgentCard({ agent, expanded, onToggle }: AgentCardProps) {
               {/* Sub-Agents */}
               {agent.subAgents && agent.subAgents.length > 0 && (
                 <div className="space-y-1.5">
-                  <div className="flex items-center gap-1.5 text-[11px] text-zinc-500 dark:text-zinc-400">
+                  <div className="flex items-center gap-1.5 text-[11px] md:text-xs text-zinc-500 dark:text-zinc-400">
                     <Brain className="h-3 w-3" />
                     <span>Sub-Agents ({agent.subAgents.length})</span>
                   </div>
@@ -242,7 +242,7 @@ function AgentCard({ agent, expanded, onToggle }: AgentCardProps) {
 
               {/* Sessions (collapsed) */}
               {sessionCount > 0 && (
-                <details className="text-[11px]">
+                <details className="text-[11px] md:text-xs">
                   <summary className="cursor-pointer text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300">
                     Sessions ({sessionCount})
                   </summary>
@@ -252,11 +252,11 @@ function AgentCard({ agent, expanded, onToggle }: AgentCardProps) {
                         key={session.key}
                         className="flex items-center justify-between rounded bg-zinc-100/80 px-2 py-1 dark:bg-zinc-800/50"
                       >
-                        <code className="truncate text-[10px] text-zinc-600 dark:text-zinc-400 max-w-[150px]">
+                        <code className="truncate text-[10px] md:text-xs text-zinc-600 dark:text-zinc-400 max-w-[150px] md:max-w-[200px]">
                           {session.key.split(":").pop()}
                         </code>
                         {session.workspace && (
-                          <span className="shrink-0 text-[10px] text-indigo-600 dark:text-indigo-400">
+                          <span className="shrink-0 text-[10px] md:text-xs text-indigo-600 dark:text-indigo-400">
                             {session.workspace}
                           </span>
                         )}
@@ -416,7 +416,7 @@ export function AgentActivityPanel({
             <motion.span
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
-              className="absolute -right-1.5 -top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-emerald-500 text-[10px] font-bold text-white"
+              className="absolute -right-1.5 -top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-emerald-500 text-[10px] md:text-xs font-bold text-white"
             >
               {activeCount}
             </motion.span>
@@ -443,7 +443,7 @@ export function AgentActivityPanel({
             Agent Activity
           </span>
           {agents.length > 0 && (
-            <span className="rounded-full bg-zinc-100 px-1.5 py-0.5 text-[10px] font-medium text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400">
+            <span className="rounded-full bg-zinc-100 px-1.5 py-0.5 text-[10px] md:text-xs font-medium text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400">
               {agents.length}
             </span>
           )}
@@ -525,7 +525,7 @@ export function AgentActivityPanel({
 
       {/* Footer */}
       <div className="border-t border-zinc-200/50 px-4 py-2 dark:border-zinc-800/50">
-        <div className="flex items-center justify-between text-[10px] text-zinc-400 dark:text-zinc-500">
+        <div className="flex items-center justify-between text-[10px] md:text-xs text-zinc-400 dark:text-zinc-500">
           <span>
             Aktualisiert: {new Date(lastRefresh).toLocaleTimeString("de-AT")}
           </span>

@@ -188,7 +188,7 @@ function TabNavigation({ activeTab, onTabChange, threadCounts }: TabNavigationPr
 
               {/* Badge */}
               {messageCount > 0 && !isActive && (
-                <span className="absolute right-0.5 md:right-1.5 top-0.5 md:top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-zinc-200 dark:bg-zinc-700 px-1 text-[9px] md:text-[10px] font-medium text-zinc-600 dark:text-zinc-300">
+                <span className="absolute right-0.5 md:right-1.5 top-0.5 md:top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-zinc-200 dark:bg-zinc-700 px-1 text-[9px] md:text-xs font-medium text-zinc-600 dark:text-zinc-300">
                   {messageCount > 99 ? "99" : messageCount}
                 </span>
               )}

@@ -166,12 +166,12 @@ const CardContent = memo(function CardContent({
             )}
             
             {item.sourceAccount && (
-              <span className="text-[10px] text-zinc-400 dark:text-zinc-500 truncate">
+              <span className="text-[10px] md:text-xs text-zinc-400 dark:text-zinc-500 truncate">
                 → {item.sourceAccount}
               </span>
             )}
             <div className="flex-1" />
-            <span className="text-[10px] text-zinc-400 dark:text-zinc-500 shrink-0">
+            <span className="text-[10px] md:text-xs text-zinc-400 dark:text-zinc-500 shrink-0">
               {timeLabel}
             </span>
           </div>

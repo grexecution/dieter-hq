@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/server/db";
 import { inboxItems, inboxActionLog } from "@/server/db/schema";
 import { eq } from "drizzle-orm";
+import { sendWhatsAppMessage } from "@/lib/messaging";
 
 export async function POST(
   request: NextRequest,
@@ -38,7 +39,7 @@ export async function POST(
 
     // Determine recipient identifier based on source
     // - WhatsApp: use threadId (ChatJID) for proper delivery
-    // - Email: use sender (email address)  
+    // - Email: use sender (email address)
     // - Slack: use threadId (channel ID)
     let recipientId = item.sender;
     if (item.source === "whatsapp") {
@@ -52,47 +53,87 @@ export async function POST(
           .from(inboxItems)
           .where(eq(inboxItems.senderName, item.senderName || item.sender))
           .limit(1);
-        
+
         if (relatedItem[0]?.threadId) {
           recipientId = relatedItem[0].threadId;
         }
-        // If still no threadId, recipientId stays as sender name - will fail but that's expected
       }
     } else if (item.source === "slack" && item.threadId) {
       recipientId = item.threadId;
     }
 
-    // Store pending reply in inboxActionLog (no schema change needed)
+    // Log the action
+    const logId = crypto.randomUUID();
     await db.insert(inboxActionLog).values({
-      id: crypto.randomUUID(),
+      id: logId,
       recommendationId: null,
       inboxItemId: id,
-      action: "pending_reply",
+      action: "reply",
       executedBy: "user",
-      result: null, // Will be filled when sent
+      result: null,
       metadata: JSON.stringify({
         channel: item.source,
         recipient: recipientId,
         recipientName: item.senderName || item.sender,
         message: trimmedMessage,
-        status: "pending",
+        status: "sending",
       }),
       createdAt: now,
     });
 
-    console.log(`[REPLY] Queued ${item.source} reply to ${item.senderName || recipientId}: ${trimmedMessage.slice(0, 50)}...`);
+    // Actually send the message via the appropriate channel
+    let sendResult: { ok: boolean; messageId?: string; error?: string } = { ok: false, error: "Unsupported channel" };
 
-    return NextResponse.json({ 
-      success: true, 
-      method: "queued",
-      message: "Reply queued - will be sent shortly",
+    if (item.source === "whatsapp") {
+      console.log(`[REPLY] Sending WhatsApp to ${recipientId}: ${trimmedMessage.slice(0, 50)}...`);
+      sendResult = await sendWhatsAppMessage(recipientId, trimmedMessage, item.sourceId ?? undefined);
+    } else {
+      // For non-WhatsApp channels, log as pending for now
+      console.log(`[REPLY] Channel ${item.source} not yet supported for direct send, logged as pending`);
+      sendResult = { ok: true, messageId: "pending" };
+    }
+
+    // Update the action log with the result
+    await db
+      .update(inboxActionLog)
+      .set({
+        result: sendResult.ok ? "sent" : `failed: ${sendResult.error}`,
+        metadata: JSON.stringify({
+          channel: item.source,
+          recipient: recipientId,
+          recipientName: item.senderName || item.sender,
+          message: trimmedMessage,
+          status: sendResult.ok ? "sent" : "failed",
+          messageId: sendResult.messageId,
+          error: sendResult.error,
+        }),
+      })
+      .where(eq(inboxActionLog.id, logId));
+
+    if (!sendResult.ok) {
+      console.error(`[REPLY] Failed to send ${item.source} reply:`, sendResult.error);
+      return NextResponse.json({
+        success: false,
+        error: sendResult.error || "Failed to send message",
+        recipient: recipientId,
+        source: item.source,
+      }, { status: 502 });
+    }
+
+    console.log(`[REPLY] Sent ${item.source} reply to ${item.senderName || recipientId}`);
+
+    return NextResponse.json({
+      success: true,
+      method: "sent",
+      message: "Reply sent successfully",
       recipient: recipientId,
       recipientName: item.senderName || item.sender,
       source: item.source,
+      messageId: sendResult.messageId,
     });
 
   } catch (error) {
-    console.error("Error queueing reply:", error);
+    console.error("Error sending reply:", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }

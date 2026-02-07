@@ -950,7 +950,14 @@ export function MultiChatView({
               if (event.item.createdAt) {
                 lastMessageTimestampsRef.current[threadId] = event.item.createdAt;
               }
+            } else if (event.type === "keepalive") {
+              // Server is still processing - show thinking indicator
+              console.log(`[Keepalive] Thread ${threadId} still processing...`);
+              // Keep the "thinking" state active
+              setAgentActivityStates(prev => ({ ...prev, [threadId]: "thinking" }));
             } else if (event.type === "delta" && event.content) {
+              // First content received - switch to typing state
+              setAgentActivityStates(prev => ({ ...prev, [threadId]: "typing" }));
               // Accumulate streaming text
               setStreamingText(prev => ({
                 ...prev,

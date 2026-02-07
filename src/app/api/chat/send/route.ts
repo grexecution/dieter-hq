@@ -262,6 +262,17 @@ export async function POST(req: NextRequest) {
         };
         const agentId = isWorkspaceThread ? 'coder' : (threadToAgent[threadId] || 'main');
 
+        // 🔄 KEEP-ALIVE: Send periodic pings to prevent timeout during long tasks
+        let firstByteReceived = false;
+        const keepAliveInterval = setInterval(() => {
+          if (!firstByteReceived) {
+            controller.enqueue(encoder.encode(`data: ${JSON.stringify({
+              type: "keepalive",
+              timestamp: Date.now(),
+            })}\n\n`));
+          }
+        }, 5000); // Ping every 5 seconds
+
         try {
           // 🧠 INFINITE CONTEXT: Send full context to OpenClaw
           const response = await fetch(`${GATEWAY_HTTP_URL}/v1/chat/completions`, {
@@ -325,6 +336,11 @@ export async function POST(req: NextRequest) {
                   // Handle text delta
                   const delta = chunk.choices?.[0]?.delta?.content;
                   if (delta) {
+                    // First real content received - stop keepalive pings
+                    if (!firstByteReceived) {
+                      firstByteReceived = true;
+                      clearInterval(keepAliveInterval);
+                    }
                     fullContent += delta;
                     // Send delta to frontend
                     controller.enqueue(encoder.encode(`data: ${JSON.stringify({
@@ -349,12 +365,16 @@ export async function POST(req: NextRequest) {
             }
           }
         } catch (err) {
+          clearInterval(keepAliveInterval);
           console.error('[Chat Send] OpenClaw gateway error:', err);
           fullContent = fullContent || '⚠️ Cannot reach OpenClaw gateway.';
           controller.enqueue(encoder.encode(`data: ${JSON.stringify({
             type: "delta",
             content: fullContent,
           })}\n\n`));
+        } finally {
+          // Always clear keepalive interval
+          clearInterval(keepAliveInterval);
         }
         
         // Log final content length for debugging

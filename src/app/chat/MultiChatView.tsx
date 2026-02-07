@@ -232,12 +232,12 @@ function MessageBubble({ message, artefact, url }: MessageBubbleProps) {
     return (
       <div
         className={cn(
-          "flex items-end gap-2.5 md:gap-3",
+          "flex items-end gap-2.5 md:gap-3 min-w-0 w-full",
           isUser ? "flex-row-reverse" : "flex-row"
         )}
       >
         {/* Avatar */}
-        <Avatar className="h-7 w-7 md:h-8 md:w-8 shrink-0">
+        <Avatar className="h-7 w-7 md:h-8 md:w-8 shrink-0 flex-none">
           {isUser ? (
             <AvatarFallback className="bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 text-[10px] md:text-xs font-medium">
               <User className="h-3.5 w-3.5" />
@@ -266,12 +266,12 @@ function MessageBubble({ message, artefact, url }: MessageBubbleProps) {
   return (
     <div
       className={cn(
-        "flex items-end gap-2.5 md:gap-3",
+        "flex items-end gap-2.5 md:gap-3 min-w-0 w-full",
         isUser ? "flex-row-reverse" : "flex-row"
       )}
     >
       {/* Avatar */}
-      <Avatar className="h-7 w-7 md:h-8 md:w-8 shrink-0">
+      <Avatar className="h-7 w-7 md:h-8 md:w-8 shrink-0 flex-none">
         {isUser ? (
           <AvatarFallback className="bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 text-[10px] md:text-xs font-medium">
             <User className="h-3.5 w-3.5" />
@@ -289,7 +289,7 @@ function MessageBubble({ message, artefact, url }: MessageBubbleProps) {
       {/* Bubble */}
       <div
         className={cn(
-          "group relative max-w-[85%] md:max-w-[70%] rounded-2xl px-3.5 py-2.5 md:px-4 md:py-3 overflow-hidden",
+          "group relative max-w-[85%] md:max-w-[70%] min-w-0 rounded-2xl px-3.5 py-2.5 md:px-4 md:py-3 overflow-hidden",
           isUser
             ? "bg-indigo-50 dark:bg-zinc-700 text-zinc-900 dark:text-zinc-100"
             : "bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800"
@@ -333,7 +333,7 @@ function MessageBubble({ message, artefact, url }: MessageBubbleProps) {
             )}
           </div>
         ) : (
-          <div className="text-[13px] md:text-[14.5px] leading-relaxed break-words [overflow-wrap:anywhere]">
+          <div className="text-[13px] md:text-[14.5px] leading-relaxed [word-break:break-word] [overflow-wrap:break-word] [hyphens:auto]">
             <MessageContent content={meta.text} />
           </div>
         )}
@@ -387,7 +387,7 @@ function ChatContent({ activeTab, messages, artefactsById, isTranscribing, isSen
 
   return (
     <ScrollArea className="flex-1" ref={scrollAreaRef}>
-      <div className="mx-auto flex w-full max-w-3xl flex-col gap-3 px-3 py-4 md:px-6 md:py-6 lg:max-w-4xl">
+      <div className="mx-auto flex w-full max-w-3xl flex-col gap-3 px-3 py-4 md:px-6 md:py-6 lg:max-w-4xl overflow-x-hidden">
         {messages.length > 0 ? (
             <div key={activeTab} className="space-y-3 md:space-y-4">
               {messages.map((m) => {
@@ -799,6 +799,18 @@ export function MultiChatView({
     } finally {
       // Mark sending as done
       setSendingStates(prev => ({ ...prev, [threadId]: false }));
+      
+      // Process next queued message for this thread
+      setMessageQueue(prev => {
+        const queue = prev[threadId] || [];
+        if (queue.length > 0) {
+          const [nextMessage, ...remaining] = queue;
+          // Schedule next send (can't call sendMessage directly in setState)
+          setTimeout(() => sendMessage(nextMessage, threadId), 0);
+          return { ...prev, [threadId]: remaining };
+        }
+        return prev;
+      });
     }
   };
 
@@ -823,21 +835,6 @@ export function MultiChatView({
     setDrafts(prev => ({ ...prev, [threadId]: "" }));
     await sendMessage(content, threadId);
   };
-
-  // Process queued messages when sending completes
-  useEffect(() => {
-    const threadId = effectiveThreadId;
-    const queue = messageQueue[threadId] || [];
-    const isSendingNow = sendingStates[threadId];
-    
-    // If not sending and there are queued messages, process the next one
-    if (!isSendingNow && queue.length > 0) {
-      const [nextMessage, ...remaining] = queue;
-      setMessageQueue(prev => ({ ...prev, [threadId]: remaining }));
-      // Send directly without going through draft
-      sendMessage(nextMessage, threadId);
-    }
-  }, [sendingStates, messageQueue, effectiveThreadId]);
 
   // Handle suggestion clicks (quick actions after assistant messages)
   const handleSuggestionClick = useCallback(async (suggestion: ChatSuggestion) => {

@@ -300,33 +300,29 @@ export function InboxView() {
   const handleSync = async () => {
     setIsSyncing(true);
     try {
-      // Try to trigger sync via OpenClaw gateway webhook (runs on Mac mini)
-      const gatewayUrl = process.env.NEXT_PUBLIC_OPENCLAW_GATEWAY_URL || 'http://127.0.0.1:18789';
-      
-      // First try the gateway webhook
+      // Try to trigger sync via backend API (which calls Mac mini via Tailscale Funnel)
       try {
-        const webhookRes = await fetch(`${gatewayUrl}/webhook/inbox-sync`, {
+        const syncRes = await fetch('/api/inbox/trigger-sync', {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          signal: AbortSignal.timeout(5000), // 5s timeout
+          signal: AbortSignal.timeout(60000), // 60s timeout for sync
         });
         
-        if (webhookRes.ok) {
-          toast.success("Sync gestartet auf Mac mini...");
-          // Wait a bit then refresh
-          await new Promise(r => setTimeout(r, 3000));
-          await loadItems(true);
-          toast.success("Inbox aktualisiert");
-          return;
+        if (syncRes.ok) {
+          const result = await syncRes.json();
+          if (result.ok) {
+            toast.success(`Sync abgeschlossen: ${result.whatsapp || 0} WhatsApp, ${result.email || 0} Emails`);
+            await loadItems(true);
+            return;
+          }
         }
-      } catch {
-        // Gateway not reachable, fallback to just refreshing
-        console.log("[Inbox] Gateway not reachable, just refreshing items");
+      } catch (err) {
+        console.log("[Inbox] Sync trigger failed, refreshing from DB:", err);
       }
       
       // Fallback: just refresh the items from DB
       await loadItems(true);
-      toast.info("Inbox aktualisiert (Auto-Sync läuft alle 30 Min auf Mac mini)");
+      toast.info("Inbox aktualisiert");
     } catch (err) {
       console.error("Error syncing:", err);
       toast.error("Fehler beim Aktualisieren");

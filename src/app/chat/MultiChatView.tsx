@@ -637,8 +637,8 @@ function Composer({ draft, setDraft, isSending, queue, onSubmit, onVoiceTranscri
                             <textarea
                               value={editText}
                               onChange={(e) => setEditText(e.target.value)}
-                              className="w-full p-2 text-sm rounded-lg border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-zinc-800 resize-none"
-                              rows={2}
+                              className="w-full min-h-[44px] px-4 py-[10px] text-[15px] leading-6 rounded-xl border-0 bg-zinc-100/80 dark:bg-zinc-800/80 ring-1 ring-zinc-200/50 dark:ring-zinc-700/50 focus:ring-2 focus:ring-indigo-500/50 focus:outline-none resize-none"
+                              rows={1}
                               autoFocus
                             />
                             <div className="flex gap-2 mt-2">

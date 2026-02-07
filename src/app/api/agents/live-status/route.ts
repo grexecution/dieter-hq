@@ -1,26 +1,6 @@
 import { NextResponse } from "next/server";
-
-// Gateway URL via Tailscale Funnel
-const GATEWAY_URL = process.env.OPENCLAW_GATEWAY_URL || "https://mac-mini-von-dieter.tail954ecb.ts.net";
-const GATEWAY_PASSWORD = process.env.OPENCLAW_GATEWAY_PASSWORD || "";
-
-interface GatewaySession {
-  key: string;
-  kind: string;
-  label?: string;
-  displayName?: string;
-  updatedAt: number;
-  sessionId: string;
-  model: string;
-  totalTokens: number;
-  contextTokens?: number;
-  abortedLastRun?: boolean;
-}
-
-interface GatewaySessionsResponse {
-  count: number;
-  sessions: GatewaySession[];
-}
+import { db } from "@/server/db";
+import { sql } from "drizzle-orm";
 
 export interface LiveAgentStatus {
   ok: boolean;
@@ -41,117 +21,129 @@ export interface LiveAgentStatus {
     tokens: number;
   }[];
   totalActiveAgents: number;
-  status: "idle" | "working" | "subagents-working" | "stuck";
+  status: "idle" | "working" | "subagents-working" | "stuck" | "offline";
   statusText: string;
+  cacheAgeMs: number;
 }
 
 /**
  * GET /api/agents/live-status
  * 
- * Fetches real-time session data from the OpenClaw Gateway
- * to show what the agent is currently doing.
+ * Returns cached session data from the DB.
+ * The sync script (launchd) updates this every 30 minutes,
+ * but the data also gets updated when agents are active.
  */
 export async function GET(request: Request) {
   const url = new URL(request.url);
   const threadId = url.searchParams.get("thread") || "dieterhq";
   
   try {
-    // Call the Gateway's sessions.list tool
-    const response = await fetch(`${GATEWAY_URL}/v1/chat/completions`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${GATEWAY_PASSWORD}`,
-      },
-      body: JSON.stringify({
-        model: "tool",
-        tool: "sessions_list",
-        tool_input: {
-          activeMinutes: 30,
-          messageLimit: 0,
-        },
-      }),
-      // Short timeout for status checks
-      signal: AbortSignal.timeout(5000),
-    });
-
-    if (!response.ok) {
-      throw new Error(`Gateway returned ${response.status}`);
-    }
-
-    const data = await response.json() as GatewaySessionsResponse;
+    // Get the latest agent activity from the cache table
+    const result = await db.execute(sql`
+      SELECT 
+        data,
+        updated_at
+      FROM agent_activity_cache
+      ORDER BY updated_at DESC
+      LIMIT 1
+    `);
+    
     const now = Date.now();
     
-    // Find the main session for this thread
-    const mainSessionKey = `dieter-hq:dev:${threadId}`;
-    const mainSession = data.sessions.find(s => s.key.includes(mainSessionKey));
+    if (!result.rows || result.rows.length === 0) {
+      return NextResponse.json({
+        ok: true,
+        timestamp: now,
+        mainSession: null,
+        subagents: [],
+        totalActiveAgents: 0,
+        status: "offline",
+        statusText: "Keine Daten",
+        cacheAgeMs: 0,
+      } as LiveAgentStatus);
+    }
     
-    // Find all subagents (sessions with "subagent" in key)
-    const subagents = data.sessions
-      .filter(s => s.key.includes("subagent"))
-      .map(s => ({
-        key: s.key,
-        label: s.label || s.key.split(":").pop() || "unknown",
-        isActive: (now - s.updatedAt) < 60000, // Active if updated in last 60s
-        lastActiveMs: now - s.updatedAt,
-        tokens: s.totalTokens,
-      }))
-      .filter(s => s.isActive); // Only show active subagents
+    const row = result.rows[0] as { data: string; updated_at: Date };
+    const cacheData = typeof row.data === 'string' ? JSON.parse(row.data) : row.data;
+    const cacheTime = new Date(row.updated_at).getTime();
+    const cacheAgeMs = now - cacheTime;
     
-    // Determine overall status
-    const mainIsActive = mainSession && (now - mainSession.updatedAt) < 30000;
-    const hasActiveSubagents = subagents.length > 0;
-    const isStuck = mainSession?.abortedLastRun === true;
+    // Parse sessions from cache
+    const sessions = cacheData.sessions || [];
     
+    // Find main session for this thread
+    const mainSessionData = sessions.find((s: { key?: string }) => 
+      s.key?.includes(`dieter-hq:dev:${threadId}`) || s.key?.includes(`:${threadId}`)
+    );
+    
+    // Find subagents (sessions with "subagent" in key)
+    const subagentSessions = sessions.filter((s: { key?: string }) => 
+      s.key?.includes("subagent")
+    );
+    
+    // Determine if sessions are active (based on cache age + last update)
+    const isStale = cacheAgeMs > 60000; // Cache older than 1 minute
+    
+    // Build response
+    const mainSession = mainSessionData ? {
+      key: mainSessionData.key,
+      isActive: !isStale && (now - (mainSessionData.updatedAt || 0)) < 30000,
+      lastActiveMs: now - (mainSessionData.updatedAt || cacheTime),
+      tokens: mainSessionData.totalTokens || 0,
+      maxTokens: mainSessionData.contextTokens || 200000,
+      model: mainSessionData.model || "claude-opus-4-5",
+    } : null;
+    
+    const subagents = subagentSessions.map((s: { key?: string; label?: string; updatedAt?: number; totalTokens?: number }) => ({
+      key: s.key || "",
+      label: s.label || s.key?.split(":").pop() || "subagent",
+      isActive: !isStale && (now - (s.updatedAt || 0)) < 60000,
+      lastActiveMs: now - (s.updatedAt || cacheTime),
+      tokens: s.totalTokens || 0,
+    })).filter((s: { isActive: boolean }) => s.isActive);
+    
+    // Determine status
     let status: LiveAgentStatus["status"] = "idle";
     let statusText = "Bereit";
     
-    if (isStuck) {
-      status = "stuck";
-      statusText = "Fehler aufgetreten";
-    } else if (mainIsActive) {
+    if (isStale && cacheAgeMs > 300000) {
+      // Cache older than 5 minutes
+      status = "offline";
+      statusText = "Sync ausstehend";
+    } else if (mainSession?.isActive) {
       status = "working";
       statusText = "Dieter arbeitet...";
-    } else if (hasActiveSubagents) {
+    } else if (subagents.length > 0) {
       status = "subagents-working";
       statusText = `${subagents.length} Agent${subagents.length > 1 ? "s" : ""} arbeiten`;
     }
     
-    const result: LiveAgentStatus = {
+    return NextResponse.json({
       ok: true,
       timestamp: now,
-      mainSession: mainSession ? {
-        key: mainSession.key,
-        isActive: mainIsActive || false,
-        lastActiveMs: now - mainSession.updatedAt,
-        tokens: mainSession.totalTokens,
-        maxTokens: mainSession.contextTokens || 200000,
-        model: mainSession.model,
-      } : null,
+      mainSession,
       subagents,
-      totalActiveAgents: (mainIsActive ? 1 : 0) + subagents.length,
+      totalActiveAgents: (mainSession?.isActive ? 1 : 0) + subagents.length,
       status,
       statusText,
-    };
-    
-    return NextResponse.json(result, {
+      cacheAgeMs,
+    } as LiveAgentStatus, {
       headers: {
-        // Short cache - this is real-time status
-        "Cache-Control": "public, s-maxage=2, stale-while-revalidate=5",
+        "Cache-Control": "public, s-maxage=3, stale-while-revalidate=10",
       },
     });
   } catch (error) {
     console.error("[LiveStatus] Error:", error);
     
-    // Return offline status on error
     return NextResponse.json({
       ok: false,
       timestamp: Date.now(),
       mainSession: null,
       subagents: [],
       totalActiveAgents: 0,
-      status: "idle",
-      statusText: "Offline",
+      status: "offline",
+      statusText: "Fehler",
+      cacheAgeMs: 0,
       error: error instanceof Error ? error.message : "Unknown error",
     } as LiveAgentStatus & { error: string });
   }

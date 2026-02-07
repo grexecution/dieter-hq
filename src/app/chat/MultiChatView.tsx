@@ -98,7 +98,7 @@ function MessageContent({ content }: { content: string }) {
     // Add text before the image
     if (match.index > lastIndex) {
       parts.push(
-        <span key={key++} className="whitespace-pre-wrap">
+        <span key={key++} className="whitespace-pre-wrap break-words">
           {content.slice(lastIndex, match.index)}
         </span>
       );
@@ -129,7 +129,7 @@ function MessageContent({ content }: { content: string }) {
   // Add remaining text after last image
   if (lastIndex < content.length) {
     parts.push(
-      <span key={key++} className="whitespace-pre-wrap">
+      <span key={key++} className="whitespace-pre-wrap break-words">
         {content.slice(lastIndex)}
       </span>
     );
@@ -137,7 +137,7 @@ function MessageContent({ content }: { content: string }) {
 
   // If no images found, just return the text
   if (parts.length === 0) {
-    return <span className="whitespace-pre-wrap">{content}</span>;
+    return <span className="whitespace-pre-wrap break-words">{content}</span>;
   }
 
   return <>{parts}</>;
@@ -289,7 +289,7 @@ function MessageBubble({ message, artefact, url }: MessageBubbleProps) {
       {/* Bubble */}
       <div
         className={cn(
-          "group relative max-w-[85%] md:max-w-[70%] rounded-2xl px-3.5 py-2.5 md:px-4 md:py-3",
+          "group relative max-w-[85%] md:max-w-[70%] rounded-2xl px-3.5 py-2.5 md:px-4 md:py-3 overflow-hidden",
           isUser
             ? "bg-indigo-50 dark:bg-zinc-700 text-zinc-900 dark:text-zinc-100"
             : "bg-white dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800"
@@ -333,7 +333,7 @@ function MessageBubble({ message, artefact, url }: MessageBubbleProps) {
             )}
           </div>
         ) : (
-          <div className="text-[13px] md:text-[14.5px] leading-relaxed">
+          <div className="text-[13px] md:text-[14.5px] leading-relaxed break-words [overflow-wrap:anywhere]">
             <MessageContent content={meta.text} />
           </div>
         )}

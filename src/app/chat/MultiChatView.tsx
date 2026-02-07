@@ -463,13 +463,16 @@ function Composer({ draft, setDraft, isSending, queueCount, onSubmit, onVoiceTra
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const currentTab = CHAT_TABS.find(tab => tab.id === activeTab);
 
-  // Auto-resize textarea (starts at h-11 = 44px, grows up to 160px)
+  // Auto-resize textarea (min 44px, max 160px)
   useEffect(() => {
     const textarea = textareaRef.current;
     if (textarea) {
-      textarea.style.height = "44px"; // h-11 base height
-      const newHeight = Math.max(44, Math.min(textarea.scrollHeight, 160));
-      textarea.style.height = newHeight + "px";
+      // Reset to min height to get accurate scrollHeight
+      textarea.style.height = "44px";
+      // Only grow if content exceeds min height
+      if (textarea.scrollHeight > 44) {
+        textarea.style.height = Math.min(textarea.scrollHeight, 160) + "px";
+      }
     }
   }, [draft]);
 
@@ -487,7 +490,7 @@ function Composer({ draft, setDraft, isSending, queueCount, onSubmit, onVoiceTra
     >
       <div className="mx-auto w-full max-w-3xl lg:max-w-4xl relative">
         <form
-          className="flex items-end gap-2.5 md:gap-3"
+          className="flex items-center gap-2.5 md:gap-3"
           onSubmit={(e) => {
             e.preventDefault();
             onSubmit();
@@ -508,7 +511,7 @@ function Composer({ draft, setDraft, isSending, queueCount, onSubmit, onVoiceTra
               disabled={isSending}
               className={cn(
                 "w-full resize-none rounded-xl border-0 bg-zinc-100/80 dark:bg-zinc-800/80 backdrop-blur-sm",
-                "h-11 px-4 py-2.5 text-[15px] leading-normal",
+                "min-h-[44px] px-4 py-[10px] text-[15px] leading-6",
                 "placeholder:text-zinc-400 dark:placeholder:text-zinc-500 text-zinc-900 dark:text-zinc-100",
                 "ring-1 ring-zinc-200/50 dark:ring-zinc-700/50",
                 "transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:bg-white dark:focus:bg-zinc-800",

@@ -40,6 +40,7 @@ lerna-debug.log*
 # env files (can opt-in for committing if needed)
 .env
 .env*.local
+.env.production
 
 # local data
 /data/artefacts/

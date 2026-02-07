@@ -39,12 +39,15 @@ const nextConfig: NextConfig = {
           },
           {
             key: "Permissions-Policy",
-            value: "camera=(), microphone=(), geolocation=()",
+            value: "camera=(), microphone=(self), geolocation=()",
           },
         ],
       },
     ];
   },
+
+  // Standalone output for self-hosted deployment (Coolify/Docker)
+  output: "standalone",
 
   // Performance and build optimizations
   poweredByHeader: false,

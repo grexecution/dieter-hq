@@ -1,4 +1,5 @@
 # Multi-stage Dockerfile for production-ready Next.js app
+# Note: Coolify with Nixpacks is preferred. This Dockerfile is a fallback.
 
 # Stage 1: Dependencies
 FROM node:22-alpine AS deps
@@ -21,7 +22,7 @@ COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
 
-# Build application
+# Build application (output: "standalone" in next.config.ts)
 RUN npm run build
 
 # Stage 3: Runner
@@ -35,13 +36,10 @@ ENV NEXT_TELEMETRY_DISABLED=1
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
-# Copy necessary files
+# Copy standalone build output
 COPY --from=builder /app/public ./public
-COPY --from=builder /app/.next/standalone ./
-COPY --from=builder /app/.next/static ./.next/static
-
-# Create data directory for SQLite
-RUN mkdir -p ./data && chown nextjs:nodejs ./data
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
 USER nextjs
 

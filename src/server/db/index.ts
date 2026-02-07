@@ -1,16 +1,19 @@
-import { neon, neonConfig } from "@neondatabase/serverless";
+import { neon } from "@neondatabase/serverless";
 import { drizzle } from "drizzle-orm/neon-http";
 
 import * as schema from "./schema";
 
-// Note: fetchConnectionCache is now always true by default in @neondatabase/serverless
+// Guard: during build, DATABASE_URL may not be set
+const databaseUrl = process.env.DATABASE_URL;
+if (!databaseUrl && process.env.NODE_ENV === "production" && typeof window === "undefined") {
+  console.warn("[DB] DATABASE_URL not set — DB calls will fail at runtime");
+}
 
-const sql = neon(process.env.DATABASE_URL!, {
-  fetchOptions: {
-    cache: "no-store",
-  },
-});
-export const db = drizzle(sql, { schema });
+const sql = databaseUrl
+  ? neon(databaseUrl, { fetchOptions: { cache: "no-store" } })
+  : ((() => { throw new Error("DATABASE_URL is not configured"); }) as never);
+
+export const db = databaseUrl ? drizzle(sql, { schema }) : (null as unknown as ReturnType<typeof drizzle<typeof schema>>);
 
 // Create tables if they don't exist (simple migration for MVP)
 // Initialize tables on first use
@@ -238,4 +241,7 @@ export async function initDb() {
 }
 
 // Auto-initialize on module load (runs once per cold start)
-initDb().catch(console.error);
+// Skip during build when DATABASE_URL is not available
+if (databaseUrl) {
+  initDb().catch(console.error);
+}

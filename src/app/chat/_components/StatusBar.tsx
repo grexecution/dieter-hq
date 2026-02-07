@@ -107,6 +107,7 @@ export function StatusBar({
   const [expanded, setExpanded] = useState(false);
   const [liveStatus, setLiveStatus] = useState<LiveAgentStatus | null>(null);
   const [isPolling, setIsPolling] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Poll live status from Gateway
   const fetchLiveStatus = useCallback(async () => {
@@ -115,14 +116,18 @@ export function StatusBar({
       if (response.ok) {
         const data = await response.json() as LiveAgentStatus;
         setLiveStatus(data);
+        setIsLoading(false);
       }
     } catch (error) {
       console.error("[StatusBar] Failed to fetch live status:", error);
+      setIsLoading(false);
     }
   }, [threadId]);
 
   useEffect(() => {
-    // Initial fetch
+    // Reset loading state on thread change
+    setIsLoading(true);
+    // Immediate fetch on mount or thread change
     fetchLiveStatus();
 
     // Poll every 3 seconds
@@ -137,25 +142,32 @@ export function StatusBar({
 
   // Determine effective activity based on live status and passed prop
   const getEffectiveActivity = (): AgentActivityState => {
-    // If we have explicit activity from props (like "typing" during stream), use it
-    if (agentActivity !== "idle") {
+    // Priority 1: Explicit typing/streaming state from props
+    if (agentActivity === "typing" || agentActivity === "searching") {
       return agentActivity;
     }
 
-    // Check live status
+    // Priority 2: Live status from Gateway API (most accurate for long tasks)
     if (liveStatus?.status === "stuck") return "stuck";
     if (liveStatus?.status === "working") return "thinking";
     if (liveStatus?.status === "subagents-working") return "subagents";
     
+    // Priority 3: Fall back to prop (might be "thinking" from SSE)
+    if (agentActivity !== "idle") {
+      return agentActivity;
+    }
+    
+    // Priority 4: Default idle
     return "idle";
   };
 
-  const effectiveActivity = getEffectiveActivity();
+  // Use loading state to show "checking" while waiting for first fetch
+  const effectiveActivity = isLoading ? "thinking" : getEffectiveActivity();
   const config = ACTIVITY_CONFIG[effectiveActivity];
   const Icon = config.icon;
 
-  // Don't render if hidden
-  if (config.hidden) {
+  // Don't render if hidden (except during loading)
+  if (config.hidden && !isLoading) {
     return null;
   }
 

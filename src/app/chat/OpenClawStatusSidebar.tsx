@@ -7,37 +7,43 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 
-type StatusPayload = {
+// Response from /api/agents/activity
+type ActivityPayload = {
   ok: boolean;
-  live: {
-    current: string;
-    next: string;
-    sinceMs: number | null;
-    updatedAtMs: number | null;
-    statusFile: string;
-  };
-  recent: Array<{
-    ts: number;
-    iso: string;
-    kind: "event";
-    summary: string;
-  }>;
-  details?: {
-    sessions?: { 
-      totalRecent: number; 
-      active: number;
-      isWorking?: boolean;
-      lastActivityMs?: number | null;
-      currentSessionId?: string | null;
+  error?: string;
+  agents: Array<{
+    sessionKey: string;
+    agentId: string;
+    label: string;
+    model: string;
+    status: 'active' | 'idle' | 'error';
+    workspace?: string;
+    task?: string;
+    tokens: {
+      input: number;
+      output: number;
+      total: number;
     };
-    cron?: { enabled: number; nextRunAtMs: number | null };
+    runtimeMs: number;
+    createdAt: string;
+    updatedAt: string;
+    isSubagent: boolean;
+  }>;
+  summary: {
+    total: number;
+    active: number;
+    idle: number;
+    error: number;
+    totalTokens: number;
   };
-  source?: {
-    adapter: string;
+  updatedAt?: string;
+  cache?: {
+    hit: boolean;
+    ageMs: number | null;
   };
 };
 
-function formatRelative(ms: number | null): string {
+function formatRelative(ms: number | null | undefined): string {
   if (!ms) return "—";
   const delta = Date.now() - ms;
   const s = Math.max(0, Math.round(delta / 1000));
@@ -48,25 +54,10 @@ function formatRelative(ms: number | null): string {
   return `${h}h`;
 }
 
-function formatIn(ms: number | null | undefined): string {
-  if (!ms) return "—";
-  const delta = ms - Date.now();
-  const s = Math.round(delta / 1000);
-  if (s <= 0) return "now";
-  if (s < 60) return `in ${s}s`;
-  const m = Math.round(s / 60);
-  if (m < 60) return `in ${m}m`;
-  const h = Math.round(m / 60);
-  return `in ${h}h`;
-}
-
-function fmtTime(ms: number | null): string {
-  if (!ms) return "—";
-  return new Intl.DateTimeFormat("de-AT", {
-    hour: "2-digit",
-    minute: "2-digit",
-    timeZone: "Europe/Vienna",
-  }).format(new Date(ms));
+function formatTokens(n: number): string {
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
+  if (n >= 1_000) return `${(n / 1_000).toFixed(1)}k`;
+  return String(n);
 }
 
 export function OpenClawStatusSidebar({
@@ -74,7 +65,7 @@ export function OpenClawStatusSidebar({
 }: {
   logoutAction: (formData: FormData) => void;
 }) {
-  const [data, setData] = useState<StatusPayload | null>(null);
+  const [data, setData] = useState<ActivityPayload | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -82,12 +73,12 @@ export function OpenClawStatusSidebar({
 
     const tick = async () => {
       try {
-        const r = await fetch("/api/openclaw/status", { cache: "no-store" });
+        const r = await fetch("/api/agents/activity", { cache: "no-store" });
         if (!r.ok) throw new Error(`status_${r.status}`);
-        const json = (await r.json()) as StatusPayload;
+        const json = (await r.json()) as ActivityPayload;
         if (!cancelled) {
           setData(json);
-          setError(null);
+          setError(json.ok ? null : (json.error || "Unknown error"));
         }
       } catch (e) {
         if (!cancelled) setError(String(e));
@@ -103,25 +94,36 @@ export function OpenClawStatusSidebar({
   }, []);
 
   const headerMeta = useMemo(() => {
-    const active = data?.details?.sessions?.active ?? 0;
-    const isWorking = data?.details?.sessions?.isWorking ?? false;
-    const lastActivityMs = data?.details?.sessions?.lastActivityMs ?? null;
-    const cronEnabled = data?.details?.cron?.enabled ?? 0;
+    const active = data?.summary?.active ?? 0;
+    const total = data?.summary?.total ?? 0;
+    const isWorking = active > 0;
+    const cacheAgeMs = data?.cache?.ageMs ?? null;
+    
     return {
-      sessionsLabel: isWorking ? "working..." : (active ? `${active} active` : "idle"),
-      cronLabel: cronEnabled ? `${cronEnabled} cron` : "no cron",
-      nextCronIn: formatIn(data?.details?.cron?.nextRunAtMs),
+      sessionsLabel: isWorking ? `${active} working` : (total > 0 ? `${total} idle` : "no sessions"),
       isWorking,
-      lastActivity: formatRelative(lastActivityMs),
+      lastUpdate: formatRelative(cacheAgeMs ? Date.now() - cacheAgeMs : null),
+      totalTokens: data?.summary?.totalTokens ?? 0,
     };
-  }, [data?.details]);
-
-  const current = data?.live?.current ?? "—";
-  const next = data?.live?.next ?? "—";
-  const sinceMs = data?.live?.sinceMs ?? null;
-  const updatedAtMs = data?.live?.updatedAtMs ?? null;
+  }, [data]);
 
   const isWorking = headerMeta.isWorking;
+
+  // Get active agents for display
+  const activeAgents = useMemo(() => {
+    if (!data?.agents) return [];
+    return data.agents
+      .filter(a => a.status === 'active')
+      .slice(0, 3);
+  }, [data?.agents]);
+
+  // Get recent agents (idle but recent)
+  const recentAgents = useMemo(() => {
+    if (!data?.agents) return [];
+    return data.agents
+      .filter(a => a.status === 'idle')
+      .slice(0, 5);
+  }, [data?.agents]);
 
   return (
     <aside className={cn(
@@ -154,9 +156,7 @@ export function OpenClawStatusSidebar({
             "mt-0.5 text-xs transition-colors",
             isWorking ? "text-amber-600 dark:text-amber-400/80" : "text-zinc-500 dark:text-zinc-400"
           )}>
-            {headerMeta.sessionsLabel} • {headerMeta.cronLabel}
-            {headerMeta.nextCronIn !== "—" ? ` • next ${headerMeta.nextCronIn}` : ""}
-            {headerMeta.lastActivity !== "—" ? ` • ${headerMeta.lastActivity}` : ""}
+            {headerMeta.sessionsLabel} • {formatTokens(headerMeta.totalTokens)} tokens
           </div>
         </div>
         <form action={logoutAction}>
@@ -170,103 +170,126 @@ export function OpenClawStatusSidebar({
 
       <ScrollArea className="h-[calc(100dvh-200px)] pr-3">
         <div className="space-y-6">
-          {/* NOW */}
-          <section className="space-y-2.5">
-            <div className="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
-              NOW
-            </div>
-
-            <div className="rounded-xl border border-zinc-200/70 bg-white/70 p-3.5 dark:border-zinc-800 dark:bg-zinc-950/40">
-              <div className="relative overflow-hidden">
-                <div
-                  className={cn(
-                    "pointer-events-none absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent",
-                    "bg-[length:200%_100%] opacity-60 dark:via-zinc-950/30",
-                    "animate-shimmer",
-                  )}
-                />
-
-                <div className="relative">
-                  <div className="text-xs text-zinc-500 dark:text-zinc-400">Working on</div>
-                  <div className="mt-1 flex items-start justify-between gap-3">
-                    <div className="min-w-0 text-base font-semibold leading-snug">
-                      <span className="text-zinc-900 dark:text-zinc-50">{current}</span>
-                    </div>
-                    <div className="shrink-0 text-right text-[11px] text-zinc-500 dark:text-zinc-400">
-                      <div>since {formatRelative(sinceMs)}</div>
-                      <div>{fmtTime(sinceMs)}</div>
-                    </div>
-                  </div>
-
-                  <div className="mt-2 text-xs text-zinc-600 dark:text-zinc-300">
-                    <span className="font-medium text-zinc-700 dark:text-zinc-200">Next:</span> {next}
-                  </div>
-
-                  <div className="mt-2 text-[11px] text-zinc-500 dark:text-zinc-400">
-                    updated {formatRelative(updatedAtMs)} ago • {fmtTime(updatedAtMs)}
-                  </div>
-
-                  {error ? (
-                    <div className="mt-2 text-xs text-rose-600 dark:text-rose-400">
-                      Failed to load: {error}
-                    </div>
-                  ) : null}
-                </div>
+          {/* Active Agents */}
+          {activeAgents.length > 0 && (
+            <section className="space-y-2.5">
+              <div className="text-xs font-semibold uppercase tracking-wider text-amber-600 dark:text-amber-400">
+                Active Now
               </div>
-            </div>
-          </section>
 
-          {/* RECENT */}
+              <div className="grid gap-2">
+                {activeAgents.map((agent) => (
+                  <div
+                    key={agent.sessionKey}
+                    className="relative rounded-xl border border-amber-300/70 bg-amber-50/70 p-3 text-xs dark:border-amber-700 dark:bg-amber-950/40"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="h-2 w-2 rounded-full bg-amber-500 animate-pulse" />
+                          <div className="font-medium text-amber-800 dark:text-amber-200">
+                            {agent.label}
+                          </div>
+                        </div>
+                        {agent.task && (
+                          <div className="mt-1 text-amber-700/80 dark:text-amber-300/80 line-clamp-2">
+                            {agent.task}
+                          </div>
+                        )}
+                      </div>
+                      <div className="shrink-0 text-[11px] text-amber-600 dark:text-amber-400">
+                        {formatTokens(agent.tokens.total)}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* Recent Sessions */}
           <section className="space-y-2.5">
             <div className="flex items-center justify-between">
               <div className="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
                 Recent
               </div>
-              <details className="group">
-                <summary className="cursor-pointer select-none text-[11px] text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200">
-                  Details
-                </summary>
-                <div className="mt-2 rounded-lg border border-zinc-200/70 bg-white/70 p-2 text-[11px] text-zinc-600 dark:border-zinc-800 dark:bg-zinc-950/40 dark:text-zinc-300">
-                  <div className="flex items-center justify-between gap-2">
-                    <div>Sessions: {data?.details?.sessions?.active ?? 0} active</div>
-                    <div className="text-zinc-500 dark:text-zinc-400">
-                      (full list coming soon)
-                    </div>
-                  </div>
-                  <div className="mt-1">
-                    Cron: {data?.details?.cron?.enabled ?? 0} enabled • next {formatIn(data?.details?.cron?.nextRunAtMs)}
-                  </div>
-                </div>
-              </details>
+              <div className="text-[11px] text-zinc-400 dark:text-zinc-500">
+                {data?.cache?.ageMs ? `${Math.round(data.cache.ageMs / 1000)}s ago` : "—"}
+              </div>
             </div>
 
             <div className="grid gap-2">
-              {(data?.recent ?? []).slice(0, 10).map((t, idx) => (
+              {recentAgents.map((agent) => (
                 <div
-                  key={`${t.iso}-${idx}`}
+                  key={agent.sessionKey}
                   className="relative rounded-xl border border-zinc-200/70 bg-white/70 p-3 text-xs dark:border-zinc-800 dark:bg-zinc-950/40"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
                       <div className="flex items-center gap-2">
-                        <span className="h-1.5 w-1.5 rounded-full bg-zinc-400/70 dark:bg-zinc-500" />
-                        <div className="font-medium text-zinc-800 dark:text-zinc-200">{t.summary}</div>
+                        <span className={cn(
+                          "h-1.5 w-1.5 rounded-full",
+                          agent.status === 'error' ? "bg-red-500" : "bg-zinc-400/70 dark:bg-zinc-500"
+                        )} />
+                        <div className="font-medium text-zinc-800 dark:text-zinc-200">
+                          {agent.label}
+                        </div>
                       </div>
+                      {agent.task && (
+                        <div className="mt-1 text-zinc-500 dark:text-zinc-400 line-clamp-1">
+                          {agent.task}
+                        </div>
+                      )}
                     </div>
                     <div className="shrink-0 text-[11px] text-zinc-500 dark:text-zinc-400">
-                      {formatRelative(t.ts)}
+                      {formatRelative(new Date(agent.updatedAt).getTime())}
                     </div>
                   </div>
                 </div>
               ))}
 
-              {!data?.recent?.length ? (
+              {recentAgents.length === 0 && !isWorking && (
                 <div className="rounded-xl border border-dashed border-zinc-200 bg-white/40 p-3 text-xs text-zinc-500 dark:border-zinc-800 dark:bg-zinc-950/30 dark:text-zinc-400">
-                  No recent actions.
+                  {error ? `Error: ${error}` : "No recent activity."}
                 </div>
-              ) : null}
+              )}
             </div>
           </section>
+
+          {/* Stats */}
+          {data?.summary && (
+            <section className="space-y-2.5">
+              <div className="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+                Stats
+              </div>
+              <div className="rounded-xl border border-zinc-200/70 bg-white/70 p-3 text-xs dark:border-zinc-800 dark:bg-zinc-950/40">
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <div className="text-zinc-500 dark:text-zinc-400">Sessions</div>
+                    <div className="font-medium text-zinc-800 dark:text-zinc-200">{data.summary.total}</div>
+                  </div>
+                  <div>
+                    <div className="text-zinc-500 dark:text-zinc-400">Active</div>
+                    <div className={cn(
+                      "font-medium",
+                      data.summary.active > 0 ? "text-amber-600 dark:text-amber-400" : "text-zinc-800 dark:text-zinc-200"
+                    )}>{data.summary.active}</div>
+                  </div>
+                  <div>
+                    <div className="text-zinc-500 dark:text-zinc-400">Total Tokens</div>
+                    <div className="font-medium text-zinc-800 dark:text-zinc-200">{formatTokens(data.summary.totalTokens)}</div>
+                  </div>
+                  <div>
+                    <div className="text-zinc-500 dark:text-zinc-400">Errors</div>
+                    <div className={cn(
+                      "font-medium",
+                      data.summary.error > 0 ? "text-red-600 dark:text-red-400" : "text-zinc-800 dark:text-zinc-200"
+                    )}>{data.summary.error}</div>
+                  </div>
+                </div>
+              </div>
+            </section>
+          )}
         </div>
       </ScrollArea>
     </aside>

@@ -1194,7 +1194,7 @@ export function MultiChatView({
 
   return (
     <div className={cn(
-      "grid gap-4 lg:gap-5 lg:px-4 lg:py-3",
+      "grid lg:gap-5 lg:px-4 lg:py-3",
       subagentPanelCollapsed
         ? "lg:grid-cols-[300px_1fr_auto]"
         : "lg:grid-cols-[300px_1fr_280px]"

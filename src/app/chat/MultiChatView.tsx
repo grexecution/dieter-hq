@@ -445,23 +445,32 @@ function ChatContent({ activeTab, messages, artefactsById, isTranscribing, isSen
 // Chat Composer Section
 // ============================================
 
+const MAX_QUEUE_SIZE = 4;
+
 interface ComposerProps {
   draft: string;
   setDraft: (value: string) => void;
   isSending: boolean;
-  queueCount: number;
+  queue: string[];
   onSubmit: () => void;
   onVoiceTranscript: (transcript: string) => void;
   onVoiceMessage: (message: MessageRow) => void | Promise<void>;
   onTranscriptionStart: () => void;
   onTranscriptionEnd: () => void;
+  onQueueEdit: (index: number, newText: string) => void;
+  onQueueDelete: (index: number) => void;
   threadId: string;
   activeTab: string;
 }
 
-function Composer({ draft, setDraft, isSending, queueCount, onSubmit, onVoiceTranscript, onVoiceMessage, onTranscriptionStart, onTranscriptionEnd, threadId, activeTab }: ComposerProps) {
+function Composer({ draft, setDraft, isSending, queue, onSubmit, onVoiceTranscript, onVoiceMessage, onTranscriptionStart, onTranscriptionEnd, onQueueEdit, onQueueDelete, threadId, activeTab }: ComposerProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const currentTab = CHAT_TABS.find(tab => tab.id === activeTab);
+  const [queueModalOpen, setQueueModalOpen] = useState(false);
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
+  const [editText, setEditText] = useState("");
+  const queueCount = queue.length;
+  const isQueueFull = queueCount >= MAX_QUEUE_SIZE;
 
   // Auto-resize textarea (min 44px, max 160px)
   useEffect(() => {
@@ -535,14 +544,133 @@ function Composer({ draft, setDraft, isSending, queueCount, onSubmit, onVoiceTra
         <div className="mt-2 flex items-center justify-center gap-3">
           <p className="hidden md:block text-[11px] text-zinc-400 dark:text-zinc-500">
             {currentTab?.emoji} {currentTab?.name} · Enter zum Senden
+            {isQueueFull && " · Queue voll"}
           </p>
           {queueCount > 0 && (
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-indigo-100 dark:bg-indigo-900/50 px-2.5 py-0.5 text-[10px] md:text-[11px] font-medium text-indigo-700 dark:text-indigo-300">
+            <button
+              type="button"
+              onClick={() => setQueueModalOpen(true)}
+              className="inline-flex items-center gap-1.5 rounded-full bg-indigo-100 dark:bg-indigo-900/50 px-2.5 py-0.5 text-[10px] md:text-[11px] font-medium text-indigo-700 dark:text-indigo-300 hover:bg-indigo-200 dark:hover:bg-indigo-800/50 transition-colors"
+            >
               <span className="h-1.5 w-1.5 rounded-full bg-indigo-500 animate-pulse" />
-              {queueCount} in Warteschlange
-            </span>
+              {queueCount}/{MAX_QUEUE_SIZE} in Warteschlange
+            </button>
           )}
         </div>
+
+        {/* Queue Modal */}
+        {queueModalOpen && (
+          <div 
+            className="fixed inset-0 z-50 flex items-end md:items-center justify-center bg-black/50 backdrop-blur-sm"
+            onClick={() => setQueueModalOpen(false)}
+          >
+            <div 
+              className="w-full max-w-md mx-4 mb-4 md:mb-0 rounded-2xl bg-white dark:bg-zinc-900 shadow-xl border border-zinc-200 dark:border-zinc-800 overflow-hidden"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Header */}
+              <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-200 dark:border-zinc-800">
+                <h3 className="font-semibold text-zinc-900 dark:text-zinc-100">
+                  Warteschlange ({queueCount}/{MAX_QUEUE_SIZE})
+                </h3>
+                <button
+                  onClick={() => setQueueModalOpen(false)}
+                  className="p-1 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+                >
+                  <span className="sr-only">Schließen</span>
+                  <svg className="h-5 w-5 text-zinc-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+
+              {/* Queue Items */}
+              <div className="max-h-[50vh] overflow-y-auto p-2">
+                {queue.length === 0 ? (
+                  <p className="text-center text-sm text-zinc-500 py-8">Keine Messages in der Warteschlange</p>
+                ) : (
+                  <div className="space-y-2">
+                    {queue.map((msg, index) => (
+                      <div 
+                        key={index}
+                        className="flex items-start gap-2 p-3 rounded-xl bg-zinc-50 dark:bg-zinc-800/50"
+                      >
+                        <span className="flex-none w-5 h-5 rounded-full bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 text-xs font-medium flex items-center justify-center">
+                          {index + 1}
+                        </span>
+                        
+                        {editingIndex === index ? (
+                          <div className="flex-1 min-w-0">
+                            <textarea
+                              value={editText}
+                              onChange={(e) => setEditText(e.target.value)}
+                              className="w-full p-2 text-sm rounded-lg border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-zinc-800 resize-none"
+                              rows={2}
+                              autoFocus
+                            />
+                            <div className="flex gap-2 mt-2">
+                              <button
+                                onClick={() => {
+                                  onQueueEdit(index, editText);
+                                  setEditingIndex(null);
+                                }}
+                                className="px-3 py-1 text-xs font-medium rounded-lg bg-indigo-500 text-white hover:bg-indigo-600"
+                              >
+                                Speichern
+                              </button>
+                              <button
+                                onClick={() => setEditingIndex(null)}
+                                className="px-3 py-1 text-xs font-medium rounded-lg bg-zinc-200 dark:bg-zinc-700 hover:bg-zinc-300 dark:hover:bg-zinc-600"
+                              >
+                                Abbrechen
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          <>
+                            <p className="flex-1 min-w-0 text-sm text-zinc-700 dark:text-zinc-300 line-clamp-3 break-words">
+                              {msg}
+                            </p>
+                            <div className="flex-none flex gap-1">
+                              <button
+                                onClick={() => {
+                                  setEditText(msg);
+                                  setEditingIndex(index);
+                                }}
+                                className="p-1.5 rounded-lg hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 transition-colors"
+                                title="Bearbeiten"
+                              >
+                                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                </svg>
+                              </button>
+                              <button
+                                onClick={() => onQueueDelete(index)}
+                                className="p-1.5 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/30 text-zinc-500 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+                                title="Löschen"
+                              >
+                                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg>
+                              </button>
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Footer */}
+              <div className="px-4 py-3 border-t border-zinc-200 dark:border-zinc-800 text-center">
+                <p className="text-xs text-zinc-500">
+                  Messages werden der Reihe nach gesendet
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -820,9 +948,14 @@ export function MultiChatView({
     if (!content) return;
 
     const threadId = effectiveThreadId;
+    const currentQueue = messageQueue[threadId] || [];
 
-    // If currently sending, queue the message
+    // If currently sending, queue the message (if not full)
     if (sendingStates[threadId]) {
+      if (currentQueue.length >= MAX_QUEUE_SIZE) {
+        // Queue is full, don't add more
+        return;
+      }
       setMessageQueue(prev => ({
         ...prev,
         [threadId]: [...(prev[threadId] || []), content]
@@ -835,6 +968,27 @@ export function MultiChatView({
     setDrafts(prev => ({ ...prev, [threadId]: "" }));
     await sendMessage(content, threadId);
   };
+
+  // Queue management functions
+  const handleQueueEdit = useCallback((index: number, newText: string) => {
+    const threadId = effectiveThreadId;
+    setMessageQueue(prev => {
+      const queue = [...(prev[threadId] || [])];
+      if (index >= 0 && index < queue.length) {
+        queue[index] = newText;
+      }
+      return { ...prev, [threadId]: queue };
+    });
+  }, [effectiveThreadId]);
+
+  const handleQueueDelete = useCallback((index: number) => {
+    const threadId = effectiveThreadId;
+    setMessageQueue(prev => {
+      const queue = [...(prev[threadId] || [])];
+      queue.splice(index, 1);
+      return { ...prev, [threadId]: queue };
+    });
+  }, [effectiveThreadId]);
 
   // Handle suggestion clicks (quick actions after assistant messages)
   const handleSuggestionClick = useCallback(async (suggestion: ChatSuggestion) => {
@@ -1148,8 +1302,10 @@ export function MultiChatView({
               draft={currentDraft}
               setDraft={setDraft}
               isSending={isSending}
-              queueCount={(messageQueue[effectiveThreadId] || []).length}
+              queue={messageQueue[effectiveThreadId] || []}
               onSubmit={handleSend}
+              onQueueEdit={handleQueueEdit}
+              onQueueDelete={handleQueueDelete}
               onVoiceTranscript={(transcript) => setDraft(transcript)}
               onVoiceMessage={async (message) => {
                 console.log("[Voice] onVoiceMessage called:", { id: message.id, hasAudioUrl: !!message.audioUrl, transcription: message.transcription?.slice(0, 50), threadId: effectiveThreadId });

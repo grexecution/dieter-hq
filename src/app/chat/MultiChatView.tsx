@@ -506,16 +506,16 @@ function Composer({ draft, setDraft, isSending, queueCount, onSubmit, onVoiceTra
               value={draft}
               onChange={(e) => setDraft(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="Nachricht..."
+              placeholder={isSending ? "Zur Queue hinzufügen..." : "Nachricht..."}
               rows={1}
-              disabled={isSending}
               className={cn(
-                "w-full resize-none rounded-xl border-0 bg-zinc-100/80 dark:bg-zinc-800/80 backdrop-blur-sm",
+                "w-full resize-none rounded-xl border-0 backdrop-blur-sm",
                 "min-h-[44px] px-4 py-[10px] text-[15px] leading-6",
                 "placeholder:text-zinc-400 dark:placeholder:text-zinc-500 text-zinc-900 dark:text-zinc-100",
-                "ring-1 ring-zinc-200/50 dark:ring-zinc-700/50",
-                "transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:bg-white dark:focus:bg-zinc-800",
-                "disabled:opacity-50"
+                "ring-1 transition-all duration-200 focus:outline-none focus:ring-2",
+                isSending
+                  ? "bg-indigo-50/80 dark:bg-indigo-950/30 ring-indigo-200/50 dark:ring-indigo-700/50 focus:ring-indigo-400/50"
+                  : "bg-zinc-100/80 dark:bg-zinc-800/80 ring-zinc-200/50 dark:ring-zinc-700/50 focus:ring-indigo-500/50 focus:bg-white dark:focus:bg-zinc-800"
               )}
             />
           </div>

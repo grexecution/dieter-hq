@@ -13,7 +13,7 @@ import { ChatComposer } from "./ChatComposer";
 // import { NowBar } from "./NowBar"; // TODO: make functional before re-enabling
 import { OpenClawStatusSidebar } from "./OpenClawStatusSidebar";
 import { DieterAvatar } from "./DieterAvatar";
-import { StatusBar } from "./_components/StatusBar";
+import { StatusBar, type AgentActivityState } from "./_components/StatusBar";
 import { SubagentPanel } from "./_components/SubagentPanel";
 import { WorkspaceManager, type WorkspaceProject } from "./_components/WorkspaceManager";
 import { ChatSuggestions, type ChatSuggestion } from "./_components/ChatSuggestions";
@@ -698,6 +698,9 @@ export function MultiChatView({
   // Voice transcription status per thread
   const [transcribingStates, setTranscribingStates] = useState<Record<string, boolean>>({});
   
+  // Agent activity state per thread (what Dieter is doing)
+  const [agentActivityStates, setAgentActivityStates] = useState<Record<string, AgentActivityState>>({});
+  
   // Workspace state (for Dev tab)
   const [activeProject, setActiveProject] = useState<WorkspaceProject | null>(null);
   const [workspaceProjects, setWorkspaceProjects] = useState<WorkspaceProject[]>([]);
@@ -760,6 +763,7 @@ export function MultiChatView({
   const currentMessages = liveMessages[effectiveThreadId] || [];
   const currentDraft = drafts[effectiveThreadId] || "";
   const isSending = sendingStates[effectiveThreadId] || false;
+  const currentAgentActivity: AgentActivityState = agentActivityStates[effectiveThreadId] || "idle";
 
   // Calculate thread counts for tab navigation
   const threadCounts = useMemo(() => {
@@ -849,6 +853,8 @@ export function MultiChatView({
     if (!content.trim()) return;
 
     setSendingStates(prev => ({ ...prev, [threadId]: true }));
+    // Start with "thinking" state
+    setAgentActivityStates(prev => ({ ...prev, [threadId]: "thinking" }));
 
     try {
       const r = await fetch("/api/chat/send", {
@@ -887,6 +893,8 @@ export function MultiChatView({
             const event = JSON.parse(payload);
 
             if (event.type === "user_confirmed" && event.item) {
+              // User message confirmed - Dieter is now typing response
+              setAgentActivityStates(prev => ({ ...prev, [threadId]: "typing" }));
               // Add user message to chat
               setLiveMessages((prev) => ({
                 ...prev,
@@ -899,6 +907,8 @@ export function MultiChatView({
                 lastMessageTimestampsRef.current[threadId] = event.item.createdAt;
               }
             } else if (event.type === "done" && event.item) {
+              // Response complete - back to idle
+              setAgentActivityStates(prev => ({ ...prev, [threadId]: "idle" }));
               // Add complete assistant message
               setLiveMessages((prev) => ({
                 ...prev,
@@ -918,6 +928,12 @@ export function MultiChatView({
       }
     } catch (err) {
       console.error("Send failed:", err);
+      // Set stuck state on error
+      setAgentActivityStates(prev => ({ ...prev, [threadId]: "stuck" }));
+      // Auto-recover to idle after 5 seconds
+      setTimeout(() => {
+        setAgentActivityStates(prev => ({ ...prev, [threadId]: "idle" }));
+      }, 5000);
     } finally {
       // Mark sending as done
       setSendingStates(prev => ({ ...prev, [threadId]: false }));
@@ -1267,8 +1283,8 @@ export function MultiChatView({
           </div>
         </header>
 
-        {/* Live Status Bar */}
-        <StatusBar />
+        {/* Live Status Bar - always shows what Dieter is doing */}
+        <StatusBar agentActivity={currentAgentActivity} />
 
         {/* Tab Navigation */}
         <TabNavigation 

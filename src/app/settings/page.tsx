@@ -26,6 +26,7 @@ import { useTheme } from "next-themes";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Haptics } from "@/lib/haptics";
 
 // Helper to convert VAPID key
 function urlBase64ToUint8Array(base64String: string): Uint8Array {
@@ -395,7 +396,10 @@ export default function SettingsPage() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                  onClick={() => {
+                    Haptics.selection();
+                    setTheme(theme === "dark" ? "light" : "dark");
+                  }}
                 >
                   {theme === "dark" ? <Sun className="h-4 w-4 mr-2" /> : <Moon className="h-4 w-4 mr-2" />}
                   {theme === "dark" ? "Light" : "Dark"}

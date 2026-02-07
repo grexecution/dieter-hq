@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Mic, Square, Send, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Haptics } from "@/lib/haptics";
 
 // ============================================
 // Types
@@ -352,7 +353,10 @@ export function VoiceRecorder({ onTranscript, onVoiceMessage, onTranscriptionSta
         {/* Cancel button */}
         <button
           type="button"
-          onClick={cancelRecording}
+          onClick={() => {
+            Haptics.light();
+            cancelRecording();
+          }}
           className="flex h-7 w-7 items-center justify-center rounded-lg bg-zinc-200 text-zinc-600 transition-colors hover:bg-zinc-300 dark:bg-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-600"
           title="Abbrechen"
         >
@@ -362,7 +366,10 @@ export function VoiceRecorder({ onTranscript, onVoiceMessage, onTranscriptionSta
         {/* Send button */}
         <button
           type="button"
-          onClick={sendRecording}
+          onClick={() => {
+            Haptics.success();
+            sendRecording();
+          }}
           className="flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-500 text-white transition-colors hover:bg-indigo-600"
           title="Senden"
         >
@@ -400,6 +407,7 @@ export function VoiceRecorder({ onTranscript, onVoiceMessage, onTranscriptionSta
         e.stopPropagation();
         console.log("[VoiceRecorder] Mic button clicked, disabled:", disabled);
         if (!disabled) {
+          Haptics.medium(); // Haptic feedback on record start
           startRecording();
         }
       }}

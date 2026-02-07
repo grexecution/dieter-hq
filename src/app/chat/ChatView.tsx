@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
+import { Haptics } from "@/lib/haptics";
 
 import { ChatComposer } from "./ChatComposer";
 import { NowBar } from "./NowBar";
@@ -258,6 +259,7 @@ function Composer({ draft, setDraft, isSending, onSubmit, onVoiceTranscript, onV
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
+      Haptics.light(); // Haptic on Enter send
       onSubmit();
     }
   };
@@ -269,6 +271,7 @@ function Composer({ draft, setDraft, isSending, onSubmit, onVoiceTranscript, onV
           className="flex items-end gap-3"
           onSubmit={(e) => {
             e.preventDefault();
+            Haptics.medium(); // Haptic on button send
             onSubmit();
           }}
         >

@@ -151,6 +151,13 @@ export function VoiceRecorder({ onTranscript, onVoiceMessage, onTranscriptionSta
     chunksRef.current = [];
   }, []);
 
+  // Check if running as iOS PWA (standalone mode)
+  const isIOSPWA = useCallback(() => {
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    const isStandalone = (window.navigator as unknown as { standalone?: boolean }).standalone === true;
+    return isIOS && isStandalone;
+  }, []);
+
   // Start recording (tap to start)
   const startRecording = useCallback(async () => {
     console.log("[VoiceRecorder] startRecording called, disabled:", disabled, "state:", state);
@@ -164,8 +171,20 @@ export function VoiceRecorder({ onTranscript, onVoiceMessage, onTranscriptionSta
       return;
     }
 
+    // Check if mediaDevices is available
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      alert("Mikrofon wird auf diesem Gerät/Browser nicht unterstützt.");
+      return;
+    }
+
     try {
       console.log("[VoiceRecorder] Requesting microphone access...");
+      
+      // On iOS PWA, we need to handle permission differently
+      if (isIOSPWA()) {
+        console.log("[VoiceRecorder] Detected iOS PWA mode");
+      }
+      
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: {
           echoCancellation: true,
@@ -206,8 +225,21 @@ export function VoiceRecorder({ onTranscript, onVoiceMessage, onTranscriptionSta
       console.error("[VoiceRecorder] Failed to start recording:", err);
       // Show user-friendly error
       if (err instanceof Error) {
-        if (err.name === "NotAllowedError") {
-          alert("Mikrofon-Zugriff verweigert. Bitte in Browser-Einstellungen erlauben.");
+        if (err.name === "NotAllowedError" || err.name === "NotReadableError") {
+          if (isIOSPWA()) {
+            // iOS PWA specific message
+            alert(
+              "🎤 Mikrofon-Zugriff in PWA nicht verfügbar.\n\n" +
+              "Lösung für iOS:\n" +
+              "1. Diese Seite in Safari öffnen (nicht in der App)\n" +
+              "2. Mikrofon dort erlauben\n" +
+              "3. App vom Home-Bildschirm löschen\n" +
+              "4. In Safari: Teilen → Zum Home-Bildschirm\n\n" +
+              "Oder: Sprachnachricht direkt in Safari aufnehmen."
+            );
+          } else {
+            alert("Mikrofon-Zugriff verweigert. Bitte in Browser-Einstellungen erlauben.");
+          }
         } else if (err.name === "NotFoundError") {
           alert("Kein Mikrofon gefunden.");
         } else {
@@ -216,7 +248,7 @@ export function VoiceRecorder({ onTranscript, onVoiceMessage, onTranscriptionSta
       }
       cleanup();
     }
-  }, [disabled, state, cleanup]);
+  }, [disabled, state, cleanup, isIOSPWA]);
 
   // Cancel recording
   const cancelRecording = useCallback(() => {

@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { cn } from "@/lib/utils";
@@ -9,7 +10,26 @@ interface MarkdownContentProps {
   className?: string;
 }
 
+/**
+ * Pre-process content to convert MEDIA: tags to markdown images
+ * MEDIA:/path/to/file.png → ![Screenshot](/api/media?path=/path/to/file.png)
+ * Note: We don't encode the path here - the browser/fetch will handle it
+ */
+function preprocessContent(content: string): string {
+  // Match MEDIA: tags - supports absolute paths and ~/paths
+  const mediaPattern = /MEDIA:((?:\/[^\s\n\]]+|~\/[^\s\n\]]+))/g;
+  
+  return content.replace(mediaPattern, (_match, filePath) => {
+    // Don't double-encode - just pass the path directly
+    const mediaUrl = `/api/media?path=${filePath}`;
+    return `![Screenshot](${mediaUrl})`;
+  });
+}
+
 export function MarkdownContent({ content, className }: MarkdownContentProps) {
+  // Pre-process content to handle MEDIA: tags
+  const processedContent = useMemo(() => preprocessContent(content), [content]);
+  
   return (
     <ReactMarkdown
       className={cn("prose prose-sm dark:prose-invert max-w-none", className)}
@@ -146,7 +166,7 @@ export function MarkdownContent({ content, className }: MarkdownContentProps) {
         ),
       }}
     >
-      {content}
+      {processedContent}
     </ReactMarkdown>
   );
 }

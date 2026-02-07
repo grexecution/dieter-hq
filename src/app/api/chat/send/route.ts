@@ -21,8 +21,8 @@ async function processImagesInContent(content: string, threadId: string): Promis
   while ((mediaMatch = mediaPattern.exec(content)) !== null) {
     const [fullMatch, filePath] = mediaMatch;
     
-    // Convert to API URL - the /api/media route will serve the file
-    const mediaUrl = `/api/media?path=${encodeURIComponent(filePath)}`;
+    // Convert to API URL - don't encode, browser handles it
+    const mediaUrl = `/api/media?path=${filePath}`;
     
     // Replace MEDIA: tag with markdown image
     result = result.replace(fullMatch, `![Screenshot](${mediaUrl})`);

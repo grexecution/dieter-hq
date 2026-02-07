@@ -628,10 +628,10 @@ p {
       z-index: 9999;
     }
     
-    /* Ensure body has padding for status bar */
-    body {
-      padding-top: env(safe-area-inset-top);
-    }
+    /* NOTE: Removed body padding-top here.
+       Pages with fixed headers (ChatShell, AppShell) handle safe-area
+       themselves via pt-[calc(3.5rem+env(safe-area-inset-top))].
+       Adding body padding caused a double gap on mobile PWA. */
   }
 }
 

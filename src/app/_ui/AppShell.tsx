@@ -17,7 +17,7 @@ import { cn } from "@/lib/utils";
 const NAV_ITEMS = [
   { href: "/", icon: Home, label: "Home", id: "home" },
   { href: "/chat", icon: MessageCircle, label: "Chat", id: "chat" },
-  { href: "/calendar", icon: Calendar, label: "Calendar", id: "calendar" },
+  { href: "/calendar", icon: Calendar, label: "Kalender", id: "calendar" },
   { href: "/kanban", icon: LayoutGrid, label: "Tasks", id: "kanban" },
 ] as const;
 

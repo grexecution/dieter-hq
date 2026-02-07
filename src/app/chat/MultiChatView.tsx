@@ -85,6 +85,64 @@ function isAudioMime(m: string): boolean {
   return m.startsWith("audio/") || m === "video/webm";
 }
 
+// Render message content with markdown image support
+function MessageContent({ content }: { content: string }) {
+  // Parse markdown images: ![alt](url)
+  const imagePattern = /!\[([^\]]*)\]\(([^)]+)\)/g;
+  const parts: React.ReactNode[] = [];
+  let lastIndex = 0;
+  let match;
+  let key = 0;
+
+  while ((match = imagePattern.exec(content)) !== null) {
+    // Add text before the image
+    if (match.index > lastIndex) {
+      parts.push(
+        <span key={key++} className="whitespace-pre-wrap">
+          {content.slice(lastIndex, match.index)}
+        </span>
+      );
+    }
+
+    const [, alt, url] = match;
+    
+    // Render the image
+    parts.push(
+      <div key={key++} className="my-2">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={url}
+          alt={alt || "Image"}
+          className="max-w-full max-h-[400px] w-auto rounded-xl border border-zinc-200 dark:border-zinc-700 cursor-pointer hover:opacity-90 transition-opacity"
+          onClick={() => window.open(url, "_blank")}
+          loading="lazy"
+        />
+        {alt && alt !== "Image" && alt !== "Screenshot" && (
+          <p className="text-[10px] text-zinc-500 mt-1">{alt}</p>
+        )}
+      </div>
+    );
+
+    lastIndex = match.index + match[0].length;
+  }
+
+  // Add remaining text after last image
+  if (lastIndex < content.length) {
+    parts.push(
+      <span key={key++} className="whitespace-pre-wrap">
+        {content.slice(lastIndex)}
+      </span>
+    );
+  }
+
+  // If no images found, just return the text
+  if (parts.length === 0) {
+    return <span className="whitespace-pre-wrap">{content}</span>;
+  }
+
+  return <>{parts}</>;
+}
+
 function initials(name: string): string {
   const parts = name.trim().split(/\s+/).slice(0, 2);
   return parts
@@ -275,8 +333,8 @@ function MessageBubble({ message, artefact, url }: MessageBubbleProps) {
             )}
           </div>
         ) : (
-          <div className="whitespace-pre-wrap text-[13px] md:text-[14.5px] leading-relaxed">
-            {meta.text}
+          <div className="text-[13px] md:text-[14.5px] leading-relaxed">
+            <MessageContent content={meta.text} />
           </div>
         )}
       </div>

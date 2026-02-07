@@ -9,11 +9,27 @@ import { artefactRelPath, artefactsBaseDir, ensureDirForFile } from "@/server/ar
 import { placeholderSvg } from "@/server/tools/image";
 
 // Helper: Extract and save base64 images from content, return modified content with URLs
+// Also handles MEDIA:<path> tags from OpenClaw Gateway
 async function processImagesInContent(content: string, threadId: string): Promise<string> {
-  // Match base64 image patterns: data:image/xxx;base64,... or just raw base64 after "Read image file"
-  const base64Pattern = /data:image\/(png|jpeg|jpg|gif|webp);base64,([A-Za-z0-9+/=]+)/g;
-  
   let result = content;
+  
+  // 1. Handle MEDIA:<path> tags from OpenClaw Gateway
+  // Matches: MEDIA:/path/to/file.png or MEDIA:~/path/to/file.png
+  const mediaPattern = /MEDIA:((?:\/[^\s\n]+|~\/[^\s\n]+))/g;
+  let mediaMatch;
+  
+  while ((mediaMatch = mediaPattern.exec(content)) !== null) {
+    const [fullMatch, filePath] = mediaMatch;
+    
+    // Convert to API URL - the /api/media route will serve the file
+    const mediaUrl = `/api/media?path=${encodeURIComponent(filePath)}`;
+    
+    // Replace MEDIA: tag with markdown image
+    result = result.replace(fullMatch, `![Screenshot](${mediaUrl})`);
+  }
+  
+  // 2. Handle base64 image patterns: data:image/xxx;base64,...
+  const base64Pattern = /data:image\/(png|jpeg|jpg|gif|webp);base64,([A-Za-z0-9+/=]+)/g;
   let match;
   
   while ((match = base64Pattern.exec(content)) !== null) {
@@ -290,6 +306,11 @@ export async function POST(req: NextRequest) {
 
                 try {
                   const chunk = JSON.parse(payload);
+                  
+                  // Log chunk structure for debugging (remove in production)
+                  // console.log('[Gateway Chunk]', JSON.stringify(chunk, null, 2));
+                  
+                  // Handle text delta
                   const delta = chunk.choices?.[0]?.delta?.content;
                   if (delta) {
                     fullContent += delta;
@@ -298,6 +319,16 @@ export async function POST(req: NextRequest) {
                       type: "delta",
                       content: delta,
                     })}\n\n`));
+                  }
+                  
+                  // Handle tool calls / images that might come as tool results
+                  // OpenClaw may send images via tool_calls or as content blocks
+                  const toolCalls = chunk.choices?.[0]?.delta?.tool_calls;
+                  if (toolCalls && Array.isArray(toolCalls)) {
+                    for (const tc of toolCalls) {
+                      // Log tool calls for debugging
+                      console.log('[Tool Call]', JSON.stringify(tc));
+                    }
                   }
                 } catch {
                   // Ignore parse errors for malformed chunks

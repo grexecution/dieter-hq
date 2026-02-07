@@ -779,24 +779,35 @@ export function MultiChatView({
   }, [sendingStates, messageQueue, effectiveThreadId]);
 
   // Handle suggestion clicks (quick actions after assistant messages)
-  const handleSuggestionClick = useCallback((suggestion: ChatSuggestion) => {
+  const handleSuggestionClick = useCallback(async (suggestion: ChatSuggestion) => {
     if (suggestion.action === "workspace" && suggestion.payload) {
-      // Switch to Dev tab and create a new workspace project
+      // Switch to Dev tab and create a new workspace project via API
       setActiveTab("dev");
-      const newProject: WorkspaceProject = {
-        id: `project-${Date.now()}`,
-        name: suggestion.payload,
-        description: `Workspace für: ${suggestion.payload}`,
-        createdAt: Date.now(),
-        lastActiveAt: Date.now(),
-      };
-      setWorkspaceProjects(prev => [...prev, newProject]);
-      setActiveProject(newProject);
-      // Set initial message for context
-      setDrafts(prev => ({
-        ...prev,
-        [newProject.id]: `Lass uns an "${suggestion.payload}" arbeiten. Was ist der Plan?`
-      }));
+      
+      try {
+        const res = await fetch('/api/workspace/projects', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: suggestion.payload }),
+        });
+        
+        if (!res.ok) throw new Error('Failed to create project');
+        
+        const data = await res.json();
+        const newProject = data.project as WorkspaceProject;
+        
+        // Add to local state and select
+        setWorkspaceProjects(prev => [newProject, ...prev]);
+        setActiveProject(newProject);
+        
+        // Set initial message for context using the correct threadId
+        setDrafts(prev => ({
+          ...prev,
+          [newProject.threadId]: `Lass uns an "${suggestion.payload}" arbeiten. Was ist der Plan?`
+        }));
+      } catch (err) {
+        console.error('Error creating project from suggestion:', err);
+      }
     } else if (suggestion.action === "send" && suggestion.payload) {
       // Send the suggested message
       const threadId = activeProject?.id || activeTab;

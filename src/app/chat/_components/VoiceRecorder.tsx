@@ -153,9 +153,19 @@ export function VoiceRecorder({ onTranscript, onVoiceMessage, onTranscriptionSta
 
   // Start recording (tap to start)
   const startRecording = useCallback(async () => {
-    if (disabled || state !== "idle") return;
+    console.log("[VoiceRecorder] startRecording called, disabled:", disabled, "state:", state);
+    
+    if (disabled) {
+      console.log("[VoiceRecorder] Blocked: disabled=true");
+      return;
+    }
+    if (state !== "idle") {
+      console.log("[VoiceRecorder] Blocked: state is not idle, state=", state);
+      return;
+    }
 
     try {
+      console.log("[VoiceRecorder] Requesting microphone access...");
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: {
           echoCancellation: true,
@@ -193,7 +203,17 @@ export function VoiceRecorder({ onTranscript, onVoiceMessage, onTranscriptionSta
       setState("recording");
       setStartTime(Date.now());
     } catch (err) {
-      console.error("Failed to start recording:", err);
+      console.error("[VoiceRecorder] Failed to start recording:", err);
+      // Show user-friendly error
+      if (err instanceof Error) {
+        if (err.name === "NotAllowedError") {
+          alert("Mikrofon-Zugriff verweigert. Bitte in Browser-Einstellungen erlauben.");
+        } else if (err.name === "NotFoundError") {
+          alert("Kein Mikrofon gefunden.");
+        } else {
+          alert(`Aufnahme fehlgeschlagen: ${err.message}`);
+        }
+      }
       cleanup();
     }
   }, [disabled, state, cleanup]);
@@ -343,18 +363,28 @@ export function VoiceRecorder({ onTranscript, onVoiceMessage, onTranscriptionSta
   return (
     <button
       type="button"
-      onClick={startRecording}
+      onClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        console.log("[VoiceRecorder] Mic button clicked, disabled:", disabled);
+        if (!disabled) {
+          startRecording();
+        }
+      }}
       className={cn(
         "relative flex h-11 w-11 items-center justify-center rounded-xl transition-all duration-200",
         "bg-zinc-100/80 dark:bg-zinc-800/80 backdrop-blur-sm",
         "text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200",
         "ring-1 ring-zinc-200/50 dark:ring-zinc-700/50",
-        "hover:ring-zinc-300 dark:hover:ring-zinc-600 hover:bg-zinc-200/80 dark:hover:bg-zinc-700/80"
+        "hover:ring-zinc-300 dark:hover:ring-zinc-600 hover:bg-zinc-200/80 dark:hover:bg-zinc-700/80",
+        "touch-manipulation select-none cursor-pointer",
+        disabled && "opacity-50 cursor-not-allowed"
       )}
       disabled={disabled}
       title="Sprachaufnahme"
+      aria-label="Sprachaufnahme starten"
     >
-      <Mic className="h-[18px] w-[18px]" />
+      <Mic className="h-[18px] w-[18px] pointer-events-none" />
     </button>
   );
 }

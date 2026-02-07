@@ -529,6 +529,43 @@ export default function SettingsPage() {
                 </Button>
               </div>
 
+              {/* Reset Push Subscriptions */}
+              <div className="flex items-center justify-between p-3 rounded-lg bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800">
+                <div>
+                  <p className="font-medium text-red-700 dark:text-red-300">🔄 Push zurücksetzen</p>
+                  <p className="text-sm text-red-600/70 dark:text-red-400/70">
+                    Löscht alle Subscriptions - danach neu aktivieren
+                  </p>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={async () => {
+                    try {
+                      // 1. Delete server-side subscriptions
+                      const res = await fetch('/api/push/reset', { method: 'POST' });
+                      const data = await res.json();
+                      
+                      // 2. Unsubscribe locally
+                      const reg = await navigator.serviceWorker.getRegistration();
+                      const sub = await reg?.pushManager.getSubscription();
+                      if (sub) {
+                        await sub.unsubscribe();
+                      }
+                      
+                      toast.success(`${data.deleted} Subscriptions gelöscht. Jetzt neu aktivieren!`);
+                      checkPushStatus();
+                    } catch (e) {
+                      toast.error(`Fehler: ${e instanceof Error ? e.message : 'Unknown'}`);
+                    }
+                  }}
+                  className="border-red-300 hover:bg-red-100 dark:border-red-700 dark:hover:bg-red-900/30"
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Reset
+                </Button>
+              </div>
+
               {/* Force Test (bypass checks) */}
               <div className="flex items-center justify-between p-3 rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800">
                 <div>

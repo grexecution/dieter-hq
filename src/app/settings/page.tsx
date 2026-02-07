@@ -140,10 +140,18 @@ export default function SettingsPage() {
       }
       
       // Subscribe mit neuen VAPID Keys
-      const subscription = await registration.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(vapidKey) as BufferSource,
-      });
+      let subscription: PushSubscription;
+      try {
+        subscription = await registration.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: urlBase64ToUint8Array(vapidKey) as BufferSource,
+        });
+      } catch (subscribeError) {
+        console.error('[Settings] pushManager.subscribe failed:', subscribeError);
+        toast.error(`Browser-Subscription fehlgeschlagen: ${subscribeError instanceof Error ? subscribeError.message : 'Unbekannt'}`);
+        setIsSubscribing(false);
+        return;
+      }
 
       // Save to server
       const response = await fetch('/api/push/subscribe', {
@@ -153,11 +161,21 @@ export default function SettingsPage() {
       });
 
       if (response.ok) {
-        toast.success('Push-Benachrichtigungen aktiviert!');
+        toast.success('Push-Benachrichtigungen aktiviert! ✅');
+        // Refresh server debug to show new subscription count
+        const debugRes = await fetch('/api/push/debug');
+        if (debugRes.ok) {
+          const debugData = await debugRes.json();
+          setServerDebug({
+            vapidPublicConfigured: debugData.config.vapidPublicConfigured,
+            vapidPrivateConfigured: debugData.config.vapidPrivateConfigured,
+            subscriptionCount: debugData.subscriptions.count,
+          });
+        }
         await checkPushStatus();
       } else {
         const data = await response.json();
-        toast.error(`Fehler: ${data.error}`);
+        toast.error(`Server-Fehler: ${data.error}`);
       }
     } catch (error) {
       console.error('[Settings] Subscribe error:', error);
@@ -523,18 +541,26 @@ export default function SettingsPage() {
               </div>
 
               {/* Test Notification */}
-              <div className="flex items-center justify-between p-3 rounded-lg bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800">
+              <div className={`flex items-center justify-between p-3 rounded-lg border ${
+                (serverDebug?.subscriptionCount || 0) > 0 
+                  ? 'bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800'
+                  : 'bg-gray-50 dark:bg-gray-950/30 border-gray-200 dark:border-gray-800 opacity-60'
+              }`}>
                 <div>
-                  <p className="font-medium text-blue-700 dark:text-blue-300">Test Push senden</p>
-                  <p className="text-sm text-blue-600/70 dark:text-blue-400/70">
-                    Sendet an alle {serverDebug?.subscriptionCount || 0} Geräte in DB
+                  <p className={`font-medium ${(serverDebug?.subscriptionCount || 0) > 0 ? 'text-blue-700 dark:text-blue-300' : 'text-gray-500 dark:text-gray-400'}`}>
+                    Test Push senden
+                  </p>
+                  <p className={`text-sm ${(serverDebug?.subscriptionCount || 0) > 0 ? 'text-blue-600/70 dark:text-blue-400/70' : 'text-gray-500/70 dark:text-gray-400/70'}`}>
+                    {(serverDebug?.subscriptionCount || 0) > 0 
+                      ? `Sendet an ${serverDebug?.subscriptionCount} Gerät(e) in DB`
+                      : '⚠️ Erst oben auf "Aktivieren" klicken!'}
                   </p>
                 </div>
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={handleSendTest}
-                  disabled={isSendingTest}
+                  disabled={isSendingTest || (serverDebug?.subscriptionCount || 0) === 0}
                   className="border-blue-300 hover:bg-blue-100 dark:border-blue-700 dark:hover:bg-blue-900/30"
                 >
                   {isSendingTest ? (

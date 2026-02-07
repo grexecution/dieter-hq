@@ -314,14 +314,16 @@ export function ChatComposer({ threadId, disabled }: { threadId: string; disable
         onClick={() => fileInputRef.current?.click()}
         disabled={disabled}
         className={cn(
-          "flex h-9 w-9 md:h-10 md:w-10 items-center justify-center rounded-xl transition-all",
-          "bg-zinc-100 text-zinc-500 hover:bg-zinc-200 hover:text-zinc-700",
-          "dark:bg-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-700 dark:hover:text-zinc-200",
+          "flex h-11 w-11 items-center justify-center rounded-xl transition-all duration-200",
+          "bg-zinc-100/80 dark:bg-zinc-800/80 backdrop-blur-sm",
+          "text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200",
+          "ring-1 ring-zinc-200/50 dark:ring-zinc-700/50",
+          "hover:ring-zinc-300 dark:hover:ring-zinc-600 hover:bg-zinc-200/80 dark:hover:bg-zinc-700/80",
           disabled && "opacity-50 pointer-events-none"
         )}
         title="Datei anhängen"
       >
-        <Paperclip className="h-4 w-4" />
+        <Paperclip className="h-[18px] w-[18px]" />
       </button>
       
       {/* Hidden file input */}

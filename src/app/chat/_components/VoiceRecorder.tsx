@@ -326,8 +326,10 @@ export function VoiceRecorder({ onTranscript, onVoiceMessage, onTranscriptionSta
       <button
         type="button"
         className={cn(
-          "relative flex h-9 w-9 items-center justify-center rounded-xl transition-all",
-          "bg-indigo-100 text-indigo-500 dark:bg-indigo-900/30 dark:text-indigo-400"
+          "relative flex h-11 w-11 items-center justify-center rounded-xl transition-all duration-200",
+          "bg-indigo-100/80 dark:bg-indigo-900/30 backdrop-blur-sm",
+          "text-indigo-500 dark:text-indigo-400",
+          "ring-1 ring-indigo-200/50 dark:ring-indigo-700/50"
         )}
         disabled
         title="Transkribiere..."
@@ -343,13 +345,16 @@ export function VoiceRecorder({ onTranscript, onVoiceMessage, onTranscriptionSta
       type="button"
       onClick={startRecording}
       className={cn(
-        "relative flex h-9 w-9 items-center justify-center rounded-xl transition-all",
-        "bg-zinc-100 text-zinc-500 hover:bg-zinc-200 hover:text-zinc-700 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-700 dark:hover:text-zinc-200"
+        "relative flex h-11 w-11 items-center justify-center rounded-xl transition-all duration-200",
+        "bg-zinc-100/80 dark:bg-zinc-800/80 backdrop-blur-sm",
+        "text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200",
+        "ring-1 ring-zinc-200/50 dark:ring-zinc-700/50",
+        "hover:ring-zinc-300 dark:hover:ring-zinc-600 hover:bg-zinc-200/80 dark:hover:bg-zinc-700/80"
       )}
       disabled={disabled}
       title="Sprachaufnahme"
     >
-      <Mic className="h-4 w-4" />
+      <Mic className="h-[18px] w-[18px]" />
     </button>
   );
 }

@@ -463,12 +463,13 @@ function Composer({ draft, setDraft, isSending, queueCount, onSubmit, onVoiceTra
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const currentTab = CHAT_TABS.find(tab => tab.id === activeTab);
 
-  // Auto-resize textarea
+  // Auto-resize textarea (starts at h-11 = 44px, grows up to 160px)
   useEffect(() => {
     const textarea = textareaRef.current;
     if (textarea) {
-      textarea.style.height = "auto";
-      textarea.style.height = Math.min(textarea.scrollHeight, 160) + "px";
+      textarea.style.height = "44px"; // h-11 base height
+      const newHeight = Math.max(44, Math.min(textarea.scrollHeight, 160));
+      textarea.style.height = newHeight + "px";
     }
   }, [draft]);
 
@@ -481,12 +482,12 @@ function Composer({ draft, setDraft, isSending, queueCount, onSubmit, onVoiceTra
 
   return (
     <div
-      className="sticky bottom-0 border-t border-zinc-200 dark:border-zinc-800 bg-white/95 dark:bg-zinc-950/95 backdrop-blur-sm px-3 py-2.5 md:px-5 md:py-3.5"
-      style={{ paddingBottom: "max(0.75rem, calc(env(safe-area-inset-bottom, 0px) + 0.5rem))" }}
+      className="sticky bottom-0 border-t border-zinc-200/50 dark:border-zinc-800/50 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-xl px-3 py-3 md:px-5 md:py-4"
+      style={{ paddingBottom: "max(1rem, calc(env(safe-area-inset-bottom, 0px) + 0.75rem))" }}
     >
       <div className="mx-auto w-full max-w-3xl lg:max-w-4xl relative">
         <form
-          className="flex items-end gap-2 md:gap-3"
+          className="flex items-end gap-2.5 md:gap-3"
           onSubmit={(e) => {
             e.preventDefault();
             onSubmit();
@@ -506,9 +507,11 @@ function Composer({ draft, setDraft, isSending, queueCount, onSubmit, onVoiceTra
               rows={1}
               disabled={isSending}
               className={cn(
-                "w-full resize-none rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 px-3 py-2.5 md:px-4 md:py-3",
-                "text-sm md:text-[15px] placeholder:text-zinc-400 dark:placeholder:text-zinc-500 text-zinc-900 dark:text-zinc-100",
-                "transition-colors focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-600 focus:bg-white dark:focus:bg-zinc-800",
+                "w-full resize-none rounded-xl border-0 bg-zinc-100/80 dark:bg-zinc-800/80 backdrop-blur-sm",
+                "h-11 px-4 py-2.5 text-[15px] leading-normal",
+                "placeholder:text-zinc-400 dark:placeholder:text-zinc-500 text-zinc-900 dark:text-zinc-100",
+                "ring-1 ring-zinc-200/50 dark:ring-zinc-700/50",
+                "transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:bg-white dark:focus:bg-zinc-800",
                 "disabled:opacity-50"
               )}
             />

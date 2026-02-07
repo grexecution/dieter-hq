@@ -38,11 +38,26 @@ export async function POST(
 
     // Determine recipient identifier based on source
     // - WhatsApp: use threadId (ChatJID) for proper delivery
-    // - Email: use sender (email address)
+    // - Email: use sender (email address)  
     // - Slack: use threadId (channel ID)
     let recipientId = item.sender;
-    if (item.source === "whatsapp" && item.threadId) {
-      recipientId = item.threadId;
+    if (item.source === "whatsapp") {
+      if (item.threadId) {
+        recipientId = item.threadId;
+      } else {
+        // No threadId - this item was synced before we stored ChatJID
+        // Try to find another WhatsApp item with same senderName that has threadId
+        const relatedItem = await db
+          .select({ threadId: inboxItems.threadId })
+          .from(inboxItems)
+          .where(eq(inboxItems.senderName, item.senderName || item.sender))
+          .limit(1);
+        
+        if (relatedItem[0]?.threadId) {
+          recipientId = relatedItem[0].threadId;
+        }
+        // If still no threadId, recipientId stays as sender name - will fail but that's expected
+      }
     } else if (item.source === "slack" && item.threadId) {
       recipientId = item.threadId;
     }

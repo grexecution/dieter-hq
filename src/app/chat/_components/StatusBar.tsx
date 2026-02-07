@@ -114,11 +114,11 @@ export function StatusBar() {
       {/* Collapsed bar */}
       <button
         onClick={() => setExpanded(!expanded)}
-        className="flex h-7 md:h-8 w-full items-center justify-between px-3 md:px-5 transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-800"
+        className="flex min-h-[32px] md:min-h-[36px] w-full items-center justify-between px-3 md:px-5 py-2 transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-800"
       >
         {/* Left: Status indicator */}
-        <div className="flex items-center gap-2 text-[11px] md:text-xs text-zinc-500 dark:text-zinc-400">
-          <span className="relative flex h-2 w-2">
+        <div className="flex items-center gap-2 text-[11px] md:text-xs text-zinc-500 dark:text-zinc-400 leading-none">
+          <span className="relative flex h-2 w-2 shrink-0">
             {isOnline && connectionState === "connected" && (
               <span
                 className={cn(
@@ -134,21 +134,23 @@ export function StatusBar() {
               )}
             />
           </span>
-          <span>{statusText}</span>
+          <span className="leading-none">{statusText}</span>
           {connectionState === "connected" && latencyMs !== undefined && (
             <>
-              <span className="text-zinc-300 dark:text-zinc-600">·</span>
-              <span className="tabular-nums">{latencyMs}ms</span>
+              <span className="text-zinc-300 dark:text-zinc-600 leading-none">·</span>
+              <span className="tabular-nums leading-none">{latencyMs}ms</span>
             </>
           )}
         </div>
 
         {/* Right: Expand icon */}
-        {expanded ? (
-          <ChevronUp className="h-3.5 w-3.5 text-zinc-400" />
-        ) : (
-          <ChevronDown className="h-3.5 w-3.5 text-zinc-400" />
-        )}
+        <div className="flex items-center shrink-0">
+          {expanded ? (
+            <ChevronUp className="h-3.5 w-3.5 text-zinc-400" />
+          ) : (
+            <ChevronDown className="h-3.5 w-3.5 text-zinc-400" />
+          )}
+        </div>
       </button>
 
       {/* Expanded details */}

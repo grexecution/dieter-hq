@@ -5,6 +5,7 @@ import fs from "node:fs/promises";
 import { db } from "@/server/db";
 import { artefacts, messages } from "@/server/db/schema";
 import { logEvent } from "@/server/events/log";
+import { notifyAgentResponse } from "@/lib/push";
 import { artefactRelPath, artefactsBaseDir, ensureDirForFile } from "@/server/artefacts/storage";
 import { placeholderSvg } from "@/server/tools/image";
 
@@ -366,6 +367,13 @@ export async function POST(req: NextRequest) {
           content: processedContent,
           createdAt: assistantCreatedAt,
         });
+
+        // 🔔 Push Notification for Dieter's response
+        try {
+          await notifyAgentResponse(processedContent);
+        } catch (pushErr) {
+          console.error('[Chat Send] Push notification failed:', pushErr);
+        }
 
         // 🧠 INFINITE CONTEXT: Temporarily disabled
         // try {

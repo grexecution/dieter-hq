@@ -702,6 +702,7 @@ export function MultiChatView({
   const [messageQueue, setMessageQueue] = useState<Record<string, string[]>>({});
   const [subagentPanelCollapsed, setSubagentPanelCollapsed] = useState(true);
   const [rightPanelView, setRightPanelView] = useState<"activity" | "subagents">("activity");
+  const [mobileActivityOpen, setMobileActivityOpen] = useState(false);
   
   // Voice transcription status per thread
   const [transcribingStates, setTranscribingStates] = useState<Record<string, boolean>>({});
@@ -1135,6 +1136,34 @@ export function MultiChatView({
         <OpenClawStatusSidebar logoutAction={logoutAction} />
         <form action={newThreadAction} className="hidden" aria-hidden="true" />
       </aside>
+
+      {/* Mobile Activity Floating Button */}
+      <button
+        onClick={() => setMobileActivityOpen(true)}
+        className="fixed bottom-20 right-4 z-50 flex h-12 w-12 items-center justify-center rounded-full bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 shadow-lg lg:hidden"
+        title="Agent Activity"
+      >
+        <Bot className="h-5 w-5" />
+      </button>
+
+      {/* Mobile Activity Modal */}
+      {mobileActivityOpen && (
+        <div
+          className="fixed inset-0 z-[70] bg-black/50 backdrop-blur-sm lg:hidden"
+          onClick={() => setMobileActivityOpen(false)}
+        >
+          <div
+            className="absolute inset-4 overflow-hidden rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 shadow-xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <AgentActivityPanel
+              className="h-full"
+              pollIntervalMs={15000}
+              onToggleCollapse={() => setMobileActivityOpen(false)}
+            />
+          </div>
+        </div>
+      )}
 
       {/* Mobile HUD overlay */}
       {mobileHudOpen && (

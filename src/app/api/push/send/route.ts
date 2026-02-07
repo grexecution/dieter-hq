@@ -1,17 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { sendPushToAll } from '@/lib/push';
 
-// Simple API key auth for OpenClaw
+// Simple API key auth for external requests (OpenClaw)
+// Internal requests (same origin) don't need auth
 const API_KEY = process.env.PUSH_API_KEY || process.env.OPENCLAW_GATEWAY_PASSWORD;
 
 export async function POST(request: NextRequest) {
   try {
-    // Check auth
-    const authHeader = request.headers.get('authorization');
-    const providedKey = authHeader?.replace('Bearer ', '');
+    // Check auth - skip for same-origin requests (from frontend)
+    const origin = request.headers.get('origin');
+    const referer = request.headers.get('referer');
+    const isSameOrigin = origin?.includes('dieter-hq') || referer?.includes('dieter-hq');
     
-    if (API_KEY && providedKey !== API_KEY) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    if (!isSameOrigin) {
+      const authHeader = request.headers.get('authorization');
+      const providedKey = authHeader?.replace('Bearer ', '');
+      
+      if (API_KEY && providedKey !== API_KEY) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      }
     }
 
     const body = await request.json();

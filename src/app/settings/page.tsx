@@ -211,6 +211,33 @@ export default function SettingsPage() {
     setIsSendingTest(false);
   };
 
+  // Fetch server debug info
+  const [serverDebug, setServerDebug] = useState<{
+    vapidPublicConfigured: boolean;
+    vapidPrivateConfigured: boolean;
+    subscriptionCount: number;
+  } | null>(null);
+
+  const fetchServerDebug = async () => {
+    try {
+      const res = await fetch('/api/push/debug');
+      const data = await res.json();
+      if (data.ok) {
+        setServerDebug({
+          vapidPublicConfigured: data.config.vapidPublicConfigured,
+          vapidPrivateConfigured: data.config.vapidPrivateConfigured,
+          subscriptionCount: data.subscriptions.count,
+        });
+      }
+    } catch (e) {
+      console.error('[Settings] Debug fetch error:', e);
+    }
+  };
+
+  useEffect(() => {
+    fetchServerDebug();
+  }, []);
+
   // Get status display info
   const getPushStatusDisplay = () => {
     if (pushStatus.permission === 'loading') {
@@ -394,13 +421,41 @@ export default function SettingsPage() {
 
               {/* Debug Info */}
               <div className="text-xs text-zinc-500 space-y-1 p-2 bg-zinc-50 dark:bg-zinc-900 rounded">
+                <p className="font-medium text-zinc-700 dark:text-zinc-300">📱 Browser (Client):</p>
                 <p>Permission: {pushStatus.permission}</p>
                 <p>Service Worker: {pushStatus.serviceWorkerActive ? '✅' : '❌'}</p>
-                <p>VAPID Key: {pushStatus.vapidKeyConfigured ? '✅' : '❌'}</p>
+                <p>VAPID Key (client): {pushStatus.vapidKeyConfigured ? '✅' : '❌'}</p>
                 <p>Subscribed: {pushStatus.isSubscribed ? '✅' : '❌'}</p>
                 {pushStatus.subscription && (
                   <p className="truncate">Endpoint: {pushStatus.subscription.endpoint.slice(0, 50)}...</p>
                 )}
+                
+                <div className="border-t border-zinc-200 dark:border-zinc-700 my-2" />
+                
+                <p className="font-medium text-zinc-700 dark:text-zinc-300">🖥️ Server (Vercel):</p>
+                {serverDebug ? (
+                  <>
+                    <p>VAPID Public: {serverDebug.vapidPublicConfigured ? '✅' : '❌'}</p>
+                    <p>VAPID Private: {serverDebug.vapidPrivateConfigured ? '✅' : '❌'}</p>
+                    <p>Subscriptions in DB: {serverDebug.subscriptionCount}</p>
+                  </>
+                ) : (
+                  <p>Lädt...</p>
+                )}
+                
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="mt-2 text-xs h-7"
+                  onClick={() => {
+                    checkPushStatus();
+                    fetchServerDebug();
+                    toast.info('Status aktualisiert');
+                  }}
+                >
+                  <RefreshCw className="h-3 w-3 mr-1" />
+                  Refresh Debug
+                </Button>
               </div>
 
               {/* Subscribe/Unsubscribe */}
@@ -449,14 +504,14 @@ export default function SettingsPage() {
                 <div>
                   <p className="font-medium text-blue-700 dark:text-blue-300">Test Push senden</p>
                   <p className="text-sm text-blue-600/70 dark:text-blue-400/70">
-                    Sendet eine Test-Benachrichtigung an alle Geräte
+                    Sendet an alle {serverDebug?.subscriptionCount || 0} Geräte in DB
                   </p>
                 </div>
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={handleSendTest}
-                  disabled={isSendingTest || !pushStatus.isSubscribed}
+                  disabled={isSendingTest}
                   className="border-blue-300 hover:bg-blue-100 dark:border-blue-700 dark:hover:bg-blue-900/30"
                 >
                   {isSendingTest ? (
@@ -465,6 +520,41 @@ export default function SettingsPage() {
                     <Send className="h-4 w-4 mr-2" />
                   )}
                   Test senden
+                </Button>
+              </div>
+
+              {/* Force Test (bypass checks) */}
+              <div className="flex items-center justify-between p-3 rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800">
+                <div>
+                  <p className="font-medium text-amber-700 dark:text-amber-300">🔧 Browser Notification Test</p>
+                  <p className="text-sm text-amber-600/70 dark:text-amber-400/70">
+                    Testet die Browser Notification API direkt (kein Server)
+                  </p>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={async () => {
+                    try {
+                      const permission = await Notification.requestPermission();
+                      if (permission === 'granted') {
+                        new Notification('🐕 Dieter HQ Test', {
+                          body: `Direkte Notification um ${new Date().toLocaleTimeString('de-DE')}`,
+                          icon: '/icon-192.png',
+                          tag: 'direct-test',
+                        });
+                        toast.success('Notification gesendet!');
+                      } else {
+                        toast.error(`Permission: ${permission}`);
+                      }
+                    } catch (e) {
+                      toast.error(`Fehler: ${e instanceof Error ? e.message : 'Unknown'}`);
+                    }
+                  }}
+                  className="border-amber-300 hover:bg-amber-100 dark:border-amber-700 dark:hover:bg-amber-900/30"
+                >
+                  <BellRing className="h-4 w-4 mr-2" />
+                  Browser Test
                 </Button>
               </div>
 

@@ -125,7 +125,20 @@ export default function SettingsPage() {
       // Get service worker registration
       const registration = await navigator.serviceWorker.ready;
       
-      // Subscribe
+      // WICHTIG: Erst alte Subscription löschen (falls mit anderen VAPID Keys erstellt)
+      const existingSubscription = await registration.pushManager.getSubscription();
+      if (existingSubscription) {
+        console.log('[Settings] Removing old subscription before creating new one');
+        await existingSubscription.unsubscribe();
+        // Auch vom Server löschen
+        await fetch('/api/push/unsubscribe', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ endpoint: existingSubscription.endpoint }),
+        }).catch(() => {}); // Ignoriere Fehler
+      }
+      
+      // Subscribe mit neuen VAPID Keys
       const subscription = await registration.pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: urlBase64ToUint8Array(vapidKey) as BufferSource,

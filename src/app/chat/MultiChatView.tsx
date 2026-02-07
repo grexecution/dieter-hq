@@ -722,32 +722,17 @@ export function MultiChatView({
     setDrafts(prev => ({ ...prev, [effectiveThreadId]: value }));
   };
 
-  // Send message handler for current thread (reads SSE stream)
-  const handleSend = async () => {
-    const content = currentDraft.trim();
-    if (!content) return;
+  // Core send function - takes content directly
+  const sendMessage = async (content: string, threadId: string) => {
+    if (!content.trim()) return;
 
-    // Capture threadId at send time to avoid stale closure issues
-    const sendThreadId = effectiveThreadId;
-
-    // If currently sending, queue the message instead
-    if (sendingStates[sendThreadId]) {
-      setMessageQueue(prev => ({
-        ...prev,
-        [sendThreadId]: [...(prev[sendThreadId] || []), content]
-      }));
-      setDrafts(prev => ({ ...prev, [sendThreadId]: "" }));
-      return;
-    }
-
-    setSendingStates(prev => ({ ...prev, [sendThreadId]: true }));
-    setDrafts(prev => ({ ...prev, [sendThreadId]: "" }));
+    setSendingStates(prev => ({ ...prev, [threadId]: true }));
 
     try {
       const r = await fetch("/api/chat/send", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ threadId: sendThreadId, content }),
+        body: JSON.stringify({ threadId, content }),
       });
 
       if (!r.ok) {
@@ -762,8 +747,6 @@ export function MultiChatView({
       const reader = r.body.getReader();
       const decoder = new TextDecoder();
       let buffer = "";
-      let assistantContent = "";
-      let assistantMsgId = "";
 
       while (true) {
         const { done, value } = await reader.read();
@@ -785,29 +768,25 @@ export function MultiChatView({
               // Add user message to chat
               setLiveMessages((prev) => ({
                 ...prev,
-                [sendThreadId]: [
-                  ...(prev[sendThreadId] || []),
+                [threadId]: [
+                  ...(prev[threadId] || []),
                   event.item
                 ].filter((m, i, arr) => arr.findIndex(msg => msg.id === m.id) === i)
               }));
               if (event.item.createdAt) {
-                lastMessageTimestampsRef.current[sendThreadId] = event.item.createdAt;
+                lastMessageTimestampsRef.current[threadId] = event.item.createdAt;
               }
-            } else if (event.type === "delta" && event.content) {
-              // Accumulate assistant response (could show streaming later)
-              assistantContent += event.content;
             } else if (event.type === "done" && event.item) {
               // Add complete assistant message
-              assistantMsgId = event.item.id;
               setLiveMessages((prev) => ({
                 ...prev,
-                [sendThreadId]: [
-                  ...(prev[sendThreadId] || []),
+                [threadId]: [
+                  ...(prev[threadId] || []),
                   event.item
                 ].filter((m, i, arr) => arr.findIndex(msg => msg.id === m.id) === i)
               }));
               if (event.item.createdAt) {
-                lastMessageTimestampsRef.current[sendThreadId] = event.item.createdAt;
+                lastMessageTimestampsRef.current[threadId] = event.item.createdAt;
               }
             }
           } catch {
@@ -817,11 +796,32 @@ export function MultiChatView({
       }
     } catch (err) {
       console.error("Send failed:", err);
-      // Don't restore draft - message was likely sent, just response failed
     } finally {
       // Mark sending as done
-      setSendingStates(prev => ({ ...prev, [sendThreadId]: false }));
+      setSendingStates(prev => ({ ...prev, [threadId]: false }));
     }
+  };
+
+  // Public send handler - reads draft, queues if busy, or sends directly
+  const handleSend = async () => {
+    const content = currentDraft.trim();
+    if (!content) return;
+
+    const threadId = effectiveThreadId;
+
+    // If currently sending, queue the message
+    if (sendingStates[threadId]) {
+      setMessageQueue(prev => ({
+        ...prev,
+        [threadId]: [...(prev[threadId] || []), content]
+      }));
+      setDrafts(prev => ({ ...prev, [threadId]: "" }));
+      return;
+    }
+
+    // Clear draft and send
+    setDrafts(prev => ({ ...prev, [threadId]: "" }));
+    await sendMessage(content, threadId);
   };
 
   // Process queued messages when sending completes
@@ -834,11 +834,8 @@ export function MultiChatView({
     if (!isSendingNow && queue.length > 0) {
       const [nextMessage, ...remaining] = queue;
       setMessageQueue(prev => ({ ...prev, [threadId]: remaining }));
-      setDrafts(prev => ({ ...prev, [threadId]: nextMessage }));
-      // Trigger send after draft is set
-      setTimeout(() => {
-        handleSend();
-      }, 50);
+      // Send directly without going through draft
+      sendMessage(nextMessage, threadId);
     }
   }, [sendingStates, messageQueue, effectiveThreadId]);
 

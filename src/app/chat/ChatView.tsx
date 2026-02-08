@@ -19,6 +19,7 @@ import { MarkdownContent } from "@/components/MarkdownContent";
 // OpenClaw WebSocket Hooks
 import { useOpenClawConnection, useOpenClawChat } from "@/lib/openclaw/hooks";
 import type { Message as OpenClawMessage } from "@/lib/openclaw/types";
+import type { AgentActivity } from "@/lib/openclaw/client";
 
 const VoiceRecorder = dynamic(
   () => import("./_components/VoiceRecorder").then((m) => m.VoiceRecorder),
@@ -157,6 +158,42 @@ function ConnectionStatus({ connected, connecting, reconnecting }: ConnectionSta
     <div className="flex items-center gap-1.5 text-xs text-destructive">
       <span className="h-2 w-2 rounded-full bg-destructive" />
       <span className="hidden sm:inline">Disconnected</span>
+    </div>
+  );
+}
+
+// ============================================
+// Agent Activity Indicator
+// ============================================
+
+interface ActivityIndicatorProps {
+  activity: AgentActivity;
+  activityLabel: string;
+}
+
+function ActivityIndicator({ activity, activityLabel }: ActivityIndicatorProps) {
+  if (activity.type === 'idle' || !activityLabel) {
+    return null;
+  }
+
+  // Different colors for different activities
+  const colorClass = {
+    thinking: 'bg-purple-500',
+    streaming: 'bg-blue-500',
+    tool: 'bg-amber-500',
+    queued: 'bg-gray-400',
+    idle: 'bg-gray-400',
+  }[activity.type] || 'bg-gray-400';
+
+  return (
+    <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-muted/50 text-xs text-muted-foreground animate-pulse">
+      <span className={cn("h-2 w-2 rounded-full", colorClass)} />
+      <span className="font-medium">{activityLabel}</span>
+      {activity.toolName && (
+        <code className="text-[10px] bg-muted px-1 py-0.5 rounded">
+          {activity.toolName}
+        </code>
+      )}
     </div>
   );
 }
@@ -716,6 +753,9 @@ export function ChatView({
           </div>
 
           <div className="flex items-center gap-2">
+            {/* Agent Activity Indicator */}
+            <ActivityIndicator activity={chat.activity} activityLabel={chat.activityLabel} />
+            
             {/* WebSocket/HTTP indicator */}
             <div 
               className={cn(
@@ -768,8 +808,8 @@ export function ChatView({
                     />
                   );
                 })}
-                {/* Streaming message indicator */}
-                {chat.isStreaming && (
+                {/* Streaming/Activity message indicator */}
+                {(chat.isStreaming || chat.activity.type !== 'idle') && (
                   <div className="flex items-end gap-3">
                     <Avatar className="h-8 w-8 shrink-0">
                       <AvatarImage src="/dieter-avatar.png" alt="Dieter" />
@@ -782,13 +822,33 @@ export function ChatView({
                         <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
                           Dieter
                         </span>
-                        <span className="text-[10px] text-zinc-400 dark:text-zinc-500">
-                          typing...
+                        <span className={cn(
+                          "text-[10px]",
+                          chat.activity.type === 'thinking' && "text-purple-500",
+                          chat.activity.type === 'tool' && "text-amber-500",
+                          chat.activity.type === 'streaming' && "text-blue-500",
+                          chat.activity.type === 'idle' && "text-zinc-400"
+                        )}>
+                          {chat.activityLabel || 'typing...'}
                         </span>
                       </div>
                       <div className="text-sm leading-relaxed min-h-[1.5rem]">
                         {chat.streamingContent ? (
                           <MarkdownContent content={chat.streamingContent} className="text-sm" />
+                        ) : chat.activity.type === 'thinking' ? (
+                          <span className="flex items-center gap-2 text-purple-500/70">
+                            <span className="inline-block h-2 w-2 rounded-full bg-purple-500 animate-pulse" />
+                            <span className="text-sm">Denkt nach...</span>
+                          </span>
+                        ) : chat.activity.type === 'tool' ? (
+                          <span className="flex items-center gap-2 text-amber-500/70">
+                            <span className="inline-block h-2 w-2 rounded-full bg-amber-500 animate-spin" />
+                            <span className="text-sm">
+                              {chat.activity.toolName 
+                                ? `Führt ${chat.activity.toolName} aus...` 
+                                : 'Führt Aktion aus...'}
+                            </span>
+                          </span>
                         ) : (
                           <span className="flex items-center gap-1.5 text-zinc-400">
                             <span className="inline-block h-1.5 w-1.5 rounded-full bg-current animate-pulse" style={{ animationDelay: "0ms" }} />

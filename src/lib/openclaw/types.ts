@@ -203,3 +203,37 @@ export const DEFAULT_CONFIG: Required<Omit<OpenClawClientConfig, 'auth'>> = {
     mode: 'operator',
   },
 };
+
+// ============================================================================
+// Agent Activity Events
+// ============================================================================
+
+export type AgentActivityType = 
+  | 'idle'           // Nothing happening
+  | 'thinking'       // Agent is thinking/reasoning
+  | 'streaming'      // Agent is streaming text
+  | 'tool'           // Agent is executing a tool
+  | 'queued';        // Message queued, waiting
+
+export interface AgentActivityEvent {
+  runId: string;
+  seq: number;
+  stream: string;  // 'thinking' | 'tool' | 'text' | 'toolResult' etc.
+  ts: number;
+  data: {
+    toolName?: string;
+    toolId?: string;
+    content?: string;
+    delta?: string;
+    [key: string]: unknown;
+  };
+}
+
+export interface AgentActivity {
+  type: AgentActivityType;
+  sessionKey?: string;
+  runId?: string;
+  toolName?: string;
+  content?: string;
+  timestamp: number;
+}

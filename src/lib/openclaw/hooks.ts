@@ -10,6 +10,8 @@ import {
   OpenClawClient,
   type ConnectionState,
   type Message,
+  type AgentActivity,
+  type AgentActivityType,
 } from './client';
 
 // ===========================================================================
@@ -102,6 +104,28 @@ interface UseOpenClawChatResult {
   error: Error | null;
   isLoading: boolean;
   reload: () => Promise<void>;
+  // Agent activity status
+  activity: AgentActivity;
+  activityLabel: string;
+}
+
+// Helper to get human-readable activity label
+function getActivityLabel(activity: AgentActivity): string {
+  switch (activity.type) {
+    case 'thinking':
+      return 'Denkt nach...';
+    case 'streaming':
+      return 'Schreibt...';
+    case 'tool':
+      return activity.toolName 
+        ? `Führt ${activity.toolName} aus...`
+        : 'Führt Aktion aus...';
+    case 'queued':
+      return 'In Warteschlange...';
+    case 'idle':
+    default:
+      return '';
+  }
 }
 
 export function useOpenClawChat(sessionKey: string): UseOpenClawChatResult {
@@ -111,6 +135,10 @@ export function useOpenClawChat(sessionKey: string): UseOpenClawChatResult {
   const [streamingContent, setStreamingContent] = useState<string | null>(null);
   const [error, setError] = useState<Error | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [activity, setActivity] = useState<AgentActivity>({
+    type: 'idle',
+    timestamp: Date.now(),
+  });
 
   // Get client and load initial history
   useEffect(() => {
@@ -143,7 +171,7 @@ export function useOpenClawChat(sessionKey: string): UseOpenClawChatResult {
     loadHistory();
   }, [sessionKey]);
 
-  // Subscribe to chat events
+  // Subscribe to chat and agent events
   useEffect(() => {
     const client = clientRef.current;
     if (!client) return;
@@ -172,23 +200,111 @@ export function useOpenClawChat(sessionKey: string): UseOpenClawChatResult {
         }
         setStreamingContent(text);
         setIsStreaming(true);
+        // Update activity to streaming
+        setActivity({
+          type: 'streaming',
+          sessionKey,
+          runId: event.runId,
+          timestamp: Date.now(),
+        });
       } else if (event.state === 'final') {
         setStreamingContent(null);
         setIsStreaming(false);
+        setActivity({ type: 'idle', timestamp: Date.now() });
         // Reload history to get final message
         client.chatHistory(sessionKey).then(setMessages).catch(console.error);
       } else if (event.state === 'error') {
         setError(new Error(event.errorMessage || 'Chat error'));
         setStreamingContent(null);
         setIsStreaming(false);
+        setActivity({ type: 'idle', timestamp: Date.now() });
       } else if (event.state === 'aborted') {
         setStreamingContent(null);
         setIsStreaming(false);
+        setActivity({ type: 'idle', timestamp: Date.now() });
+      }
+    });
+
+    // Handle agent events for detailed activity status
+    const unsubAgent = client.on<{
+      runId: string;
+      seq: number;
+      stream: string;
+      ts: number;
+      sessionKey?: string;
+      data?: {
+        toolName?: string;
+        toolId?: string;
+        name?: string;
+        content?: string;
+        delta?: string;
+        [key: string]: unknown;
+      };
+    }>('agent', (event) => {
+      // Check if event belongs to our session (if sessionKey is provided)
+      // Some agent events might not include sessionKey, so we track by runId
+      
+      console.log('[OpenClaw] Agent event:', event.stream, event);
+      
+      const now = Date.now();
+      
+      switch (event.stream) {
+        case 'thinking':
+        case 'thinking_delta':
+          setActivity({
+            type: 'thinking',
+            sessionKey,
+            runId: event.runId,
+            timestamp: now,
+          });
+          break;
+          
+        case 'tool':
+        case 'tool_use':
+        case 'toolCall':
+          setActivity({
+            type: 'tool',
+            sessionKey,
+            runId: event.runId,
+            toolName: event.data?.toolName || event.data?.name || undefined,
+            timestamp: now,
+          });
+          break;
+          
+        case 'toolResult':
+        case 'tool_result':
+          // Tool finished, might go back to thinking or streaming
+          setActivity({
+            type: 'thinking',
+            sessionKey,
+            runId: event.runId,
+            timestamp: now,
+          });
+          break;
+          
+        case 'text':
+        case 'delta':
+        case 'content_block_delta':
+          setActivity({
+            type: 'streaming',
+            sessionKey,
+            runId: event.runId,
+            content: event.data?.delta || event.data?.content,
+            timestamp: now,
+          });
+          break;
+          
+        case 'end':
+        case 'done':
+        case 'message_stop':
+          setActivity({ type: 'idle', timestamp: now });
+          break;
       }
     });
 
     return () => {
       unsubChat();
+      unsubAgent();
     };
   }, [sessionKey]);
 
@@ -260,5 +376,8 @@ export function useOpenClawChat(sessionKey: string): UseOpenClawChatResult {
     error,
     isLoading,
     reload,
+    // Agent activity
+    activity,
+    activityLabel: getActivityLabel(activity),
   };
 }

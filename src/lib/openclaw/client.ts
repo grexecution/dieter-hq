@@ -20,6 +20,23 @@ export interface Message {
   timestamp: string;
 }
 
+// Agent Activity types
+export type AgentActivityType = 
+  | 'idle'           // Nothing happening
+  | 'thinking'       // Agent is thinking/reasoning
+  | 'streaming'      // Agent is streaming text
+  | 'tool'           // Agent is executing a tool
+  | 'queued';        // Message queued, waiting
+
+export interface AgentActivity {
+  type: AgentActivityType;
+  sessionKey?: string;
+  runId?: string;
+  toolName?: string;
+  content?: string;
+  timestamp: number;
+}
+
 export interface OpenClawClientConfig {
   url: string;
   password?: string;

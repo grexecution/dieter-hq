@@ -1,7 +1,6 @@
 import { createSessionToken, setSessionCookie } from "@/server/auth/node";
 import { getPassword } from "@/server/auth/constants";
 import { verifyPassword, isBcryptHash } from "@/server/auth/password";
-import { setCsrfCookie, validateCsrf, clearCsrfCookie } from "@/server/auth/csrf";
 import {
   checkRateLimit,
   recordFailedAttempt,
@@ -12,7 +11,6 @@ import { headers } from "next/headers";
 import { LoginView } from "./LoginView";
 
 function getClientIp(headersList: Headers): string {
-  // Check common proxy headers
   const forwarded = headersList.get("x-forwarded-for");
   if (forwarded) {
     return forwarded.split(",")[0].trim();
@@ -21,7 +19,6 @@ function getClientIp(headersList: Headers): string {
   if (realIp) {
     return realIp;
   }
-  // Fallback
   return "unknown";
 }
 
@@ -31,9 +28,6 @@ export default async function LoginPage({
   searchParams?: Promise<{ err?: string }> | { err?: string };
 }) {
   const sp = searchParams ? await Promise.resolve(searchParams) : undefined;
-
-  // Generate CSRF token for the form
-  const csrfToken = await setCsrfCookie();
 
   async function loginAction(formData: FormData) {
     "use server";
@@ -46,13 +40,6 @@ export default async function LoginPage({
     if (!rateCheck.allowed) {
       const minutes = Math.ceil((rateCheck.retryAfterSec ?? 1800) / 60);
       redirect(`/login?err=rate_limited&retry=${minutes}`);
-    }
-
-    // Validate CSRF token
-    const csrfFromForm = formData.get("csrf_token") as string | null;
-    const csrfValid = await validateCsrf(csrfFromForm);
-    if (!csrfValid) {
-      redirect("/login?err=csrf_invalid");
     }
 
     const password = getPassword();
@@ -68,11 +55,8 @@ export default async function LoginPage({
     let passwordValid = false;
 
     if (isBcryptHash(password)) {
-      // Modern: compare against bcrypt hash
       passwordValid = await verifyPassword(attempt, password);
     } else {
-      // Legacy: plain text comparison (not recommended)
-      // This branch allows migration from plain to hashed passwords
       passwordValid = attempt === password;
     }
 
@@ -81,14 +65,13 @@ export default async function LoginPage({
       redirect("/login?err=bad_password");
     }
 
-    // Success - clear rate limit and CSRF
+    // Success - clear rate limit
     clearRateLimit(ip);
-    await clearCsrfCookie();
 
     const token = createSessionToken({ iat: Date.now() });
     await setSessionCookie(token);
     redirect("/chat");
   }
 
-  return <LoginView err={sp?.err} action={loginAction} csrfToken={csrfToken} />;
+  return <LoginView err={sp?.err} action={loginAction} />;
 }

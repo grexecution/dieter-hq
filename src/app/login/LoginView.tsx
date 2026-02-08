@@ -10,8 +10,6 @@ function getErrorMessage(err: string | undefined): string | null {
       return "Missing HQ_PASSWORD env var. Set it and restart the server.";
     case "bad_password":
       return "Wrong password.";
-    case "csrf_invalid":
-      return "Security token expired. Please try again.";
     case "rate_limited":
       return "Too many failed attempts. Please wait before trying again.";
     default:
@@ -22,11 +20,9 @@ function getErrorMessage(err: string | undefined): string | null {
 export function LoginView({
   err,
   action,
-  csrfToken,
 }: {
   err?: string;
   action: (formData: FormData) => void;
-  csrfToken: string;
 }) {
   const errorMessage = getErrorMessage(err);
 
@@ -45,9 +41,6 @@ export function LoginView({
           )}
 
           <form action={action} className="grid gap-3">
-            {/* CSRF Token - hidden field */}
-            <input type="hidden" name="csrf_token" value={csrfToken} />
-
             <Input
               name="password"
               type="password"

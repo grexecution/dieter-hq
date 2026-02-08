@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
-import { Menu, Send, Sparkles, User, Bot } from "lucide-react";
+import { Menu, Send, Sparkles, User, Bot, Wifi, WifiOff } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -15,6 +15,10 @@ import { NowBar } from "./NowBar";
 import { OpenClawStatusSidebar } from "./OpenClawStatusSidebar";
 import { AgentStatusPanel } from "@/components/agent-status-panel";
 import { MarkdownContent } from "@/components/MarkdownContent";
+
+// OpenClaw WebSocket Hooks
+import { useOpenClawConnection, useOpenClawChat } from "@/lib/openclaw/hooks";
+import type { Message as OpenClawMessage } from "@/lib/openclaw/types";
 
 const VoiceRecorder = dynamic(
   () => import("./_components/VoiceRecorder").then((m) => m.VoiceRecorder),
@@ -58,6 +62,19 @@ export type ArtefactRow = {
 };
 
 // ============================================
+// Session Key Mapping
+// ============================================
+
+function getSessionKey(threadId: string): string {
+  // Thread → Session Key mapping
+  // dev: threads go to the coder agent
+  // other threads go to the main agent
+  return threadId.startsWith("dev:")
+    ? `agent:coder:dieter-hq:${threadId}`
+    : `agent:main:dieter-hq:${threadId}`;
+}
+
+// ============================================
 // Utilities
 // ============================================
 
@@ -80,12 +97,68 @@ function isAudioMime(m: string): boolean {
   return m.startsWith("audio/") || m === "video/webm";
 }
 
-function initials(name: string): string {
-  const parts = name.trim().split(/\s+/).slice(0, 2);
-  return parts
-    .map((p) => p[0])
-    .join("")
-    .toUpperCase();
+function formatTimestamp(isoString: string): string {
+  try {
+    const date = new Date(isoString);
+    return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  } catch {
+    return "";
+  }
+}
+
+// Convert OpenClaw Message to MessageRow
+function toMessageRow(msg: OpenClawMessage, threadId: string): MessageRow {
+  return {
+    id: msg.id,
+    threadId,
+    role: msg.role as "user" | "assistant" | "system",
+    content: msg.content,
+    createdAt: new Date(msg.timestamp).getTime(),
+    createdAtLabel: formatTimestamp(msg.timestamp),
+  };
+}
+
+// ============================================
+// Connection Status Indicator
+// ============================================
+
+interface ConnectionStatusProps {
+  connected: boolean;
+  connecting: boolean;
+  reconnecting: boolean;
+}
+
+function ConnectionStatus({ connected, connecting, reconnecting }: ConnectionStatusProps) {
+  if (connected) {
+    return (
+      <div className="flex items-center gap-1.5 text-xs text-success">
+        <span className="relative flex h-2 w-2">
+          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-success opacity-75" />
+          <span className="relative inline-flex h-2 w-2 rounded-full bg-success" />
+        </span>
+        <span className="hidden sm:inline">Connected</span>
+      </div>
+    );
+  }
+
+  if (connecting || reconnecting) {
+    return (
+      <div className="flex items-center gap-1.5 text-xs text-warning">
+        <span className="relative flex h-2 w-2">
+          <span className="absolute inline-flex h-full w-full animate-pulse rounded-full bg-warning opacity-75" />
+          <span className="relative inline-flex h-2 w-2 rounded-full bg-warning" />
+        </span>
+        <span className="hidden sm:inline">{reconnecting ? "Reconnecting..." : "Connecting..."}</span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex items-center gap-1.5 text-xs text-destructive">
+      <span className="h-2 w-2 rounded-full bg-destructive" />
+      <span className="hidden sm:inline">Disconnected</span>
+    </div>
+  );
 }
 
 // ============================================
@@ -242,9 +315,10 @@ interface ComposerProps {
   onVoiceTranscript: (transcript: string) => void;
   onVoiceMessage: (message: MessageRow) => void;
   threadId: string;
+  disabled?: boolean;
 }
 
-function Composer({ draft, setDraft, isSending, onSubmit, onVoiceTranscript, onVoiceMessage, threadId }: ComposerProps) {
+function Composer({ draft, setDraft, isSending, onSubmit, onVoiceTranscript, onVoiceMessage, threadId, disabled }: ComposerProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Auto-resize textarea
@@ -263,6 +337,8 @@ function Composer({ draft, setDraft, isSending, onSubmit, onVoiceTranscript, onV
       onSubmit();
     }
   };
+
+  const isDisabled = isSending || disabled;
 
   return (
     <div className="sticky bottom-0 border-t border-divider bg-content1 px-4 py-4">
@@ -284,7 +360,7 @@ function Composer({ draft, setDraft, isSending, onSubmit, onVoiceTranscript, onV
               onKeyDown={handleKeyDown}
               placeholder="Message Dieter..."
               rows={1}
-              disabled={isSending}
+              disabled={isDisabled}
               className={cn(
                 "w-full resize-none rounded-xl border border-divider bg-default-100 px-4 py-3 pr-12",
                 "text-sm placeholder:text-foreground-400",
@@ -297,17 +373,17 @@ function Composer({ draft, setDraft, isSending, onSubmit, onVoiceTranscript, onV
 
           {/* Action Buttons */}
           <div className="flex items-center gap-2">
-            <ChatComposer threadId={threadId} disabled={isSending} />
+            <ChatComposer threadId={threadId} disabled={isDisabled} />
             <VoiceRecorder
               threadId={threadId}
               onTranscript={onVoiceTranscript}
               onVoiceMessage={onVoiceMessage}
-              disabled={isSending}
+              disabled={isDisabled}
             />
             <Button
               type="submit"
               size="icon"
-              disabled={isSending || !draft.trim()}
+              disabled={isDisabled || !draft.trim()}
               className={cn(
                 "h-11 w-11 rounded-full transition-all",
                 draft.trim()
@@ -349,57 +425,75 @@ export function ChatView({
   newThreadAction: (formData: FormData) => void;
   logoutAction: (formData: FormData) => void;
 }) {
+  // OpenClaw WebSocket connection
+  const connection = useOpenClawConnection();
+  
+  // Session key for the current thread
+  const sessionKey = useMemo(() => getSessionKey(activeThreadId), [activeThreadId]);
+  
+  // OpenClaw chat hook for WebSocket-based messaging
+  const chat = useOpenClawChat(sessionKey);
+
+  // Local state for messages (merged from initial props and WS)
   const [liveMessages, setLiveMessages] = useState<MessageRow[]>(threadMessages);
   const [mobileHudOpen, setMobileHudOpen] = useState(false);
   const [draft, setDraft] = useState("");
   const [isSending, setIsSending] = useState(false);
+  const [useHttpFallback, setUseHttpFallback] = useState(false);
   const endRef = useRef<HTMLDivElement | null>(null);
 
-  // Sync messages from props
+  // Sync messages from props (initial load)
   useEffect(() => {
     setLiveMessages(threadMessages);
   }, [threadMessages]);
 
+  // Sync messages from WebSocket hook
+  useEffect(() => {
+    if (chat.messages.length > 0 && connection.connected) {
+      // Convert OpenClaw messages to MessageRow format
+      const wsMessages = chat.messages.map((m) => toMessageRow(m, activeThreadId));
+      
+      // Merge with existing messages, avoiding duplicates
+      setLiveMessages((prev) => {
+        const existingIds = new Set(prev.map((m) => m.id));
+        const newMsgs = wsMessages.filter((m) => !existingIds.has(m.id));
+        if (newMsgs.length === 0) return prev;
+        return [...prev, ...newMsgs].sort((a, b) => a.createdAt - b.createdAt);
+      });
+    }
+  }, [chat.messages, activeThreadId, connection.connected]);
+
   // Auto-scroll to bottom
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
-  }, [liveMessages.length]);
+  }, [liveMessages.length, chat.streamingContent]);
 
+  // Fallback to HTTP if WebSocket isn't available after 5 seconds
+  useEffect(() => {
+    if (connection.connected) {
+      setUseHttpFallback(false);
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      if (!connection.connected && !connection.connecting) {
+        console.log("[ChatView] WebSocket unavailable, using HTTP fallback");
+        setUseHttpFallback(true);
+      }
+    }, 5000);
+
+    return () => clearTimeout(timer);
+  }, [connection.connected, connection.connecting]);
+
+  // HTTP Polling fallback (only when WS is unavailable)
   const lastCreatedAt = useMemo(() => {
     const last = liveMessages[liveMessages.length - 1];
     return last?.createdAt ?? 0;
   }, [liveMessages]);
 
-  // SSE subscription for real-time messages
   useEffect(() => {
-    if (activeThreadId !== "main") return;
-
-    const es = new EventSource(
-      `/api/stream?thread=${encodeURIComponent(activeThreadId)}&since=${encodeURIComponent(String(lastCreatedAt))}`
-    );
-
-    const onMessage = (ev: MessageEvent) => {
-      try {
-        const item = JSON.parse(ev.data) as MessageRow;
-        if (!item?.id) return;
-        setLiveMessages((prev) => {
-          if (prev.some((m) => m.id === item.id)) return prev;
-          return [...prev, item];
-        });
-      } catch {
-        // ignore parse errors
-      }
-    };
-
-    es.addEventListener("message", onMessage);
-    return () => {
-      es.removeEventListener("message", onMessage);
-      es.close();
-    };
-  }, [activeThreadId, lastCreatedAt]);
-
-  // Polling fallback
-  useEffect(() => {
+    // Only use HTTP polling as fallback when WS is not connected
+    if (connection.connected || !useHttpFallback) return;
     if (activeThreadId !== "main") return;
 
     let stopped = false;
@@ -433,107 +527,105 @@ export function ChatView({
       stopped = true;
       clearInterval(t);
     };
-  }, [activeThreadId, lastCreatedAt]);
+  }, [activeThreadId, lastCreatedAt, connection.connected, useHttpFallback]);
 
-  // Streaming message state - the assistant message being streamed
-  const [streamingContent, setStreamingContent] = useState<string | null>(null);
-  const [streamingMsgId, setStreamingMsgId] = useState<string | null>(null);
-
-  // Send message handler with SSE streaming
-  const handleSend = async () => {
+  // Send message handler
+  const handleSend = useCallback(async () => {
     const content = draft.trim();
     if (!content || isSending) return;
 
     setIsSending(true);
     setDraft("");
-    setStreamingContent("");
-    setStreamingMsgId(null);
 
     try {
-      const r = await fetch("/api/chat/send", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ threadId: activeThreadId, content }),
-      });
+      // Try WebSocket first
+      if (connection.connected) {
+        await chat.send(content);
+      } else {
+        // HTTP fallback
+        const r = await fetch("/api/chat/send", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ threadId: activeThreadId, content }),
+        });
 
-      if (!r.ok) throw new Error("send_failed");
+        if (!r.ok) throw new Error("send_failed");
 
-      const contentType = r.headers.get("content-type") || "";
+        const contentType = r.headers.get("content-type") || "";
 
-      // Handle SSE streaming response
-      if (contentType.includes("text/event-stream") && r.body) {
-        const reader = r.body.getReader();
-        const decoder = new TextDecoder();
-        let buffer = "";
-        let accumulatedContent = "";
+        // Handle SSE streaming response (HTTP fallback)
+        if (contentType.includes("text/event-stream") && r.body) {
+          const reader = r.body.getReader();
+          const decoder = new TextDecoder();
+          let buffer = "";
 
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
 
-          buffer += decoder.decode(value, { stream: true });
-          const lines = buffer.split("\n");
-          buffer = lines.pop() || "";
+            buffer += decoder.decode(value, { stream: true });
+            const lines = buffer.split("\n");
+            buffer = lines.pop() || "";
 
-          for (const line of lines) {
-            if (!line.startsWith("data: ")) continue;
-            const payload = line.slice(6).trim();
-            if (!payload) continue;
+            for (const line of lines) {
+              if (!line.startsWith("data: ")) continue;
+              const payload = line.slice(6).trim();
+              if (!payload) continue;
 
-            try {
-              const event = JSON.parse(payload) as {
-                type: "user_confirmed" | "delta" | "done";
-                item?: MessageRow;
-                content?: string;
-              };
+              try {
+                const event = JSON.parse(payload) as {
+                  type: "user_confirmed" | "delta" | "done";
+                  item?: MessageRow;
+                  content?: string;
+                };
 
-              if (event.type === "user_confirmed" && event.item) {
-                // Add user message to the list
-                setLiveMessages((prev) => {
-                  if (prev.some((m) => m.id === event.item!.id)) return prev;
-                  return [...prev, event.item!];
-                });
-                // Start showing streaming placeholder
-                const tempId = `streaming-${Date.now()}`;
-                setStreamingMsgId(tempId);
-              } else if (event.type === "delta" && event.content) {
-                // Accumulate streaming content
-                accumulatedContent += event.content;
-                setStreamingContent(accumulatedContent);
-              } else if (event.type === "done" && event.item) {
-                // Finalize: add complete assistant message
-                setStreamingContent(null);
-                setStreamingMsgId(null);
-                setLiveMessages((prev) => {
-                  if (prev.some((m) => m.id === event.item!.id)) return prev;
-                  return [...prev, event.item!];
-                });
+                if (event.type === "user_confirmed" && event.item) {
+                  setLiveMessages((prev) => {
+                    if (prev.some((m) => m.id === event.item!.id)) return prev;
+                    return [...prev, event.item!];
+                  });
+                } else if (event.type === "done" && event.item) {
+                  setLiveMessages((prev) => {
+                    if (prev.some((m) => m.id === event.item!.id)) return prev;
+                    return [...prev, event.item!];
+                  });
+                }
+              } catch {
+                // Ignore parse errors
               }
-            } catch {
-              // Ignore parse errors
             }
           }
-        }
-      } else {
-        // Fallback: non-streaming JSON response
-        const data = (await r.json()) as { ok: boolean; item: MessageRow };
-        if (data?.ok && data.item?.id) {
-          setLiveMessages((prev) => {
-            if (prev.some((m) => m.id === data.item.id)) return prev;
-            return [...prev, data.item];
-          });
+        } else {
+          // Non-streaming JSON response
+          const data = (await r.json()) as { ok: boolean; item: MessageRow };
+          if (data?.ok && data.item?.id) {
+            setLiveMessages((prev) => {
+              if (prev.some((m) => m.id === data.item.id)) return prev;
+              return [...prev, data.item];
+            });
+          }
         }
       }
-    } catch {
+    } catch (error) {
+      console.error("[ChatView] Send error:", error);
       setDraft(content); // Restore on failure
-      setStreamingContent(null);
-      setStreamingMsgId(null);
     } finally {
       setIsSending(false);
     }
-  };
+  }, [draft, isSending, connection.connected, chat, activeThreadId]);
+
+  // Handle voice message from VoiceRecorder
+  const handleVoiceMessage = useCallback((message: MessageRow) => {
+    setLiveMessages((prev) => {
+      if (prev.some((m) => m.id === message.id)) return prev;
+      return [...prev, message];
+    });
+  }, []);
 
   const mainCount = threads.find((t) => t.threadId === "main")?.count ?? liveMessages.length;
+
+  // Determine if we're currently streaming
+  const isStreaming = chat.isStreaming || isSending;
 
   return (
     <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
@@ -596,19 +688,46 @@ export function ChatView({
                     <Bot className="h-5 w-5" />
                   </AvatarFallback>
                 </Avatar>
-                {/* Online indicator */}
-                <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-background bg-success" />
+                {/* Online indicator based on WS connection */}
+                <span 
+                  className={cn(
+                    "absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-background",
+                    connection.connected ? "bg-success" : "bg-warning"
+                  )} 
+                />
               </div>
               <div className="min-w-0">
                 <h1 className="truncate text-base font-semibold">Dieter</h1>
                 <p className="text-xs text-muted-foreground">
-                  AI Assistant • Online
+                  AI Assistant • <ConnectionStatus {...connection} />
                 </p>
               </div>
             </div>
           </div>
 
           <div className="flex items-center gap-2">
+            {/* WebSocket/HTTP indicator */}
+            <div 
+              className={cn(
+                "flex items-center gap-1 rounded-full px-2 py-1 text-xs",
+                connection.connected 
+                  ? "bg-success/10 text-success" 
+                  : useHttpFallback 
+                    ? "bg-warning/10 text-warning"
+                    : "bg-muted text-muted-foreground"
+              )}
+              title={connection.connected ? "WebSocket connected" : useHttpFallback ? "Using HTTP fallback" : "Connecting..."}
+            >
+              {connection.connected ? (
+                <Wifi className="h-3 w-3" />
+              ) : (
+                <WifiOff className="h-3 w-3" />
+              )}
+              <span className="hidden sm:inline">
+                {connection.connected ? "WS" : useHttpFallback ? "HTTP" : "..."}
+              </span>
+            </div>
+            
             <span className="rounded-full bg-muted/50 px-2.5 py-1 text-xs text-muted-foreground tabular-nums">
               {mainCount} messages
             </span>
@@ -621,7 +740,7 @@ export function ChatView({
         {/* Messages */}
         <ScrollArea className="flex-1">
           <div className="mx-auto flex w-full max-w-3xl flex-col gap-4 px-4 py-6">
-            {liveMessages.length > 0 || streamingMsgId ? (
+            {liveMessages.length > 0 || chat.isStreaming ? (
               <>
                 {liveMessages.map((m) => {
                   const artefactId = extractArtefactIdFromContent(m.content);
@@ -640,7 +759,7 @@ export function ChatView({
                   );
                 })}
                 {/* Streaming message indicator */}
-                {streamingMsgId && (
+                {chat.isStreaming && (
                   <div className="flex items-end gap-3">
                     <Avatar className="h-8 w-8 shrink-0">
                       <AvatarImage src="/dieter-avatar.png" alt="Dieter" />
@@ -658,13 +777,13 @@ export function ChatView({
                         </span>
                       </div>
                       <div className="text-sm leading-relaxed min-h-[1.5rem]">
-                        {streamingContent ? (
-                          <MarkdownContent content={streamingContent} className="text-sm" />
+                        {chat.streamingContent ? (
+                          <MarkdownContent content={chat.streamingContent} className="text-sm" />
                         ) : (
                           <span className="flex items-center gap-1.5 text-zinc-400">
-                            <span className="inline-block h-1.5 w-1.5 rounded-full bg-current opacity-60" />
-                            <span className="inline-block h-1.5 w-1.5 rounded-full bg-current opacity-40" />
-                            <span className="inline-block h-1.5 w-1.5 rounded-full bg-current opacity-20" />
+                            <span className="inline-block h-1.5 w-1.5 rounded-full bg-current animate-pulse" style={{ animationDelay: "0ms" }} />
+                            <span className="inline-block h-1.5 w-1.5 rounded-full bg-current animate-pulse" style={{ animationDelay: "150ms" }} />
+                            <span className="inline-block h-1.5 w-1.5 rounded-full bg-current animate-pulse" style={{ animationDelay: "300ms" }} />
                           </span>
                         )}
                       </div>
@@ -694,20 +813,15 @@ export function ChatView({
         <Composer
           draft={draft}
           setDraft={setDraft}
-          isSending={isSending}
+          isSending={isStreaming}
           onSubmit={handleSend}
           onVoiceTranscript={(transcript) => {
             // Set transcript as draft (fallback for old API)
             setDraft(transcript);
           }}
-          onVoiceMessage={(message) => {
-            // Add voice message to chat immediately
-            setLiveMessages((prev) => {
-              if (prev.some((m) => m.id === message.id)) return prev;
-              return [...prev, message];
-            });
-          }}
+          onVoiceMessage={handleVoiceMessage}
           threadId={activeThreadId}
+          disabled={!connection.connected && !useHttpFallback}
         />
       </section>
     </div>

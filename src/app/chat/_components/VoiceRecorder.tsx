@@ -287,13 +287,13 @@ export function VoiceRecorder({ onTranscript, onVoiceMessage, onTranscriptionSta
         formData.append("durationMs", String(duration));
 
         // Send as voice message (includes synchronous transcription)
-        console.log("[VoiceRecorder] Sending to /api/chat/voice-message...");
+        console.log("[VoiceRecorder] 🎤 Sending to /api/chat/voice-message...", { threadId, durationMs: duration, blobSize: blob.size, mimeType: recorder.mimeType });
         const response = await fetch("/api/chat/voice-message", {
           method: "POST",
           body: formData,
         });
 
-        console.log("[VoiceRecorder] Response:", response.status, response.ok);
+        console.log("[VoiceRecorder] 📡 Response status:", response.status, response.ok);
 
         if (response.ok) {
           const data = await response.json();

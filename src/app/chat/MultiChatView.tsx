@@ -1471,7 +1471,8 @@ export function MultiChatView({
               onQueueDelete={handleQueueDelete}
               onVoiceTranscript={(transcript) => setDraft(transcript)}
               onVoiceMessage={async (message) => {
-                console.log("[Voice] onVoiceMessage called:", { id: message.id, hasAudioUrl: !!message.audioUrl, transcription: message.transcription?.slice(0, 50), threadId: effectiveThreadId });
+                console.log("[Voice] 🎤 onVoiceMessage called:", { id: message.id, hasAudioUrl: !!message.audioUrl, transcription: message.transcription?.slice(0, 50), threadId: effectiveThreadId });
+                console.log("[Voice] 🎤 Full message object:", JSON.stringify(message, null, 2));
                 
                 // Add voice message to chat IMMEDIATELY (user sees playable audio right away!)
                 const threadIdAtSend = effectiveThreadId;
@@ -1546,25 +1547,29 @@ export function MultiChatView({
                 
                 // If transcription exists immediately, trigger assistant
                 if (message.transcription) {
+                  console.log("[Voice] ✅ Transcription exists immediately, triggering assistant");
                   await triggerAssistantResponse(message.transcription);
                 } else {
                   // Transcription is processing in background - poll for it
-                  console.log("[Voice] No transcription yet, polling for background transcription...");
+                  console.log("[Voice] ⏳ No transcription yet, starting poll for background transcription...");
                   
                   // Poll for transcription (max 30 seconds, every 500ms)
                   const pollForTranscription = async () => {
                     const maxAttempts = 60; // 30 seconds
                     const pollInterval = 500;
+                    console.log("[Voice] 🔄 Starting transcription poll, messageId:", message.id);
                     
                     for (let attempt = 0; attempt < maxAttempts; attempt++) {
                       await new Promise(resolve => setTimeout(resolve, pollInterval));
                       
                       try {
+                        console.log(`[Voice] 🔄 Poll attempt ${attempt + 1}/${maxAttempts}`);
                         const res = await fetch(`/api/chat/voice-message/${message.id}`);
                         if (res.ok) {
                           const data = await res.json();
+                          console.log("[Voice] 🔄 Poll response:", { transcription: data.transcription?.slice(0, 30), pending: data.pending });
                           if (data.transcription) {
-                            console.log("[Voice] Background transcription received:", data.transcription.slice(0, 50));
+                            console.log("[Voice] ✅ Background transcription received:", data.transcription.slice(0, 50));
                             
                             // Update local message with transcription
                             setLiveMessages((prev) => ({

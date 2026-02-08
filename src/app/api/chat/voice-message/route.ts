@@ -16,9 +16,12 @@ async function transcribeInBackground(
   audioBuffer: Buffer,
   mimeType: string,
 ): Promise<void> {
+  console.log(`[Voice] 🎙️ Starting background transcription for ${messageId}, size: ${audioBuffer.length} bytes`);
   try {
     const { transcribeViaGateway } = await import("@/server/whisper/transcribe-gateway");
+    console.log(`[Voice] 🎙️ Calling transcribeViaGateway...`);
     const text = await transcribeViaGateway(audioBuffer, mimeType, { language: "de" });
+    console.log(`[Voice] 🎙️ Transcription result: ${text ? text.slice(0, 50) : 'null'}`);
     
     if (text) {
       // Update the message with transcription

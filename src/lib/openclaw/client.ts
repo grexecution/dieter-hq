@@ -99,11 +99,14 @@ export class OpenClawClient {
 
         this.ws.onopen = async () => {
           try {
+            console.log('[OpenClaw] WebSocket opened, authenticating...');
             await this.authenticate(wsAuth);
             this.reconnectAttempts = 0;
             this.setConnectionState('connected');
+            console.log('[OpenClaw] ✅ Connected successfully!');
             resolve();
           } catch (error) {
+            console.error('[OpenClaw] ❌ Auth failed:', error);
             this.ws?.close();
             reject(error);
           }
@@ -385,6 +388,15 @@ export function getOpenClawClient(): OpenClawClient {
     const token = typeof window !== 'undefined'
       ? process.env.NEXT_PUBLIC_OPENCLAW_TOKEN
       : undefined;
+
+    // Debug: Log connection setup
+    if (typeof window !== 'undefined') {
+      console.log('[OpenClaw] Client init:', { 
+        url, 
+        hasToken: !!token,
+        envSet: !!process.env.NEXT_PUBLIC_OPENCLAW_WS_URL 
+      });
+    }
 
     defaultClient = new OpenClawClient({
       url,

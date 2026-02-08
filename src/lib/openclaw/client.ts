@@ -452,13 +452,11 @@ export function getOpenClawClient(): OpenClawClient {
       ? (process.env.NEXT_PUBLIC_OPENCLAW_PASSWORD ?? process.env.NEXT_PUBLIC_OPENCLAW_TOKEN)
       : undefined;
 
-    console.log('[OpenClaw] Creating client:', { 
-      url, 
-      hasPassword: !!password,
-      envUrl: process.env.NEXT_PUBLIC_OPENCLAW_WS_URL,
-      envPasswordSet: !!process.env.NEXT_PUBLIC_OPENCLAW_PASSWORD,
-      envTokenSet: !!process.env.NEXT_PUBLIC_OPENCLAW_TOKEN,
-    });
+    console.log('[OpenClaw] Creating client');
+    console.log('[OpenClaw] URL:', url);
+    console.log('[OpenClaw] Password set:', !!password);
+    console.log('[OpenClaw] ENV URL:', process.env.NEXT_PUBLIC_OPENCLAW_WS_URL);
+    console.log('[OpenClaw] ENV Token set:', !!process.env.NEXT_PUBLIC_OPENCLAW_TOKEN);
 
     defaultClient = new OpenClawClient({ url, password });
   }

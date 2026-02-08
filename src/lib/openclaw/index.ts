@@ -74,6 +74,11 @@ export {
 export {
   useOpenClawConnection,
   useOpenClawChat,
-  useOpenClawEvent,
-  useOpenClawRequest,
+  useGlobalActivity,
+  getActivityLabel,
+} from './hooks';
+
+export type {
+  SessionActivity,
+  GlobalActivityState,
 } from './hooks';

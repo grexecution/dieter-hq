@@ -527,7 +527,7 @@ function Composer({ draft, setDraft, isSending, queue, onSubmit, onVoiceTranscri
 
   return (
     <div
-      className="sticky bottom-0 border-t border-zinc-200/50 dark:border-zinc-800/50 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-xl px-3 py-2 md:px-5 md:py-4 pb-[max(0.5rem,calc(env(safe-area-inset-bottom,0px)+0.25rem))] md:pb-[max(1rem,calc(env(safe-area-inset-bottom,0px)+0.75rem))]"
+      className="sticky bottom-0 border-t border-zinc-200/50 dark:border-zinc-800/50 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-xl px-3 py-2 md:px-5 md:py-4"
     >
       <div className="mx-auto w-full max-w-3xl lg:max-w-4xl relative">
         <form
@@ -1544,6 +1544,9 @@ export function MultiChatView({
               threadId={effectiveThreadId}
               activeTab={activeTab}
             />
+
+            {/* Safe area spacer — keeps composer content above home indicator in PWA standalone */}
+            <div className="bg-white/80 dark:bg-zinc-950/80 backdrop-blur-xl h-[env(safe-area-inset-bottom,0px)] md:h-0" />
           </>
         )}
       </section>

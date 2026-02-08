@@ -119,9 +119,17 @@ export class OpenClawClient {
 
   async connect(): Promise<void> {
     if (this.connectionState === 'connected' || this.connectionState === 'connecting') {
+      console.log('[OpenClaw] Already connected or connecting, skipping');
       return;
     }
 
+    // Don't try to connect if URL is disabled
+    if (this.config.url === 'wss://disabled') {
+      console.log('[OpenClaw] WebSocket disabled (no URL configured)');
+      return;
+    }
+
+    console.log('[OpenClaw] Connecting to:', this.config.url);
     this.setConnectionState('connecting');
     this.clearReconnectTimer();
 
@@ -132,6 +140,7 @@ export class OpenClawClient {
         this.ws = new WebSocket(this.config.url);
 
         this.ws.onopen = () => {
+          console.log('[OpenClaw] WebSocket opened, waiting for challenge...');
           // Don't resolve yet - wait for connect.challenge and auth
         };
 
@@ -139,11 +148,13 @@ export class OpenClawClient {
           this.handleMessage(event.data);
         };
 
-        this.ws.onerror = () => {
+        this.ws.onerror = (err) => {
+          console.error('[OpenClaw] WebSocket error:', err);
           // Error handling in onclose
         };
 
         this.ws.onclose = (event) => {
+          console.log('[OpenClaw] WebSocket closed:', event.code, event.reason);
           const wasConnected = this.connectionState === 'connected';
           const wasConnecting = this.connectionState === 'connecting';
           
@@ -231,6 +242,7 @@ export class OpenClawClient {
 
       this.pendingRequests.set(requestId, {
         resolve: () => {
+          console.log('[OpenClaw] ✅ Connected and authenticated!');
           this.reconnectAttempts = 0;
           this.setConnectionState('connected');
           if (this.connectPromise) {
@@ -310,11 +322,15 @@ export class OpenClawClient {
   private handleEvent(frame: EventFrame): void {
     // Handle connect.challenge - this triggers the actual connect request
     if (frame.event === 'connect.challenge') {
-      this.sendConnectRequest().catch(() => {
-        // Auth failed
+      console.log('[OpenClaw] Received challenge, authenticating...');
+      this.sendConnectRequest().catch((err) => {
+        console.error('[OpenClaw] Auth failed:', err);
       });
       return;
     }
+    
+    // Log all events for debugging
+    console.log('[OpenClaw] Event:', frame.event, frame.payload);
 
     // Broadcast to event handlers
     const handlers = this.eventHandlers.get(frame.event);
@@ -440,13 +456,27 @@ export function getOpenClawClient(): OpenClawClient {
   if (!defaultClient) {
     // Read from environment
     const url = typeof window !== 'undefined' 
-      ? (process.env.NEXT_PUBLIC_OPENCLAW_WS_URL ?? 'wss://localhost:18789')
-      : 'wss://localhost:18789';
+      ? process.env.NEXT_PUBLIC_OPENCLAW_WS_URL
+      : undefined;
     
     // Support both PASSWORD and TOKEN (TOKEN is legacy, but maps to same gateway password)
     const password = typeof window !== 'undefined'
       ? (process.env.NEXT_PUBLIC_OPENCLAW_PASSWORD ?? process.env.NEXT_PUBLIC_OPENCLAW_TOKEN)
       : undefined;
+
+    // Log for debugging
+    console.log('[OpenClaw] Client init:', {
+      url: url ?? '(not set)',
+      hasPassword: !!password,
+      envSet: !!url && !!password,
+    });
+
+    if (!url) {
+      console.warn('[OpenClaw] NEXT_PUBLIC_OPENCLAW_WS_URL not set - WebSocket disabled');
+      // Create a dummy client that won't connect
+      defaultClient = new OpenClawClient({ url: 'wss://disabled' });
+      return defaultClient;
+    }
 
     defaultClient = new OpenClawClient({ url, password });
   }

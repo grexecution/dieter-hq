@@ -18,6 +18,52 @@ import {
 } from '@/lib/openclaw/hooks';
 
 // ============================================================================
+// Session Name Formatter
+// ============================================================================
+
+/**
+ * Converts technical session keys to human-readable names
+ * 
+ * Examples:
+ * - "agent:main:dieter-hq:main" → "Dieter HQ"
+ * - "agent:subagent:gyn-portale:abc123" → "Gyn Portale"
+ * - "agent:subagent:security-agent:xyz" → "Security Agent"
+ * - "gyn-websites" → "Gyn Websites"
+ */
+function formatSessionName(sessionKey: string, label?: string): string {
+  // If we have a clean label, use it
+  if (label && !label.includes(':')) {
+    return formatSlug(label);
+  }
+  
+  // Parse session key: agent:type:name:id
+  const parts = sessionKey.split(':');
+  
+  if (parts.length >= 3) {
+    // Get the meaningful part (usually index 2)
+    const name = parts[2];
+    return formatSlug(name);
+  }
+  
+  // Fallback: just format whatever we have
+  return formatSlug(label || sessionKey);
+}
+
+/**
+ * Convert slug to Title Case
+ * "gyn-portale" → "Gyn Portale"
+ * "security_agent" → "Security Agent"
+ */
+function formatSlug(slug: string): string {
+  return slug
+    .replace(/[-_]/g, ' ')
+    .split(' ')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ')
+    .trim() || 'Agent';
+}
+
+// ============================================================================
 // Activity Icon
 // ============================================================================
 
@@ -46,8 +92,9 @@ interface SessionChipProps {
 }
 
 const SessionChip = memo(function SessionChip({ session }: SessionChipProps) {
-  const label = getActivityLabel(session);
+  const activityLabel = getActivityLabel(session);
   const isActive = session.type !== 'idle';
+  const displayName = formatSessionName(session.sessionKey, session.label);
   
   return (
     <motion.div
@@ -64,14 +111,14 @@ const SessionChip = memo(function SessionChip({ session }: SessionChipProps) {
       )}
     >
       <ActivityIcon type={session.type} />
-      <span className="font-medium truncate max-w-[80px]">
-        {session.label || 'agent'}
+      <span className="font-medium truncate max-w-[100px]">
+        {displayName}
       </span>
-      {label && (
+      {activityLabel && (
         <>
           <span className="text-zinc-500 dark:text-zinc-400">·</span>
           <span className="text-zinc-400 dark:text-zinc-500 truncate max-w-[120px]">
-            {label}
+            {activityLabel}
           </span>
         </>
       )}

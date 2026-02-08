@@ -26,6 +26,42 @@ export default async function ChatPage() {
   // Get all supported thread IDs (fixed tabs)
   const supportedThreadIds = CHAT_TAB_IDS;
 
+  // Check if DATABASE_URL is configured
+  const hasDb = !!process.env.DATABASE_URL;
+  
+  // If no database, return empty state (useful for local WebSocket testing)
+  if (!hasDb) {
+    console.warn('[ChatPage] DATABASE_URL not configured - using empty state for local dev');
+    
+    const emptyThreadMessages: Record<string, any[]> = {};
+    for (const tabId of supportedThreadIds) {
+      emptyThreadMessages[tabId] = [];
+    }
+    
+    async function newThreadAction() {
+      "use server";
+      redirect("/chat");
+    }
+    
+    async function logoutAction() {
+      "use server";
+      await clearSessionCookie();
+      redirect("/login");
+    }
+    
+    return (
+      <ChatShell>
+        <MultiChatView
+          threads={[]}
+          threadMessages={emptyThreadMessages}
+          artefactsById={{}}
+          newThreadAction={newThreadAction}
+          logoutAction={logoutAction}
+        />
+      </ChatShell>
+    );
+  }
+
   // Load threads with statistics (fixed tabs)
   const threads = await db
     .select({

@@ -954,9 +954,11 @@ export function MultiChatView({
               }
             } else if (event.type === "keepalive") {
               // Server is still processing - show thinking indicator
-              console.log(`[Keepalive] Thread ${threadId} still processing...`);
-              // Keep the "thinking" state active
+              console.log(`[Keepalive] Thread ${threadId}: ${event.message || 'still processing...'}`);
+              // Keep the "thinking" state active and ensure streaming bubble shows
               setAgentActivityStates(prev => ({ ...prev, [threadId]: "thinking" }));
+              // Initialize streaming bubble if not already (shows thinking dots)
+              setStreamingText(prev => prev[threadId] !== undefined ? prev : { ...prev, [threadId]: "" });
             } else if (event.type === "delta" && event.content) {
               // First content received - switch to typing state
               setAgentActivityStates(prev => ({ ...prev, [threadId]: "typing" }));

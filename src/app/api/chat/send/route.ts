@@ -263,15 +263,25 @@ export async function POST(req: NextRequest) {
         const agentId = isWorkspaceThread ? 'coder' : (threadToAgent[threadId] || 'main');
 
         // 🔄 KEEP-ALIVE: Send periodic pings to prevent timeout during long tasks
+        // Send first ping immediately, then every 3 seconds
         let firstByteReceived = false;
+        
+        // Immediate first ping to prevent early timeout
+        controller.enqueue(encoder.encode(`data: ${JSON.stringify({
+          type: "keepalive",
+          timestamp: Date.now(),
+          message: "Dieter denkt nach...",
+        })}\n\n`));
+        
         const keepAliveInterval = setInterval(() => {
           if (!firstByteReceived) {
             controller.enqueue(encoder.encode(`data: ${JSON.stringify({
               type: "keepalive",
               timestamp: Date.now(),
+              message: "Dieter arbeitet noch...",
             })}\n\n`));
           }
-        }, 5000); // Ping every 5 seconds
+        }, 3000); // Ping every 3 seconds (reduced from 5)
 
         try {
           // 🧠 INFINITE CONTEXT: Send full context to OpenClaw

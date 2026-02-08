@@ -14,6 +14,10 @@ import {
   type AgentActivityType,
 } from './client';
 
+// Re-export global activity hook
+export { useGlobalActivity, getActivityLabel } from './useGlobalActivity';
+export type { SessionActivity, GlobalActivityState } from './useGlobalActivity';
+
 // ===========================================================================
 // useOpenClawConnection
 // ===========================================================================

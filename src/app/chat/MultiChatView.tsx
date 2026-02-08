@@ -23,6 +23,7 @@ import { ChatSuggestions, type ChatSuggestion } from "./_components/ChatSuggesti
 import { InboxView } from "./inbox";
 import { CHAT_TABS, type ChatTab } from "./chat-config";
 import { AgentActivityPanel } from "@/components/agents";
+import { GlobalActivityBar } from "@/components/GlobalActivityBar";
 
 const VoiceRecorder = dynamic(
   () => import("./_components/VoiceRecorder").then((m) => m.VoiceRecorder),
@@ -1322,6 +1323,9 @@ export function MultiChatView({
 
       {/* Main Chat Area */}
       <section className="flex h-[calc(100dvh-3.5rem-env(safe-area-inset-top))] flex-col overflow-hidden md:rounded-2xl md:border md:border-zinc-200/80 md:dark:border-zinc-800/80 md:bg-white md:dark:bg-zinc-950 md:shadow-sm lg:h-[calc(100dvh-4.5rem)]">
+        {/* Global Activity Bar - shows ALL sessions in real-time */}
+        <GlobalActivityBar showWhenEmpty={false} />
+        
         {/* Header */}
         <header className="hidden md:flex items-center justify-between gap-4 border-b border-zinc-200 dark:border-zinc-800 px-5 py-3.5">
           <div className="flex min-w-0 items-center gap-3">

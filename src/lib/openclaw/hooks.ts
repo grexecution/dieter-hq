@@ -34,14 +34,11 @@ export function useOpenClawConnection(): UseOpenClawConnectionResult {
 
   useEffect(() => {
     mountedRef.current = true;
-    console.log('[useOpenClawConnection] Hook mounted');
-    
     clientRef.current = getOpenClawClient();
     
     // Subscribe to connection state changes
     const unsubscribe = clientRef.current.onConnectionChange((newState, err) => {
       if (mountedRef.current) {
-        console.log('[useOpenClawConnection] State changed:', newState);
         setState(newState);
         if (err) setError(err);
       }
@@ -52,9 +49,7 @@ export function useOpenClawConnection(): UseOpenClawConnectionResult {
 
     // Auto-connect on mount
     if (clientRef.current.state === 'disconnected') {
-      console.log('[useOpenClawConnection] Auto-connecting...');
       clientRef.current.connect().catch(err => {
-        console.error('[useOpenClawConnection] Connect error:', err);
         if (mountedRef.current) {
           setError(err instanceof Error ? err : new Error(String(err)));
         }
@@ -135,12 +130,10 @@ export function useOpenClawChat(sessionKey: string): UseOpenClawChatResult {
 
       try {
         setIsLoading(true);
-        console.log('[useOpenClawChat] Loading history for:', sessionKey);
         const history = await clientRef.current.chatHistory(sessionKey);
         setMessages(history);
         setError(null);
       } catch (e) {
-        console.error('[useOpenClawChat] History error:', e);
         setError(e instanceof Error ? e : new Error(String(e)));
       } finally {
         setIsLoading(false);

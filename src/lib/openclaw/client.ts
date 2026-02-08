@@ -7,14 +7,6 @@
  * - Proper client.id and client.mode values
  */
 
-// Module-level log to verify code is loaded
-console.log('[OpenClaw] Module loaded');
-console.log('[OpenClaw] ENV check at load:', {
-  url: process.env.NEXT_PUBLIC_OPENCLAW_WS_URL?.substring(0, 30) + '...',
-  urlLength: process.env.NEXT_PUBLIC_OPENCLAW_WS_URL?.length,
-  hasToken: !!process.env.NEXT_PUBLIC_OPENCLAW_TOKEN,
-});
-
 // ===========================================================================
 // Types
 // ===========================================================================
@@ -94,11 +86,6 @@ export class OpenClawClient {
       reconnectMaxDelay: config.reconnectMaxDelay ?? 30000,
       requestTimeout: config.requestTimeout ?? 60000,
     };
-    
-    console.log('[OpenClaw] Client created:', { 
-      url: this.config.url, 
-      hasPassword: !!this.config.password 
-    });
   }
 
   get state(): ConnectionState {
@@ -115,7 +102,6 @@ export class OpenClawClient {
 
   async connect(): Promise<void> {
     if (this.connectionState === 'connected' || this.connectionState === 'connecting') {
-      console.log('[OpenClaw] Already connected/connecting');
       return;
     }
 
@@ -126,11 +112,9 @@ export class OpenClawClient {
       this.connectPromise = { resolve, reject };
       
       try {
-        console.log('[OpenClaw] Connecting to:', this.config.url);
         this.ws = new WebSocket(this.config.url);
 
         this.ws.onopen = () => {
-          console.log('[OpenClaw] WebSocket opened, waiting for challenge...');
           // Don't resolve yet - wait for connect.challenge and auth
         };
 
@@ -138,12 +122,11 @@ export class OpenClawClient {
           this.handleMessage(event.data);
         };
 
-        this.ws.onerror = (error) => {
-          console.error('[OpenClaw] WebSocket error:', error);
+        this.ws.onerror = () => {
+          // Error handling in onclose
         };
 
         this.ws.onclose = (event) => {
-          console.log('[OpenClaw] WebSocket closed:', event.code, event.reason);
           const wasConnected = this.connectionState === 'connected';
           const wasConnecting = this.connectionState === 'connecting';
           
@@ -159,7 +142,6 @@ export class OpenClawClient {
           }
         };
       } catch (error) {
-        console.error('[OpenClaw] Connection error:', error);
         this.setConnectionState('disconnected');
         reject(error);
       }
@@ -167,7 +149,6 @@ export class OpenClawClient {
   }
 
   disconnect(): void {
-    console.log('[OpenClaw] Disconnecting...');
     this.clearReconnectTimer();
     this.config.autoReconnect = false;
     
@@ -191,20 +172,17 @@ export class OpenClawClient {
   }
 
   private setConnectionState(state: ConnectionState, error?: Error): void {
-    console.log('[OpenClaw] State:', state);
     this.connectionState = state;
     for (const handler of this.connectionHandlers) {
       try {
         handler(state, error);
-      } catch (e) {
-        console.error('[OpenClaw] Connection handler error:', e);
+      } catch {
+        // Handler error
       }
     }
   }
 
   private async sendConnectRequest(): Promise<void> {
-    console.log('[OpenClaw] Sending connect request...');
-    
     const connectReq: RequestFrame = {
       type: 'req',
       id: crypto.randomUUID(),
@@ -236,7 +214,6 @@ export class OpenClawClient {
 
       this.pendingRequests.set(requestId, {
         resolve: () => {
-          console.log('[OpenClaw] ✅ Authenticated!');
           this.reconnectAttempts = 0;
           this.setConnectionState('connected');
           if (this.connectPromise) {
@@ -246,7 +223,6 @@ export class OpenClawClient {
           resolve();
         },
         reject: (error) => {
-          console.error('[OpenClaw] ❌ Auth failed:', error);
           if (this.connectPromise) {
             this.connectPromise.reject(error);
             this.connectPromise = null;
@@ -262,7 +238,6 @@ export class OpenClawClient {
 
   private scheduleReconnect(): void {
     if (this.reconnectAttempts >= this.config.reconnectMaxAttempts) {
-      console.error('[OpenClaw] Max reconnection attempts reached');
       return;
     }
 
@@ -273,8 +248,6 @@ export class OpenClawClient {
 
     this.reconnectAttempts++;
     this.setConnectionState('reconnecting');
-
-    console.log(`[OpenClaw] Reconnecting in ${delay}ms (attempt ${this.reconnectAttempts})`);
 
     this.reconnectTimer = setTimeout(() => {
       this.connect().catch((error) => {
@@ -300,8 +273,7 @@ export class OpenClawClient {
     
     try {
       frame = JSON.parse(data);
-    } catch (error) {
-      console.error('[OpenClaw] Failed to parse message:', error);
+    } catch {
       return;
     }
 
@@ -321,9 +293,8 @@ export class OpenClawClient {
   private handleEvent(frame: EventFrame): void {
     // Handle connect.challenge - this triggers the actual connect request
     if (frame.event === 'connect.challenge') {
-      console.log('[OpenClaw] Received challenge, authenticating...');
-      this.sendConnectRequest().catch(err => {
-        console.error('[OpenClaw] Connect request failed:', err);
+      this.sendConnectRequest().catch(() => {
+        // Auth failed
       });
       return;
     }
@@ -334,8 +305,8 @@ export class OpenClawClient {
       for (const handler of handlers) {
         try {
           handler(frame.payload);
-        } catch (error) {
-          console.error(`[OpenClaw] Event handler error for ${frame.event}:`, error);
+        } catch {
+          // Handler error
         }
       }
     }
@@ -459,12 +430,6 @@ export function getOpenClawClient(): OpenClawClient {
     const password = typeof window !== 'undefined'
       ? (process.env.NEXT_PUBLIC_OPENCLAW_PASSWORD ?? process.env.NEXT_PUBLIC_OPENCLAW_TOKEN)
       : undefined;
-
-    console.log('[OpenClaw] Creating client');
-    console.log('[OpenClaw] URL:', url);
-    console.log('[OpenClaw] Password set:', !!password);
-    console.log('[OpenClaw] ENV URL:', process.env.NEXT_PUBLIC_OPENCLAW_WS_URL);
-    console.log('[OpenClaw] ENV Token set:', !!process.env.NEXT_PUBLIC_OPENCLAW_TOKEN);
 
     defaultClient = new OpenClawClient({ url, password });
   }

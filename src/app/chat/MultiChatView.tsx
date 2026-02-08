@@ -781,23 +781,8 @@ export function MultiChatView({
   // OpenClaw WebSocket Integration
   // ============================================
   
-  // Debug log on mount
-  useEffect(() => {
-    console.log('[MultiChatView] Mounted, activeTab:', activeTab);
-  }, []);
-  
   // OpenClaw WebSocket connection
   const wsConnection = useOpenClawConnection();
-  
-  // Debug log connection state
-  useEffect(() => {
-    console.log('[MultiChatView] WebSocket connection:', {
-      connected: wsConnection.connected,
-      connecting: wsConnection.connecting,
-      state: wsConnection.state,
-      error: wsConnection.error?.message
-    });
-  }, [wsConnection.connected, wsConnection.connecting, wsConnection.state, wsConnection.error]);
   
   // Session key for the current tab (thread)
   // The tab id IS the thread id (e.g., "life", "work", "dev")
@@ -820,7 +805,6 @@ export function MultiChatView({
     
     const timeout = setTimeout(() => {
       if (!wsConnection.connected && !wsConnection.connecting) {
-        console.log('[MultiChatView] WebSocket not available, using HTTP fallback');
         setUseHttpFallback(true);
       }
     }, 5000);

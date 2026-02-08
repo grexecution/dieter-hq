@@ -460,9 +460,9 @@ export function getOpenClawClient(): OpenClawClient {
       ? process.env.NEXT_PUBLIC_OPENCLAW_WS_URL
       : undefined;
     
-    // Support both PASSWORD and TOKEN (TOKEN is legacy, but maps to same gateway password)
+    // Support both TOKEN and PASSWORD (check both, prefer TOKEN for Coolify compatibility)
     const password = typeof window !== 'undefined'
-      ? (process.env.NEXT_PUBLIC_OPENCLAW_PASSWORD ?? process.env.NEXT_PUBLIC_OPENCLAW_TOKEN)
+      ? (process.env.NEXT_PUBLIC_OPENCLAW_TOKEN ?? process.env.NEXT_PUBLIC_OPENCLAW_PASSWORD)
       : undefined;
 
     // Log for debugging

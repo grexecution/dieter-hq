@@ -425,8 +425,18 @@ export function ChatView({
   newThreadAction: (formData: FormData) => void;
   logoutAction: (formData: FormData) => void;
 }) {
+  // Debug: Log when ChatView mounts
+  console.log('[ChatView] Mounted, activeThread:', activeThreadId);
+  
   // OpenClaw WebSocket connection
   const connection = useOpenClawConnection();
+  
+  // Debug: Log connection state
+  console.log('[ChatView] Connection:', { 
+    connected: connection.connected, 
+    connecting: connection.connecting,
+    error: connection.error?.message 
+  });
   
   // Session key for the current thread
   const sessionKey = useMemo(() => getSessionKey(activeThreadId), [activeThreadId]);

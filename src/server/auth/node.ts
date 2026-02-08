@@ -23,7 +23,8 @@ export type SessionPayload = {
 };
 
 export function createSessionToken(payload: SessionPayload): string {
-  const key = getPasswordOrThrow();
+  // Use password as HMAC key, fall back to a static key when auth is disabled
+  const key = process.env.HQ_PASSWORD || "dev-no-auth";
   const payloadB64 = base64url(JSON.stringify(payload));
   const sig = sign(key, payloadB64);
   return `${payloadB64}.${sig}`;

@@ -64,6 +64,9 @@ const nextConfig: NextConfig = {
     ignoreBuildErrors: true,
   },
 
+  // Ensure native modules are not bundled into standalone (they need the real binary)
+  serverExternalPackages: ["bcrypt"],
+
   // Experimental features
   experimental: {
     optimizePackageImports: ["lucide-react", "@radix-ui/react-icons"],

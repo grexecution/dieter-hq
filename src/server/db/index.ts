@@ -3,24 +3,41 @@ import { drizzle } from "drizzle-orm/neon-http";
 
 import * as schema from "./schema";
 
-// Guard: during build, DATABASE_URL may not be set
-const databaseUrl = process.env.DATABASE_URL;
-if (!databaseUrl && process.env.NODE_ENV === "production" && typeof window === "undefined") {
-  console.warn("[DB] DATABASE_URL not set — DB calls will fail at runtime");
+// Lazy-init: read DATABASE_URL at runtime, not build time.
+// With standalone builds, module-scope consts are frozen at build time,
+// so we must defer reading process.env until first use.
+let _db: ReturnType<typeof drizzle<typeof schema>> | null = null;
+
+function getDb() {
+  if (_db) return _db;
+  const url = process.env.DATABASE_URL;
+  if (!url) {
+    throw new Error("DATABASE_URL is not configured");
+  }
+  const sql = neon(url, { fetchOptions: { cache: "no-store" } });
+  _db = drizzle(sql, { schema });
+  return _db;
 }
 
-const sql = databaseUrl
-  ? neon(databaseUrl, { fetchOptions: { cache: "no-store" } })
-  : ((() => { throw new Error("DATABASE_URL is not configured"); }) as never);
-
-export const db = databaseUrl ? drizzle(sql, { schema }) : (null as unknown as ReturnType<typeof drizzle<typeof schema>>);
+// Proxy that lazily initializes on first property access
+export const db = new Proxy({} as ReturnType<typeof drizzle<typeof schema>>, {
+  get(_target, prop, receiver) {
+    return Reflect.get(getDb(), prop, receiver);
+  },
+});
 
 // Create tables if they don't exist (simple migration for MVP)
 // Initialize tables on first use
 let initialized = false;
+function getSql() {
+  const url = process.env.DATABASE_URL;
+  if (!url) throw new Error("DATABASE_URL is not configured");
+  return neon(url, { fetchOptions: { cache: "no-store" } });
+}
 export async function initDb() {
   if (initialized) return;
   initialized = true;
+  const sql = getSql();
   await sql`
     CREATE TABLE IF NOT EXISTS messages (
       id TEXT PRIMARY KEY,
@@ -242,6 +259,6 @@ export async function initDb() {
 
 // Auto-initialize on module load (runs once per cold start)
 // Skip during build when DATABASE_URL is not available
-if (databaseUrl) {
+if (process.env.DATABASE_URL) {
   initDb().catch(console.error);
 }

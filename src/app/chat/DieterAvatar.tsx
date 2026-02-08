@@ -66,7 +66,7 @@ export function DieterAvatar({ size = "md", className, showDialog = true }: Diet
     };
 
     void tick();
-    const id = setInterval(() => void tick(), 5000);
+    const id = setInterval(() => void tick(), 15000);
     return () => { cancelled = true; clearInterval(id); };
   }, []);
 

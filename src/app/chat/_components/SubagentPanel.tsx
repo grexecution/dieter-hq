@@ -259,7 +259,7 @@ export function SubagentPanel({ className, collapsed = false, onToggleCollapse }
   // Auto-refresh every 5 seconds
   useEffect(() => {
     void fetchSessions();
-    const interval = setInterval(() => void fetchSessions(), 5000);
+    const interval = setInterval(() => void fetchSessions(), 15000);
     return () => clearInterval(interval);
   }, [fetchSessions]);
 

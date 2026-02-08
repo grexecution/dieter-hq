@@ -130,12 +130,12 @@ export function StatusBar({
     // Immediate fetch on mount or thread change
     fetchLiveStatus();
 
-    // Poll every 3 seconds
+    // Poll every 10 seconds (reduced from 3s to lower CPU)
     const interval = setInterval(() => {
       if (isPolling) {
         fetchLiveStatus();
       }
-    }, 3000);
+    }, 10000);
 
     return () => clearInterval(interval);
   }, [fetchLiveStatus, isPolling]);

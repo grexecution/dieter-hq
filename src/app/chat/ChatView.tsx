@@ -426,7 +426,7 @@ export function ChatView({
       }
     };
 
-    const t = setInterval(tick, 2500);
+    const t = setInterval(tick, 10000);
     void tick();
 
     return () => {

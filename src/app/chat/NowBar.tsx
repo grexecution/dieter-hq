@@ -44,7 +44,7 @@ export function NowBar() {
     };
 
     void tick();
-    const t = setInterval(tick, 2500);
+    const t = setInterval(tick, 10000);
     return () => {
       stopped = true;
       clearInterval(t);

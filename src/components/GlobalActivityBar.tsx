@@ -22,31 +22,53 @@ import {
 // ============================================================================
 
 /**
- * Converts technical session keys to human-readable names
+ * Converts technical session keys to human-readable names with context
+ * 
+ * Session key format: agent:type:instance:thread
  * 
  * Examples:
- * - "agent:main:dieter-hq:main" → "Dieter HQ"
- * - "agent:subagent:gyn-portale:abc123" → "Gyn Portale"
+ * - "agent:main:dieter-hq:main" → "Main"
+ * - "agent:main:dieter-hq:life" → "Main · Life"
+ * - "agent:coder:dieter-hq:dev:dieterhq-2" → "Coder · Dieterhq 2"
  * - "agent:subagent:security-agent:xyz" → "Security Agent"
- * - "gyn-websites" → "Gyn Websites"
  */
-function formatSessionName(sessionKey: string, label?: string): string {
-  // If we have a clean label, use it
-  if (label && !label.includes(':')) {
-    return formatSlug(label);
-  }
-  
-  // Parse session key: agent:type:name:id
+function formatSessionName(sessionKey: string, label?: string): { agent: string; thread?: string } {
+  // Parse session key: agent:type:instance:thread (or more parts for dev:project)
   const parts = sessionKey.split(':');
   
-  if (parts.length >= 3) {
-    // Get the meaningful part (usually index 2)
-    const name = parts[2];
-    return formatSlug(name);
+  // Handle subagent pattern: agent:subagent:name:id
+  if (parts[1] === 'subagent' && parts.length >= 3) {
+    return { agent: formatSlug(parts[2]) };
+  }
+  
+  // Handle main/coder pattern: agent:type:instance:thread
+  if (parts.length >= 4) {
+    const agentType = parts[1]; // main, coder, etc.
+    const threadParts = parts.slice(3); // thread or dev:project-name
+    
+    // Format agent name
+    const agent = formatSlug(agentType);
+    
+    // Format thread - handle dev:project-name specially
+    let thread: string | undefined;
+    if (threadParts.length > 0) {
+      const threadStr = threadParts.join(':');
+      // Skip "main" as thread since it's the default
+      if (threadStr !== 'main') {
+        // Handle dev:project-name → "Project Name"
+        if (threadStr.startsWith('dev:')) {
+          thread = formatSlug(threadStr.replace('dev:', ''));
+        } else {
+          thread = formatSlug(threadStr);
+        }
+      }
+    }
+    
+    return { agent, thread };
   }
   
   // Fallback: just format whatever we have
-  return formatSlug(label || sessionKey);
+  return { agent: formatSlug(label || sessionKey) };
 }
 
 /**
@@ -94,7 +116,7 @@ interface SessionChipProps {
 const SessionChip = memo(function SessionChip({ session }: SessionChipProps) {
   const activityLabel = getActivityLabel(session);
   const isActive = session.type !== 'idle';
-  const displayName = formatSessionName(session.sessionKey, session.label);
+  const { agent, thread } = formatSessionName(session.sessionKey, session.label);
   
   return (
     <motion.div
@@ -111,9 +133,17 @@ const SessionChip = memo(function SessionChip({ session }: SessionChipProps) {
       )}
     >
       <ActivityIcon type={session.type} />
-      <span className="font-medium truncate max-w-[100px]">
-        {displayName}
+      <span className="font-medium truncate max-w-[80px]">
+        {agent}
       </span>
+      {thread && (
+        <>
+          <span className="text-zinc-500 dark:text-zinc-400">·</span>
+          <span className="text-zinc-300 dark:text-zinc-400 truncate max-w-[100px]">
+            {thread}
+          </span>
+        </>
+      )}
       {activityLabel && (
         <>
           <span className="text-zinc-500 dark:text-zinc-400">·</span>

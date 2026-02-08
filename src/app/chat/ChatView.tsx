@@ -589,12 +589,21 @@ export function ChatView({
       if (connection.connected) {
         await chat.send(content);
       } else {
-        // HTTP fallback
+        // HTTP fallback with long timeout for agent tasks
+        // Use AbortController with 30 minute timeout (agents can take a long time)
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 30 * 60 * 1000); // 30 minutes
+        
+        console.log('[ChatView] Sending via HTTP fallback...');
+        
         const r = await fetch("/api/chat/send", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ threadId: activeThreadId, content }),
+          signal: controller.signal,
         });
+        
+        clearTimeout(timeoutId);
 
         if (!r.ok) throw new Error("send_failed");
 
@@ -621,12 +630,19 @@ export function ChatView({
 
               try {
                 const event = JSON.parse(payload) as {
-                  type: "user_confirmed" | "delta" | "done";
+                  type: "user_confirmed" | "delta" | "done" | "keepalive";
                   item?: MessageRow;
                   content?: string;
+                  message?: string;
+                  timestamp?: number;
                 };
 
-                if (event.type === "user_confirmed" && event.item) {
+                if (event.type === "keepalive") {
+                  // Agent is still working - keep connection alive
+                  // Log for debugging, update activity state
+                  console.log(`[ChatView] Keepalive: ${event.message}`);
+                  // Could show "Dieter denkt nach..." in UI here
+                } else if (event.type === "user_confirmed" && event.item) {
                   setLiveMessages((prev) => {
                     if (prev.some((m) => m.id === event.item!.id)) return prev;
                     return [...prev, event.item!];

@@ -7,6 +7,14 @@
  * - Proper client.id and client.mode values
  */
 
+// Module-level log to verify code is loaded
+console.log('[OpenClaw] Module loaded');
+console.log('[OpenClaw] ENV check at load:', {
+  url: process.env.NEXT_PUBLIC_OPENCLAW_WS_URL?.substring(0, 30) + '...',
+  urlLength: process.env.NEXT_PUBLIC_OPENCLAW_WS_URL?.length,
+  hasToken: !!process.env.NEXT_PUBLIC_OPENCLAW_TOKEN,
+});
+
 // ===========================================================================
 // Types
 // ===========================================================================

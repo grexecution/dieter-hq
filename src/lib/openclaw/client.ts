@@ -150,6 +150,7 @@ export class OpenClawClient {
 
         this.ws.onerror = (err) => {
           console.error('[OpenClaw] WebSocket error:', err);
+          console.error('[OpenClaw] URL was:', this.config.url);
           // Error handling in onclose
         };
 

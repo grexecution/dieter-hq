@@ -4,6 +4,9 @@
  * React Hooks for OpenClaw WebSocket Client
  */
 
+// Log immediately when module is loaded
+console.log('[OpenClaw-Hooks] Module loaded');
+
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { 
   getOpenClawClient,
@@ -33,12 +36,15 @@ interface UseOpenClawConnectionResult {
 }
 
 export function useOpenClawConnection(): UseOpenClawConnectionResult {
+  console.log('[OpenClaw-Hooks] useOpenClawConnection called');
+  
   const clientRef = useRef<OpenClawClient | null>(null);
   const [state, setState] = useState<ConnectionState>('disconnected');
   const [error, setError] = useState<Error | null>(null);
   const mountedRef = useRef(true);
 
   useEffect(() => {
+    console.log('[OpenClaw-Hooks] useOpenClawConnection useEffect running');
     mountedRef.current = true;
     clientRef.current = getOpenClawClient();
     

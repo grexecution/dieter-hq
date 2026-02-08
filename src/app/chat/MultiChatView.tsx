@@ -12,6 +12,9 @@ import { cn } from "@/lib/utils";
 import { ChatComposer } from "./ChatComposer";
 // import { NowBar } from "./NowBar"; // TODO: make functional before re-enabling
 import { OpenClawStatusSidebar } from "./OpenClawStatusSidebar";
+
+// OpenClaw WebSocket Hooks
+import { useOpenClawConnection, useOpenClawChat } from "@/lib/openclaw/hooks";
 import { DieterAvatar } from "./DieterAvatar";
 import { StatusBar, type AgentActivityState } from "./_components/StatusBar";
 import { SubagentPanel } from "./_components/SubagentPanel";
@@ -67,6 +70,23 @@ export { CHAT_TABS };
 // ============================================
 // Utilities
 // ============================================
+
+/**
+ * Get OpenClaw session key for a thread ID
+ */
+function getSessionKey(threadId: string): string {
+  // Map thread IDs to session keys
+  // main -> agent:main
+  // dev:* -> agent:main:webchat:dev:<id>
+  // etc.
+  if (threadId === "main" || threadId === "life") {
+    return "agent:main";
+  }
+  if (threadId.startsWith("dev:")) {
+    return `agent:main:webchat:${threadId}`;
+  }
+  return `agent:main:webchat:${threadId}`;
+}
 
 function displayContent(raw: string): { author?: string; text: string } {
   const m = raw.match(/^\[(.+?)\]\s*([\s\S]*)$/);
@@ -756,6 +776,57 @@ export function MultiChatView({
   
   // Ref to track pending send operation to avoid stale closure issues
   const pendingSendRef = useRef<{ threadId: string; content: string } | null>(null);
+
+  // ============================================
+  // OpenClaw WebSocket Integration
+  // ============================================
+  
+  // Debug log on mount
+  useEffect(() => {
+    console.log('[MultiChatView] Mounted, activeTab:', activeTab);
+  }, []);
+  
+  // OpenClaw WebSocket connection
+  const wsConnection = useOpenClawConnection();
+  
+  // Debug log connection state
+  useEffect(() => {
+    console.log('[MultiChatView] WebSocket connection:', {
+      connected: wsConnection.connected,
+      connecting: wsConnection.connecting,
+      state: wsConnection.state,
+      error: wsConnection.error?.message
+    });
+  }, [wsConnection.connected, wsConnection.connecting, wsConnection.state, wsConnection.error]);
+  
+  // Session key for the current tab (thread)
+  // The tab id IS the thread id (e.g., "life", "work", "dev")
+  const currentThreadId = useMemo(() => activeTab, [activeTab]);
+  
+  const sessionKey = useMemo(() => getSessionKey(currentThreadId), [currentThreadId]);
+  
+  // OpenClaw chat hook for WebSocket-based messaging
+  const wsChat = useOpenClawChat(sessionKey);
+  
+  // Flag to use HTTP fallback if WebSocket not available
+  const [useHttpFallback, setUseHttpFallback] = useState(false);
+  
+  // Fallback to HTTP if WebSocket isn't available after 5 seconds
+  useEffect(() => {
+    if (wsConnection.connected) {
+      setUseHttpFallback(false);
+      return;
+    }
+    
+    const timeout = setTimeout(() => {
+      if (!wsConnection.connected && !wsConnection.connecting) {
+        console.log('[MultiChatView] WebSocket not available, using HTTP fallback');
+        setUseHttpFallback(true);
+      }
+    }, 5000);
+    
+    return () => clearTimeout(timeout);
+  }, [wsConnection.connected, wsConnection.connecting]);
 
   // Load workspace projects on mount (from API for persistence across devices)
   useEffect(() => {

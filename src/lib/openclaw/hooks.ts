@@ -4,15 +4,12 @@
  * React Hooks for OpenClaw WebSocket Client
  */
 
-import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { 
   getOpenClawClient,
   OpenClawClient,
   type ConnectionState,
   type Message,
-  type StreamChunkEvent,
-  type StreamCompleteEvent,
-  type StreamErrorEvent,
 } from './client';
 
 // ===========================================================================
@@ -33,15 +30,21 @@ export function useOpenClawConnection(): UseOpenClawConnectionResult {
   const clientRef = useRef<OpenClawClient | null>(null);
   const [state, setState] = useState<ConnectionState>('disconnected');
   const [error, setError] = useState<Error | null>(null);
+  const mountedRef = useRef(true);
 
-  // Get or create client
   useEffect(() => {
+    mountedRef.current = true;
+    console.log('[useOpenClawConnection] Hook mounted');
+    
     clientRef.current = getOpenClawClient();
     
     // Subscribe to connection state changes
     const unsubscribe = clientRef.current.onConnectionChange((newState, err) => {
-      setState(newState);
-      if (err) setError(err);
+      if (mountedRef.current) {
+        console.log('[useOpenClawConnection] State changed:', newState);
+        setState(newState);
+        if (err) setError(err);
+      }
     });
 
     // Set initial state
@@ -49,10 +52,17 @@ export function useOpenClawConnection(): UseOpenClawConnectionResult {
 
     // Auto-connect on mount
     if (clientRef.current.state === 'disconnected') {
-      clientRef.current.connect().catch(setError);
+      console.log('[useOpenClawConnection] Auto-connecting...');
+      clientRef.current.connect().catch(err => {
+        console.error('[useOpenClawConnection] Connect error:', err);
+        if (mountedRef.current) {
+          setError(err instanceof Error ? err : new Error(String(err)));
+        }
+      });
     }
 
     return () => {
+      mountedRef.current = false;
       unsubscribe();
     };
   }, []);
@@ -104,7 +114,6 @@ export function useOpenClawChat(sessionKey: string): UseOpenClawChatResult {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isStreaming, setIsStreaming] = useState(false);
   const [streamingContent, setStreamingContent] = useState<string | null>(null);
-  const [currentRunId, setCurrentRunId] = useState<string | null>(null);
   const [error, setError] = useState<Error | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -126,10 +135,12 @@ export function useOpenClawChat(sessionKey: string): UseOpenClawChatResult {
 
       try {
         setIsLoading(true);
+        console.log('[useOpenClawChat] Loading history for:', sessionKey);
         const history = await clientRef.current.chatHistory(sessionKey);
         setMessages(history);
         setError(null);
       } catch (e) {
+        console.error('[useOpenClawChat] History error:', e);
         setError(e instanceof Error ? e : new Error(String(e)));
       } finally {
         setIsLoading(false);
@@ -139,48 +150,54 @@ export function useOpenClawChat(sessionKey: string): UseOpenClawChatResult {
     loadHistory();
   }, [sessionKey]);
 
-  // Subscribe to streaming events
+  // Subscribe to chat events
   useEffect(() => {
     const client = clientRef.current;
     if (!client) return;
 
-    // Handle streaming chunks
-    const unsubChunk = client.onStreamChunk((event: StreamChunkEvent) => {
+    // Handle chat events for streaming
+    const unsubChat = client.on<{
+      sessionKey: string;
+      runId?: string;
+      state: 'delta' | 'final' | 'error' | 'aborted';
+      message?: { role: string; content: unknown };
+      errorMessage?: string;
+    }>('chat', (event) => {
       if (event.sessionKey !== sessionKey) return;
-      if (currentRunId && event.runId !== currentRunId) return;
 
-      setStreamingContent(event.content);
-      setIsStreaming(true);
-    });
-
-    // Handle stream completion
-    const unsubComplete = client.onStreamComplete((event: StreamCompleteEvent) => {
-      if (event.sessionKey !== sessionKey) return;
-      if (currentRunId && event.runId !== currentRunId) return;
-
-      setMessages((prev) => [...prev, event.message]);
-      setStreamingContent(null);
-      setIsStreaming(false);
-      setCurrentRunId(null);
-    });
-
-    // Handle stream errors
-    const unsubError = client.onStreamError((event: StreamErrorEvent) => {
-      if (event.sessionKey !== sessionKey) return;
-      if (currentRunId && event.runId !== currentRunId) return;
-
-      setError(new Error(event.error.message));
-      setStreamingContent(null);
-      setIsStreaming(false);
-      setCurrentRunId(null);
+      if (event.state === 'delta' && event.message) {
+        // Extract text from message content
+        const content = event.message.content;
+        let text = '';
+        if (typeof content === 'string') {
+          text = content;
+        } else if (Array.isArray(content)) {
+          text = content
+            .filter((c: { type: string; text?: string }) => c.type === 'text')
+            .map((c: { text?: string }) => c.text || '')
+            .join('');
+        }
+        setStreamingContent(text);
+        setIsStreaming(true);
+      } else if (event.state === 'final') {
+        setStreamingContent(null);
+        setIsStreaming(false);
+        // Reload history to get final message
+        client.chatHistory(sessionKey).then(setMessages).catch(console.error);
+      } else if (event.state === 'error') {
+        setError(new Error(event.errorMessage || 'Chat error'));
+        setStreamingContent(null);
+        setIsStreaming(false);
+      } else if (event.state === 'aborted') {
+        setStreamingContent(null);
+        setIsStreaming(false);
+      }
     });
 
     return () => {
-      unsubChunk();
-      unsubComplete();
-      unsubError();
+      unsubChat();
     };
-  }, [sessionKey, currentRunId]);
+  }, [sessionKey]);
 
   const send = useCallback(async (content: string) => {
     const client = clientRef.current;
@@ -200,8 +217,7 @@ export function useOpenClawChat(sessionKey: string): UseOpenClawChatResult {
     setMessages((prev) => [...prev, userMessage]);
 
     try {
-      const { runId } = await client.chatSend(sessionKey, content);
-      setCurrentRunId(runId);
+      await client.chatSend(sessionKey, content);
       setIsStreaming(true);
       setStreamingContent('');
     } catch (e) {
@@ -221,7 +237,6 @@ export function useOpenClawChat(sessionKey: string): UseOpenClawChatResult {
       await client.chatAbort(sessionKey);
       setIsStreaming(false);
       setStreamingContent(null);
-      setCurrentRunId(null);
     } catch (e) {
       setError(e instanceof Error ? e : new Error(String(e)));
     }
@@ -252,94 +267,5 @@ export function useOpenClawChat(sessionKey: string): UseOpenClawChatResult {
     error,
     isLoading,
     reload,
-  };
-}
-
-// ===========================================================================
-// useOpenClawEvent
-// ===========================================================================
-
-/**
- * Subscribe to a specific OpenClaw event
- */
-export function useOpenClawEvent<T = unknown>(
-  event: string,
-  handler: (payload: T) => void
-): void {
-  const handlerRef = useRef(handler);
-  handlerRef.current = handler;
-
-  useEffect(() => {
-    const client = getOpenClawClient();
-    
-    const unsubscribe = client.on<T>(event, (payload) => {
-      handlerRef.current(payload);
-    });
-
-    return unsubscribe;
-  }, [event]);
-}
-
-// ===========================================================================
-// useOpenClawRequest
-// ===========================================================================
-
-interface UseOpenClawRequestResult<T> {
-  data: T | null;
-  error: Error | null;
-  isLoading: boolean;
-  refetch: () => Promise<void>;
-}
-
-/**
- * Make a request to the OpenClaw gateway
- */
-export function useOpenClawRequest<T = unknown>(
-  method: string,
-  params: object = {},
-  options: { enabled?: boolean } = {}
-): UseOpenClawRequestResult<T> {
-  const { enabled = true } = options;
-  const [data, setData] = useState<T | null>(null);
-  const [error, setError] = useState<Error | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const paramsRef = useRef(params);
-
-  // Update params ref when params change
-  useEffect(() => {
-    paramsRef.current = params;
-  }, [params]);
-
-  const fetch = useCallback(async () => {
-    const client = getOpenClawClient();
-    if (!client.connected) {
-      setError(new Error('Not connected'));
-      return;
-    }
-
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      const result = await client.request<T>(method, paramsRef.current);
-      setData(result);
-    } catch (e) {
-      setError(e instanceof Error ? e : new Error(String(e)));
-    } finally {
-      setIsLoading(false);
-    }
-  }, [method]);
-
-  useEffect(() => {
-    if (enabled) {
-      fetch();
-    }
-  }, [enabled, fetch]);
-
-  return {
-    data,
-    error,
-    isLoading,
-    refetch: fetch,
   };
 }

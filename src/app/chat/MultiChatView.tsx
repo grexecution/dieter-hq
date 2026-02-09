@@ -709,8 +709,9 @@ export function MultiChatView({
   };
 
   // Send message handler for current thread (reads SSE stream)
-  const handleSend = async () => {
-    const content = currentDraft.trim();
+  // contentOverride: Pass content directly to avoid stale closure issues when processing queued messages
+  const handleSend = async (contentOverride?: string) => {
+    const content = (contentOverride ?? currentDraft).trim();
     const attachments = pendingAttachments[effectiveThreadId] || [];
     
     // Allow sending if there's content OR attachments
@@ -736,6 +737,12 @@ export function MultiChatView({
     setPendingAttachments(prev => ({ ...prev, [sendThreadId]: [] }));
     setClearTrigger(prev => ({ ...prev, [sendThreadId]: (prev[sendThreadId] || 0) + 1 }));
 
+    // AbortController for overall request timeout (120s)
+    const abortController = new AbortController();
+    const overallTimeout = setTimeout(() => {
+      abortController.abort();
+    }, 120_000);
+
     try {
       const r = await fetch("/api/chat/send", {
         method: "POST",
@@ -745,6 +752,7 @@ export function MultiChatView({
           content: content || "(attached image)", // Fallback if only image
           attachmentIds: attachments.map(a => a.artefactId),
         }),
+        signal: abortController.signal,
       });
 
       if (!r.ok) {
@@ -761,61 +769,83 @@ export function MultiChatView({
       let buffer = "";
       let assistantContent = "";
       let assistantMsgId = "";
+      
+      // Stream inactivity timeout (60s without any data = abort)
+      let streamInactivityTimer: ReturnType<typeof setTimeout> | null = null;
+      const resetStreamTimer = () => {
+        if (streamInactivityTimer) clearTimeout(streamInactivityTimer);
+        streamInactivityTimer = setTimeout(() => {
+          abortController.abort();
+        }, 60_000);
+      };
+      resetStreamTimer();
 
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
+      try {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          
+          // Reset inactivity timer on each chunk
+          resetStreamTimer();
 
-        buffer += decoder.decode(value, { stream: true });
-        const lines = buffer.split("\n");
-        buffer = lines.pop() || "";
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split("\n");
+          buffer = lines.pop() || "";
 
-        for (const line of lines) {
-          if (!line.startsWith("data: ")) continue;
-          const payload = line.slice(6).trim();
-          if (!payload || payload === "[DONE]") continue;
+          for (const line of lines) {
+            if (!line.startsWith("data: ")) continue;
+            const payload = line.slice(6).trim();
+            if (!payload || payload === "[DONE]") continue;
 
-          try {
-            const event = JSON.parse(payload);
+            try {
+              const event = JSON.parse(payload);
 
-            if (event.type === "user_confirmed" && event.item) {
-              // Add user message to chat
-              setLiveMessages((prev) => ({
-                ...prev,
-                [sendThreadId]: [
-                  ...(prev[sendThreadId] || []),
-                  event.item
-                ].filter((m, i, arr) => arr.findIndex(msg => msg.id === m.id) === i)
-              }));
-              if (event.item.createdAt) {
-                lastMessageTimestampsRef.current[sendThreadId] = event.item.createdAt;
+              if (event.type === "user_confirmed" && event.item) {
+                // Add user message to chat
+                setLiveMessages((prev) => ({
+                  ...prev,
+                  [sendThreadId]: [
+                    ...(prev[sendThreadId] || []),
+                    event.item
+                  ].filter((m, i, arr) => arr.findIndex(msg => msg.id === m.id) === i)
+                }));
+                if (event.item.createdAt) {
+                  lastMessageTimestampsRef.current[sendThreadId] = event.item.createdAt;
+                }
+              } else if (event.type === "delta" && event.content) {
+                // Accumulate assistant response (could show streaming later)
+                assistantContent += event.content;
+              } else if (event.type === "done" && event.item) {
+                // Add complete assistant message
+                assistantMsgId = event.item.id;
+                setLiveMessages((prev) => ({
+                  ...prev,
+                  [sendThreadId]: [
+                    ...(prev[sendThreadId] || []),
+                    event.item
+                  ].filter((m, i, arr) => arr.findIndex(msg => msg.id === m.id) === i)
+                }));
+                if (event.item.createdAt) {
+                  lastMessageTimestampsRef.current[sendThreadId] = event.item.createdAt;
+                }
               }
-            } else if (event.type === "delta" && event.content) {
-              // Accumulate assistant response (could show streaming later)
-              assistantContent += event.content;
-            } else if (event.type === "done" && event.item) {
-              // Add complete assistant message
-              assistantMsgId = event.item.id;
-              setLiveMessages((prev) => ({
-                ...prev,
-                [sendThreadId]: [
-                  ...(prev[sendThreadId] || []),
-                  event.item
-                ].filter((m, i, arr) => arr.findIndex(msg => msg.id === m.id) === i)
-              }));
-              if (event.item.createdAt) {
-                lastMessageTimestampsRef.current[sendThreadId] = event.item.createdAt;
-              }
+            } catch {
+              // Ignore JSON parse errors
             }
-          } catch {
-            // Ignore JSON parse errors
           }
         }
+      } finally {
+        if (streamInactivityTimer) clearTimeout(streamInactivityTimer);
       }
     } catch (err) {
-      console.error("Send failed:", err);
+      if (err instanceof Error && err.name === 'AbortError') {
+        console.error("Send aborted due to timeout");
+      } else {
+        console.error("Send failed:", err);
+      }
       // Don't restore draft - message was likely sent, just response failed
     } finally {
+      clearTimeout(overallTimeout);
       // Mark sending as done
       setSendingStates(prev => ({ ...prev, [sendThreadId]: false }));
     }
@@ -831,11 +861,8 @@ export function MultiChatView({
     if (!isSendingNow && queue.length > 0) {
       const [nextMessage, ...remaining] = queue;
       setMessageQueue(prev => ({ ...prev, [threadId]: remaining }));
-      setDrafts(prev => ({ ...prev, [threadId]: nextMessage }));
-      // Trigger send after draft is set
-      setTimeout(() => {
-        handleSend();
-      }, 50);
+      // Pass content directly to avoid stale closure issues
+      handleSend(nextMessage);
     }
   }, [sendingStates, messageQueue, effectiveThreadId]);
 
@@ -860,11 +887,8 @@ export function MultiChatView({
         [newProject.id]: `Lass uns an "${suggestion.payload}" arbeiten. Was ist der Plan?`
       }));
     } else if (suggestion.action === "send" && suggestion.payload) {
-      // Send the suggested message
-      const threadId = activeProject?.id || activeTab;
-      setDrafts(prev => ({ ...prev, [threadId]: suggestion.payload! }));
-      // Trigger send after state update
-      setTimeout(() => handleSend(), 50);
+      // Send the suggested message - pass content directly to avoid stale closure
+      handleSend(suggestion.payload);
     } else if (suggestion.action === "custom") {
       // Focus the input for custom response
       const textarea = document.querySelector('textarea[placeholder="Nachricht..."]') as HTMLTextAreaElement;

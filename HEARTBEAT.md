@@ -1,30 +1,23 @@
 # HEARTBEAT.md — Active Checks
 
-## 🧠 AUTO CONTEXT MANAGEMENT
+## Memory System: Elite Longterm Memory 🧠
 
-### Strategie: Leise sichern, nicht nerven
+Memory wird jetzt über das Elite Longterm Memory System gehandhabt:
+- **SESSION-STATE.md** — Hot RAM (aktiver Kontext)
+- **MEMORY.md** — Curated long-term memory
+- **memory/*.md** — Daily logs
 
-**Bei jedem Heartbeat:**
-1. `session_status` → Context % checken
-2. **>60%:** Leise wichtige Infos in MEMORY.md sichern (keine Nachricht)
-3. **>75%:** Einmalig kurz sagen: "/new wenn du Zeit hast"
-4. **>85%:** Alles in MEMORY.md + daily log sichern
+### WAL Protocol
+Bei wichtigen User-Inputs: ERST in SESSION-STATE.md schreiben, DANN antworten.
 
-### Was gesichert wird:
-- Aktuelle Projekte/Tasks
-- Neue Learnings
-- Offene Fragen
-- Wichtige Entscheidungen
-
-### KEINE nervigen Telegram-Pings mehr!
-- Keine "Context bei X%" Warnungen
-- Keine wiederholten Erinnerungen
-- Einfach leise arbeiten
+### Bei Heartbeats
+- Nichts Besonderes zu tun — Memory System läuft automatisch
+- Bei Bedarf: SESSION-STATE.md aufräumen
 
 ## Tracking
 ```json
 {
-  "lastContextWarning": null,
-  "lastSummarySave": null
+  "memorySystem": "elite-longterm-memory",
+  "version": "1.2.2"
 }
 ```

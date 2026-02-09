@@ -110,6 +110,9 @@
 
 ### 2026-02-09
 - **Email-Freigabe:** "Schick mir das per Mail" ≠ Freigabe zum Senden! IMMER Draft zeigen + explizit fragen "Soll ich abschicken?" + auf JA warten. Jede einzelne Email braucht Freigabe!
+- **AdFire Campaign Analysis Tool** fertig — Commit 9c2030f, Railway deployment pending
+- **Olivadis 5x ROAS Strategy** erstellt — 6 Kampagnen, €160/Tag, "Tradition" Creative als Top-Performer (2.6x)
+- **DieterHQ Image Fix** — Gateway erwartet OpenAI-Format, nicht Anthropic-Format (commit 3066a38)
 
 ### 2026-02-06 (continued)
 - **Unified Inbox Feature** gestartet — AI Command Center für alle Incoming Messages

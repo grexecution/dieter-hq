@@ -153,6 +153,17 @@ Capture what matters. Decisions, context, things to remember. Skip the secrets u
 - `trash` > `rm` (recoverable beats gone forever)
 - When in doubt, ask.
 
+### 🏗️ Keine Architektur-Änderungen ohne Rückfrage!
+
+**NIEMALS** ohne explizite Freigabe ändern:
+- `package.json` (scripts, dependencies, build config)
+- Build/Deploy-Konfiguration (Railway, Vercel, Docker)
+- Datenbank-Schema oder Migrations
+- CI/CD Pipelines
+- Grundlegende Projekt-Struktur
+
+**Regel:** Wenn es die Grundarchitektur betrifft → ERST FRAGEN!
+
 ## External vs Internal
 
 **Safe to do freely:**

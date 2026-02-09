@@ -2,7 +2,7 @@
 # DieterHQ Smart Alert Filter
 # Verifies alerts and auto-archives stale ones
 
-DIETER_API="https://dieter-hq.vercel.app/api/inbox/items"
+DIETER_API="https://dieter.dergreg.com/api/inbox/items"
 
 echo "🧠 Smart Alert Filter starting..."
 
@@ -68,7 +68,7 @@ curl -s "$DIETER_API?status=pending&limit=100" | jq -c '.data.items[]? | select(
   # For dieter-hq repo: check if there's a more recent successful deploy
   if echo "$PREVIEW" | grep -qi "dieter-hq"; then
     # Check Vercel deployment status
-    LATEST_STATUS=$(curl -s "https://dieter-hq.vercel.app/api/status" 2>/dev/null | jq -r '.ok // "unknown"')
+    LATEST_STATUS=$(curl -s "https://dieter.dergreg.com/api/status" 2>/dev/null | jq -r '.ok // "unknown"')
     
     if [ "$LATEST_STATUS" = "true" ]; then
       echo "   ✅ dieter-hq is deployed successfully → archiving old failure"

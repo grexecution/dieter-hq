@@ -1,0 +1,32 @@
+Hi Greg,
+
+Hier ist das komplette Olivadis Kampagnen-Paket (Prospecting + Retargeting):
+
+📁 QUICK-SETUP.md
+- Retargeting Kampagnen (Copy-Paste-fertig)
+- Cart Abandoners, Website Visitors, Re-Engagement, LAL
+
+📁 PROSPECTING-CAMPAIGNS.md (NEU)
+- Advantage+ Shopping (ASC) - Meta AI
+- Interest Targeting (Foodies, Health, Premium)
+- Broad Targeting
+
+📁 README.md
+- Custom Audiences erstellen
+- Budget & Bidding Strategie
+
+📁 ad-copy-variations.md
+- 12 Ad Copy Varianten
+
+Budget-Übersicht:
+- Prospecting: €120/Tag
+- Retargeting: €100/Tag
+- Total: €220/Tag
+- Oder Light-Version: €65/Tag
+
+Empfohlene Reihenfolge:
+1. Sofort: Cart Abandoners + ASC Prospecting
+2. Tag 2-3: Website Visitors + Interest Targeting
+3. Woche 2: Rest
+
+🐕 Dieter

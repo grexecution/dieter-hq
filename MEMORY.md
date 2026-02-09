@@ -4,6 +4,7 @@
 
 **Mimi (Freundin):**
 - Verträgt keinen Sellerie! ⚠️
+- **Wenn ich Mimi schreibe:** Immer klar als "Dieter" kennzeichnen, KEINE Herzchen/romantischen Emojis — das wäre so als käme es von Greg persönlich. Ich bin der Assistent, nicht sein Sprachrohr für Liebesbotschaften.
 
 ## Über Greg
 
@@ -34,6 +35,10 @@
 - ✅ **Workspace Manager**: Dev-Tab mit dynamischen Projekt-Sessions
 - ✅ **Reset Chat Button** im Header
 - ⏸️ **Infinite Context**: Code da, aber temporär deaktiviert (DB Schema Issue)
+
+### Deployment:
+- **Coolify:** Auto-deploy via `main` branch push
+- **URL:** https://dieter.dergreg.com
 
 ### Vercel Env Vars (wichtig!):
 - `DATABASE_URL` — Neon Postgres
@@ -102,6 +107,9 @@
 - **API:** Comments/Tasks durchsuchbar, keine direkte "Chat" API aber Comments auf Tasks
 
 ## Lessons Learned
+
+### 2026-02-09
+- **Email-Freigabe:** "Schick mir das per Mail" ≠ Freigabe zum Senden! IMMER Draft zeigen + explizit fragen "Soll ich abschicken?" + auf JA warten. Jede einzelne Email braucht Freigabe!
 
 ### 2026-02-06 (continued)
 - **Unified Inbox Feature** gestartet — AI Command Center für alle Incoming Messages

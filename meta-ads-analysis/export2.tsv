@@ -1,0 +1,746 @@
+﻿Campaign ID	Creation Package Config ID	Campaign Name	Special Ad Categories	Special Ad Category Country	Campaign Status	Campaign Objective	Buying Type	Campaign Spend Limit	Campaign Daily Budget	Campaign Lifetime Budget	Campaign Bid Strategy	Tags	Campaign Is Using L3 Schedule	Campaign Start Time	Campaign Stop Time	Product Catalog ID	Campaign Page ID	New Objective	Buy With Prime Type	Is Budget Scheduling Enabled For Campaign	Campaign High Demand Periods	Buy With Integration Partner	Ad Set ID	Ad Set Run Status	Ad Set Lifetime Impressions	Ad Set Name	Ad Set Time Start	Ad Set Time Stop	Ad Set Daily Budget	Destination Type	Ad Set Lifetime Budget	Rate Card	Ad Set Schedule	Use Accelerated Delivery	Frequency Control	Ad Set Minimum Spend Limit	Ad Set Maximum Spend Limit	Is Budget Scheduling Enabled For Ad Set	Ad Set High Demand Periods	Link Object ID	Optimized Conversion Tracking Pixels	Optimized Custom Conversion ID	Optimized Pixel Rule	Optimized Event	Custom Event Name	Link	Application ID	Product Set ID	Place Page Set ID	Object Store URL	Offer ID	Offline Event Data Set ID	Countries	Cities	Regions	Electoral Districts	Zip	Addresses	Geo Markets (DMA)	Global Regions	Large Geo Areas	Medium Geo Areas	Small Geo Areas	Metro Areas	Neighborhoods	Subneighborhoods	Subcities	Location Types	Location Cluster IDs	Location Set IDs	Excluded Countries	Excluded Cities	Excluded Large Geo Areas	Excluded Medium Geo Areas	Excluded Metro Areas	Excluded Small Geo Areas	Excluded Subcities	Excluded Neighborhoods	Excluded Subneighborhoods	Excluded Regions	Excluded Electoral Districts	Excluded Zip	Excluded Addresses	Excluded Geo Markets (DMA)	Excluded Global Regions	Excluded Location Cluster IDs	Gender	Age Min	Age Max	Education Status	Fields of Study	Education Schools	Work Job Titles	Work Employers	College Start Year	College End Year	Interested In	Relationship	Family Statuses	Industries	Life Events	Income	Multicultural Affinity	Household Composition	Behaviors	Connections	Excluded Connections	Friends of Connections	Locales	Site Category	Unified Interests	Excluded User AdClusters	Broad Category Clusters	Targeting Categories - ALL OF	Custom Audiences	Excluded Custom Audiences	Flexible Inclusions	Flexible Exclusions	Advantage Audience	Age Range	Targeting Optimization	Targeting Relaxation	Product Audience Specs	Excluded Product Audience Specs	Targeted Business Locations	Dynamic Audiences	Excluded Dynamic Audiences	Beneficiary	Payer	Publisher Platforms	Facebook Positions	Instagram Positions	Audience Network Positions	Messenger Positions	Oculus Positions	Device Platforms	User Device	Excluded User Device	User Operating System	User OS Version	Wireless Carrier	Excluded Publisher Categories	Brand Safety Inventory Filtering Levels	Optimization Goal	Attribution Spec	Billing Event	Bid Amount	Ad Set Bid Strategy	Regional Regulated Categories	Beneficiary (financial ads in Australia)	Payer (financial ads in Australia)	Beneficiary (financial ads in Taiwan)	Payer (financial ads in Taiwan)	Beneficiary (Taiwan)	Payer (Taiwan)	Beneficiary (Singapore)	Payer (Singapore)	Beneficiary (securities ads in India)	Payer (securities ads in India)	Beneficiary (selected locations)	Payer (selected locations)	Story ID	Ad ID	Ad Status	Preview Link	Instagram Preview Link	Ad Name	Dynamic Creative Ad Format	Title	Title Placement	Additional Title 1	Additional Title 1 Placement	Additional Title 2	Additional Title 2 Placement	Additional Title 3	Additional Title 3 Placement	Additional Title 4	Additional Title 4 Placement	Additional Title 5	Additional Title 5 Placement	Additional Title 6	Additional Title 6 Placement	Additional Title 7	Additional Title 7 Placement	Additional Title 8	Additional Title 8 Placement	Additional Title 9	Additional Title 9 Placement	Body	Body Placement	Additional Body 1	Additional Body 1 Placement	Additional Body 2	Additional Body 2 Placement	Additional Body 3	Additional Body 3 Placement	Additional Body 4	Additional Body 4 Placement	Additional Body 5	Additional Body 5 Placement	Additional Body 6	Additional Body 6 Placement	Additional Body 7	Additional Body 7 Placement	Additional Body 8	Additional Body 8 Placement	Additional Body 9	Additional Body 9 Placement	Display Link	Link Placement	Additional Link 1	Additional Display Link 1	Additional Link 1 Placement	Additional Link 2	Additional Display Link 2	Additional Link 2 Placement	Additional Link 3	Additional Display Link 3	Additional Link 3 Placement	Additional Link 4	Additional Display Link 4	Additional Link 4 Placement	Additional Link 5	Additional Display Link 5	Additional Link 5 Placement	Additional Link 6	Additional Display Link 6	Additional Link 6 Placement	Additional Link 7	Additional Display Link 7	Additional Link 7 Placement	Additional Link 8	Additional Display Link 8	Additional Link 8 Placement	Additional Link 9	Additional Display Link 9	Additional Link 9 Placement	Link Description	Additional Link Description 1	Additional Link Description 2	Additional Link Description 3	Additional Link Description 4	Additional Link Description 5	Additional Link Description 6	Additional Link Description 7	Additional Link Description 8	Additional Link Description 9	Optimize text per person	Retailer IDs	Post Click Item Headline	Post Click Item Description	Conversion Tracking Pixels	Optimized Ad Creative	Image Hash	Image File Name	Image Crops	Video Thumbnail URL	Image Customization	Image Placement	Additional Image 1 Hash	Additional Image 1 Crops	Additional Image 1 Customization	Additional Image 1 Placement	Additional Image 2 Hash	Additional Image 2 Crops	Additional Image 2 Customization	Additional Image 2 Placement	Additional Image 3 Hash	Additional Image 3 Crops	Additional Image 3 Customization	Additional Image 3 Placement	Additional Image 4 Hash	Additional Image 4 Crops	Additional Image 4 Customization	Additional Image 4 Placement	Additional Image 5 Hash	Additional Image 5 Crops	Additional Image 5 Customization	Additional Image 5 Placement	Additional Image 6 Hash	Additional Image 6 Crops	Additional Image 6 Customization	Additional Image 6 Placement	Additional Image 7 Hash	Additional Image 7 Crops	Additional Image 7 Customization	Additional Image 7 Placement	Additional Image 8 Hash	Additional Image 8 Crops	Additional Image 8 Customization	Additional Image 8 Placement	Additional Image 9 Hash	Additional Image 9 Crops	Additional Image 9 Customization	Additional Image 9 Placement	Instagram Platform Image Hash	Instagram Platform Image Crops	Instagram Platform Image URL	Carousel Delivery Mode	Creative Type	URL Tags	View Tags	Event ID	Video ID	Video File Name	Video Customization	Video Placement	Additional Video 1 ID	Additional Video 1 Customization	Additional Video 1 Placement	Additional Video 1 Thumbnail URL	Additional Video 2 ID	Additional Video 2 Customization	Additional Video 2 Placement	Additional Video 2 Thumbnail URL	Additional Video 3 ID	Additional Video 3 Customization	Additional Video 3 Placement	Additional Video 3 Thumbnail URL	Additional Video 4 ID	Additional Video 4 Customization	Additional Video 4 Placement	Additional Video 4 Thumbnail URL	Additional Video 5 ID	Additional Video 5 Customization	Additional Video 5 Placement	Additional Video 5 Thumbnail URL	Additional Video 6 ID	Additional Video 6 Customization	Additional Video 6 Placement	Additional Video 6 Thumbnail URL	Additional Video 7 ID	Additional Video 7 Customization	Additional Video 7 Placement	Additional Video 7 Thumbnail URL	Additional Video 8 ID	Additional Video 8 Customization	Additional Video 8 Placement	Additional Video 8 Thumbnail URL	Additional Video 9 ID	Additional Video 9 Customization	Additional Video 9 Placement	Additional Video 9 Thumbnail URL	Instagram Account ID	Mobile App Deep Link	Product Link	App Link Destination	Call Extension Phone Data ID	Call to Action	Additional Call To Action 5	Additional Call To Action 6	Additional Call To Action 7	Additional Call To Action 8	Additional Call To Action 9	Call to Action Link	Call to Action WhatsApp Number	Additional Custom Tracking Specs	Video Retargeting	Lead Form ID	Permalink	Force Single Link	Format Option	Dynamic Ad Voice	Creative Optimization	Template URL	Android App Name	Android Package Name	Deep Link For Android	Facebook App ID	iOS App Name	iOS App Store ID	Deep Link For iOS	iPad App Name	iPad App Store ID	Deep Link For iPad	iPhone App Name	iPhone App Store ID	Deep Link For iPhone	Deep link to website	Windows Store ID	Windows App Name	Deep Link For Windows Phone	Add End Card	Dynamic Ads Ad Context	Page Welcome Message	App Destination	App Destination Page ID	Use Page as Actor	Image Overlay Template	Image Overlay Text Type	Image Overlay Text Font	Image Overlay Position	Image Overlay Theme Color	Image Overlay Float With Margin	Image Layer 1 - layer_type	Image Layer 1 - image_source	Image Layer 1 - overlay_shape	Image Layer 1 - text_font	Image Layer 1 - shape_color	Image Layer 1 - text_color	Image Layer 1 - content_type	Image Layer 1 - price	Image Layer 1 - low_price	Image Layer 1 - high_price	Image Layer 1 - frame_source	Image Layer 1 - frame_image_hash	Image Layer 1 - scale	Image Layer 1 - blending_mode	Image Layer 1 - opacity	Image Layer 1 - overlay_position	Image Layer 1 - pad_image	Image Layer 1 - crop_image	Image Layer 2 - layer_type	Image Layer 2 - image_source	Image Layer 2 - overlay_shape	Image Layer 2 - text_font	Image Layer 2 - shape_color	Image Layer 2 - text_color	Image Layer 2 - content_type	Image Layer 2 - price	Image Layer 2 - low_price	Image Layer 2 - high_price	Image Layer 2 - frame_source	Image Layer 2 - frame_image_hash	Image Layer 2 - scale	Image Layer 2 - blending_mode	Image Layer 2 - opacity	Image Layer 2 - overlay_position	Image Layer 2 - pad_image	Image Layer 2 - crop_image	Image Layer 3 - layer_type	Image Layer 3 - image_source	Image Layer 3 - overlay_shape	Image Layer 3 - text_font	Image Layer 3 - shape_color	Image Layer 3 - text_color	Image Layer 3 - content_type	Image Layer 3 - price	Image Layer 3 - low_price	Image Layer 3 - high_price	Image Layer 3 - frame_source	Image Layer 3 - frame_image_hash	Image Layer 3 - scale	Image Layer 3 - blending_mode	Image Layer 3 - opacity	Image Layer 3 - overlay_position	Image Layer 3 - pad_image	Image Layer 3 - crop_image	Product 1 - Link	Product 1 - Name	Product 1 - Description	Product 1 - Image Hash	Product 1 - Image Crops	Product 1 - Video ID	Product 1 - Call To Action Link	Product 1 - Mobile App Deep Link	Product 1 - Display Link	Product 1 - Place Data	Product 1 - Is Static Card	Product 2 - Link	Product 2 - Name	Product 2 - Description	Product 2 - Image Hash	Product 2 - Image Crops	Product 2 - Video ID	Product 2 - Call To Action Link	Product 2 - Mobile App Deep Link	Product 2 - Display Link	Product 2 - Place Data	Product 2 - Is Static Card	Product 3 - Link	Product 3 - Name	Product 3 - Description	Product 3 - Image Hash	Product 3 - Image Crops	Product 3 - Video ID	Product 3 - Call To Action Link	Product 3 - Mobile App Deep Link	Product 3 - Display Link	Product 3 - Place Data	Product 3 - Is Static Card	Product 4 - Link	Product 4 - Name	Product 4 - Description	Product 4 - Image Hash	Product 4 - Image Crops	Product 4 - Video ID	Product 4 - Call To Action Link	Product 4 - Mobile App Deep Link	Product 4 - Display Link	Product 4 - Place Data	Product 4 - Is Static Card	Product 5 - Link	Product 5 - Name	Product 5 - Description	Product 5 - Image Hash	Product 5 - Image Crops	Product 5 - Video ID	Product 5 - Call To Action Link	Product 5 - Mobile App Deep Link	Product 5 - Display Link	Product 5 - Place Data	Product 5 - Is Static Card	Product 6 - Link	Product 6 - Name	Product 6 - Description	Product 6 - Image Hash	Product 6 - Image Crops	Product 6 - Video ID	Product 6 - Call To Action Link	Product 6 - Mobile App Deep Link	Product 6 - Display Link	Product 6 - Place Data	Product 6 - Is Static Card	Product 7 - Link	Product 7 - Name	Product 7 - Description	Product 7 - Image Hash	Product 7 - Image Crops	Product 7 - Video ID	Product 7 - Call To Action Link	Product 7 - Mobile App Deep Link	Product 7 - Display Link	Product 7 - Place Data	Product 7 - Is Static Card	Product 8 - Link	Product 8 - Name	Product 8 - Description	Product 8 - Image Hash	Product 8 - Image Crops	Product 8 - Video ID	Product 8 - Call To Action Link	Product 8 - Mobile App Deep Link	Product 8 - Display Link	Product 8 - Place Data	Product 8 - Is Static Card	Product 9 - Link	Product 9 - Name	Product 9 - Description	Product 9 - Image Hash	Product 9 - Image Crops	Product 9 - Video ID	Product 9 - Call To Action Link	Product 9 - Mobile App Deep Link	Product 9 - Display Link	Product 9 - Place Data	Product 9 - Is Static Card	Product 10 - Link	Product 10 - Name	Product 10 - Description	Product 10 - Image Hash	Product 10 - Image Crops	Product 10 - Video ID	Product 10 - Call To Action Link	Product 10 - Mobile App Deep Link	Product 10 - Display Link	Product 10 - Place Data	Product 10 - Is Static Card	Product Sales Channel	Dynamic Creative Lead Form ID	Additional Dynamic Creative Lead Gen Form ID 1	Additional Dynamic Creative Lead Gen Form ID 2	Additional Dynamic Creative Lead Gen Form ID 3	Additional Dynamic Creative Lead Gen Form ID 4	Additional Dynamic Creative Lead Gen Form ID 5	Additional Dynamic Creative Lead Gen Form ID 6	Additional Dynamic Creative Lead Gen Form ID 7	Additional Dynamic Creative Lead Gen Form ID 8	Additional Dynamic Creative Lead Gen Form ID 9	Dynamic Creative Call to Action	Additional Dynamic Creative Call To Action Type 5	Additional Dynamic Creative Call To Action Type 6	Additional Dynamic Creative Call To Action Type 7	Additional Dynamic Creative Call To Action Type 8	Additional Dynamic Creative Call To Action Type 9	Degrees of Freedom Type	Creative Destination Type	Creative Onsite Destinations	Mockup ID	Text Transformations	Ad Stop Time	Ad Start Time
+cg:120217163857880454		1 - 01/30 - Launch JG 2025 - CT			PAUSED	Outcome Sales	AUCTION							01/30/2025 12:57:06 pm				Yes	NONE	No	[]	NONE	c:120217484509390454	PAUSED	0	250207 - PUR - Griechenland, Olivenöl - ex Best Performer	02/07/2025 6:20:34 pm		100	UNDEFINED	0			No				No	[]	o:101883605856765	tp:465289858755756			PURCHASE		http://www.olivadis.com/jahresvorrat-2025-kampagne							AT, DE															home, recent																				18	65																											120217163885590454:PUR 90	"[{""interests"":[{""id"":""6003075824815"",""name"":""Greece""},{""id"":""6003184482902"",""name"":""Olive oil""}]}]"		0									Olivadis GmbH	Olivadis GmbH														FACEBOOK_STANDARD, AN_STANDARD	OFFSITE_CONVERSIONS	"[{""event_type"":""CLICK_THROUGH"",""window_days"":7},{""event_type"":""VIEW_THROUGH"",""window_days"":1},{""event_type"":""ENGAGED_VIDEO_VIEW"",""window_days"":1}]"	IMPRESSIONS		Highest volume or value														s:621998763715782	a:120217484563080454	ACTIVE	https://www.facebook.com/?feed_demo_ad=120217484563080454&h=AQJq34MOWo5qMmjsmcJ-CTX3WBs	https://www.instagram.com/p/DFx59eIxqL0/	Info Ad 1 - Öl im Supermarkt kaufen Explainer																						"Wenn du dieses Video zu Ende schaust, wirst du kein Olivenöl mehr im Supermarkt kaufen wollen 🤯
+
+𝐇𝐢𝐞𝐫 𝐢𝐬𝐭 𝐝𝐢𝐞 𝐛𝐢𝐭𝐭𝐞𝐫𝐞 𝐖𝐚𝐡𝐫𝐡𝐞𝐢𝐭 (𝐣𝐚, 𝐝𝐚𝐬 𝐖𝐨𝐫𝐭𝐬𝐩𝐢𝐞𝐥 𝐰𝐚𝐫 𝐀𝐛𝐬𝐢𝐜𝐡𝐭): Supermarkt Olivenöle werden oft tausende Kilometer transportiert und in Tanks zusammengeschüttet, in denen sie 1-2 Jahre lagern, bevor sie überhaupt erst abgefüllt werden. Dafür werden laut Berichten  immer wieder auch minderwertige Olivenöle verwendet, die aus teils faulen Oliven gepresst wurden. Diese werden mit dann mit etwas besserem Olivenöl gemischt und somit die mindere Qualität verschleiert.
+
+𝐖𝐚𝐬 𝐡𝐞𝐢ß𝐭 𝐝𝐚𝐬 𝐢𝐦 𝐊𝐥𝐚𝐫𝐭𝐞𝐱𝐭? Wenn du im Supermarkt ein Olivenöl kaufst, kann es durchaus sein, dass dein Öl  schon mehrere Jahre alt ist. Für das aufgedruckte Mindesthaltbarkeitsdatum ist nämlich nicht der Erntezeitpunkt, sondern das Datum der Abfüllung in die Flasche ausschlaggebend.
+
+𝐖𝐢𝐫 𝐟𝐢𝐧𝐝𝐞𝐧: Das muss nicht so sein und haben dafür die perfekte Lösung – unser selbstgemachtes Olivenöl in einer feinen Glasflasche.
+
+Wir sind ein Familienbetrieb aus Pteleos in Griechenland und produzieren jedes Jahr auf unseren eigenen Olivenhainen eine limitierte Menge an flüssigem Gold.
+
+𝐇𝐢𝐞𝐫 𝐬𝐢𝐧𝐝 𝐝𝐢𝐞 𝐰𝐢𝐜𝐡𝐭𝐢𝐠𝐬𝐭𝐞𝐧 𝐅𝐚𝐤𝐭𝐨𝐫𝐞𝐧, 𝐝𝐢𝐞 𝐮𝐧𝐬𝐞𝐫 𝐎𝐥𝐢𝐯𝐞𝐧ö𝐥 𝐠𝐞𝐬𝐜𝐡𝐦𝐚𝐜𝐤𝐥𝐢𝐜𝐡 𝐮𝐧𝐝 𝐪𝐮𝐚𝐥𝐢𝐭𝐚𝐭𝐢𝐯 𝐛𝐞𝐬𝐬𝐞𝐫 𝐚𝐥𝐬 𝐚𝐥𝐥𝐞𝐬 𝐦𝐚𝐜𝐡𝐞𝐧, 𝐰𝐚𝐬 𝐝𝐮 𝐢𝐦 𝐒𝐮𝐩𝐞𝐫𝐦𝐚𝐫𝐤𝐭 𝐟𝐢𝐧𝐝𝐞𝐧 𝐰𝐢𝐫𝐬𝐭:
+
+🫒 In unserem Olivenöl befinden sich ausschließlich handgepflückte Oliven aus unserem hauseigenen Olivenhain in Griechenland. Deshalb können wir jedes Jahr auch nur eine sehr begrenzte Menge Olivenöl produzieren. Das limitiert uns zwar, dadurch erreichen wir aber eine unvergleichliche Qualität.
+
+🫒 Unsere Oliven legen von der Ernte über das Pressen, Abfüllen und Verpacken nur wenige Meter zurück. Mit dieser Frische im Geschmack können Produkte aus dem Supermarkt niemals mithalten.
+
+🫒 Als „Natives Olivenöl Extra“ befinden wir uns in der allerhöchsten Güteklasse der Olivenöle. Dafür ist ein Säuregehalt von maximal 0,8% erforderlich. Unser Olivenöl übertrifft diese Anforderung mit einem Säuregehalt von 0,4% bei Weitem.
+
+𝐃𝐢𝐞𝐬𝐞𝐧 𝐔𝐧𝐭𝐞𝐫𝐬𝐜𝐡𝐢𝐞𝐝 𝐬𝐜𝐡𝐦𝐞𝐜𝐤𝐭 𝐦𝐚𝐧. Mittlerweile haben mehr als 2.000 Kunden unser Olivenöl probiert, von tausenden verkauften Flaschen haben wir keine einzige retour bekommen. Darüber berichten unsere Kunden regelmäßig auf Trustpilot, in Form von 5-Sterne-Bewertungen ⭐⭐⭐⭐⭐
+
+Probier’s aus und schmecke auch du den Unterschied!
+http://www.olivadis.com/jahresvorrat-2025-kampagne"																																																											No				tp:465289858755756	No																																															Video Page Post Ad	utm_source={{site_source_name}}&utm_medium={{placement}}&utm_campaign={{campaign.name}}&utm_content={{ad.name}}			v:621998763715782																																								x:4610719345700861					LEARN_MORE								[]	No		https://www.facebook.com/100081610752007/videos/621998763715782																												No																																																																																																																																																																																																		
+cg:120217163857880454		1 - 01/30 - Launch JG 2025 - CT			PAUSED	Outcome Sales	AUCTION							01/30/2025 12:57:06 pm				Yes	NONE	No	[]	NONE	c:120217484509390454	PAUSED	0	250207 - PUR - Griechenland, Olivenöl - ex Best Performer	02/07/2025 6:20:34 pm		100	UNDEFINED	0			No				No	[]	o:101883605856765	tp:465289858755756			PURCHASE		http://www.olivadis.com/jahresvorrat-2025-kampagne							AT, DE															home, recent																				18	65																											120217163885590454:PUR 90	"[{""interests"":[{""id"":""6003075824815"",""name"":""Greece""},{""id"":""6003184482902"",""name"":""Olive oil""}]}]"		0									Olivadis GmbH	Olivadis GmbH														FACEBOOK_STANDARD, AN_STANDARD	OFFSITE_CONVERSIONS	"[{""event_type"":""CLICK_THROUGH"",""window_days"":7},{""event_type"":""VIEW_THROUGH"",""window_days"":1},{""event_type"":""ENGAGED_VIDEO_VIEW"",""window_days"":1}]"	IMPRESSIONS		Highest volume or value														s:519183383924186	a:120217484509400454	ACTIVE	https://www.facebook.com/?feed_demo_ad=120217484509400454&h=AQK_cP_DId3oX69iH-u8S8p0VGU	https://www.instagram.com/p/DFx5-SGMfup/	Info Ad 2 - Animation																						"„Wie könnt ihr als kleiner Familienbetrieb so ein einzigartiges Olivenöl aus dem Hut zaubern?“ 🤯
+
+Immer wieder bekommen wir diese Frage von unseren Kunden gestellt. Denn Olivenöl ist doch Olivenöl, oder? Definitiv nicht 🙅‍♂️
+
+Hier sind die wichtigsten Faktoren, die unser Olivenöl geschmacklich und qualitativ besser als alles machen, was du im Supermarkt deines Vertrauens finden wirst:
+
+🫒 In unserem Olivenöl befinden sich ausschließlich handgepflückte Oliven aus unserem hauseigenen Olivenhain in Griechenland. Deshalb können wir jedes Jahr auch nur eine sehr begrenzte Menge Olivenöl produzieren. Das limitiert uns zwar, dadurch erreichen wir aber eine unvergleichliche Qualität.
+
+🫒 Unsere Oliven legen von der Ernte über das Pressen, Abfüllen und Verpacken nur wenige Meter zurück. Dadurch entsteht eine Frische im Geschmack, mit der Produkte aus dem Supermarkt niemals mithalten können.
+
+🫒 Als „Natives Olivenöl Extra“ befinden wir uns in der allerhöchsten Güteklasse der Olivenöle. Dafür ist ein Säuregehalt von maximal 0,8% erforderlich. Unser Olivenöl übertrifft diese Anforderung mit einem Säuregehalt von 0,4% bei Weitem.
+
+Diesen Unterschied schmeckt man. Unsere begeisterten Kunden berichten darüber regelmäßig auf Trustpilot, in Form von 5-Sterne-Bewertungen ⭐⭐⭐⭐⭐
+
+Probier’s aus und schmecke auch du den Unterschied.
+👉 http://www.olivadis.com/jahresvorrat-2025-kampagne"																																																											No				tp:465289858755756	No																																															Video Page Post Ad	utm_source={{site_source_name}}&utm_medium={{placement}}&utm_campaign={{campaign.name}}&utm_content={{ad.name}}			v:519183383924186																																								x:4610719345700861					LEARN_MORE								[]	No		https://www.facebook.com/100081610752007/videos/519183383924186																												No																																																																																																																																																																																																		
+cg:120217163857880454		1 - 01/30 - Launch JG 2025 - CT			PAUSED	Outcome Sales	AUCTION							01/30/2025 12:57:06 pm				Yes	NONE	No	[]	NONE	c:120217484509390454	PAUSED	0	250207 - PUR - Griechenland, Olivenöl - ex Best Performer	02/07/2025 6:20:34 pm		100	UNDEFINED	0			No				No	[]	o:101883605856765	tp:465289858755756			PURCHASE		http://www.olivadis.com/jahresvorrat-2025-kampagne							AT, DE															home, recent																				18	65																											120217163885590454:PUR 90	"[{""interests"":[{""id"":""6003075824815"",""name"":""Greece""},{""id"":""6003184482902"",""name"":""Olive oil""}]}]"		0									Olivadis GmbH	Olivadis GmbH														FACEBOOK_STANDARD, AN_STANDARD	OFFSITE_CONVERSIONS	"[{""event_type"":""CLICK_THROUGH"",""window_days"":7},{""event_type"":""VIEW_THROUGH"",""window_days"":1},{""event_type"":""ENGAGED_VIDEO_VIEW"",""window_days"":1}]"	IMPRESSIONS		Highest volume or value														s:1126850861902680	a:120217484533790454	ACTIVE	https://www.facebook.com/?feed_demo_ad=120217484533790454&h=AQKC518_Sxs5YpJD1d7UVccPDXM	https://www.instagram.com/p/DFx5-HlsLDo/	UGC Supermarkt																						"Wenn du dieses Video zu Ende schaust, wirst du kein Olivenöl mehr im Supermarkt kaufen wollen 🤯
+
+𝐇𝐢𝐞𝐫 𝐢𝐬𝐭 𝐝𝐢𝐞 𝐛𝐢𝐭𝐭𝐞𝐫𝐞 𝐖𝐚𝐡𝐫𝐡𝐞𝐢𝐭 (𝐣𝐚, 𝐝𝐚𝐬 𝐖𝐨𝐫𝐭𝐬𝐩𝐢𝐞𝐥 𝐰𝐚𝐫 𝐀𝐛𝐬𝐢𝐜𝐡𝐭): Supermarkt Olivenöle werden oft tausende Kilometer transportiert und in Tanks zusammengeschüttet, in denen sie 1-2 Jahre lagern, bevor sie überhaupt erst abgefüllt werden. Dafür werden laut Berichten  immer wieder auch minderwertige Olivenöle verwendet, die aus teils faulen Oliven gepresst wurden. Diese werden mit dann mit etwas besserem Olivenöl gemischt und somit die mindere Qualität verschleiert.
+
+𝐖𝐚𝐬 𝐡𝐞𝐢ß𝐭 𝐝𝐚𝐬 𝐢𝐦 𝐊𝐥𝐚𝐫𝐭𝐞𝐱𝐭? Wenn du im Supermarkt ein Olivenöl kaufst, kann es durchaus sein, dass dein Öl  schon mehrere Jahre alt ist. Für das aufgedruckte Mindesthaltbarkeitsdatum ist nämlich nicht der Erntezeitpunkt, sondern das Datum der Abfüllung in die Flasche ausschlaggebend.
+
+𝐖𝐢𝐫 𝐟𝐢𝐧𝐝𝐞𝐧: Das muss nicht so sein und haben dafür die perfekte Lösung – unser selbstgemachtes Olivenöl in einer feinen Glasflasche.
+
+Wir sind ein Familienbetrieb aus Pteleos in Griechenland und produzieren jedes Jahr auf unseren eigenen Olivenhainen eine limitierte Menge an flüssigem Gold.
+
+𝐇𝐢𝐞𝐫 𝐬𝐢𝐧𝐝 𝐝𝐢𝐞 𝐰𝐢𝐜𝐡𝐭𝐢𝐠𝐬𝐭𝐞𝐧 𝐅𝐚𝐤𝐭𝐨𝐫𝐞𝐧, 𝐝𝐢𝐞 𝐮𝐧𝐬𝐞𝐫 𝐎𝐥𝐢𝐯𝐞𝐧ö𝐥 𝐠𝐞𝐬𝐜𝐡𝐦𝐚𝐜𝐤𝐥𝐢𝐜𝐡 𝐮𝐧𝐝 𝐪𝐮𝐚𝐥𝐢𝐭𝐚𝐭𝐢𝐯 𝐛𝐞𝐬𝐬𝐞𝐫 𝐚𝐥𝐬 𝐚𝐥𝐥𝐞𝐬 𝐦𝐚𝐜𝐡𝐞𝐧, 𝐰𝐚𝐬 𝐝𝐮 𝐢𝐦 𝐒𝐮𝐩𝐞𝐫𝐦𝐚𝐫𝐤𝐭 𝐟𝐢𝐧𝐝𝐞𝐧 𝐰𝐢𝐫𝐬𝐭:
+
+🫒 In unserem Olivenöl befinden sich ausschließlich handgepflückte Oliven aus unserem hauseigenen Olivenhain in Griechenland. Deshalb können wir jedes Jahr auch nur eine sehr begrenzte Menge Olivenöl produzieren. Das limitiert uns zwar, dadurch erreichen wir aber eine unvergleichliche Qualität.
+
+🫒 Unsere Oliven legen von der Ernte über das Pressen, Abfüllen und Verpacken nur wenige Meter zurück. Mit dieser Frische im Geschmack können Produkte aus dem Supermarkt niemals mithalten.
+
+🫒 Als „Natives Olivenöl Extra“ befinden wir uns in der allerhöchsten Güteklasse der Olivenöle. Dafür ist ein Säuregehalt von maximal 0,8% erforderlich. Unser Olivenöl übertrifft diese Anforderung mit einem Säuregehalt von 0,4% bei Weitem.
+
+𝐃𝐢𝐞𝐬𝐞𝐧 𝐔𝐧𝐭𝐞𝐫𝐬𝐜𝐡𝐢𝐞𝐝 𝐬𝐜𝐡𝐦𝐞𝐜𝐤𝐭 𝐦𝐚𝐧. Mittlerweile haben mehr als 2.000 Kunden unser Olivenöl probiert, von tausenden verkauften Flaschen haben wir keine einzige retour bekommen. Darüber berichten unsere Kunden regelmäßig auf Trustpilot, in Form von 5-Sterne-Bewertungen ⭐⭐⭐⭐⭐
+
+Probier’s aus und schmecke auch du den Unterschied!
+http://www.olivadis.com/jahresvorrat-2025-kampagne"																																																											No				tp:465289858755756	No																																															Video Page Post Ad	utm_source={{site_source_name}}&utm_medium={{placement}}&utm_campaign={{campaign.name}}&utm_content={{ad.name}}			v:1126850861902680																																								x:4610719345700861					LEARN_MORE								[]	No		https://www.facebook.com/100081610752007/videos/1126850861902680																												No																																																																																																																																																																																																		
+cg:120223540644860454	cp:368028505538585	1 - ADV+ - 04/25 - JG 2025			PAUSED	Outcome Sales	AUCTION							04/22/2025 9:49:13 am				Yes	NONE	No	[]	NONE	c:120223540644840454	ACTIVE	0	1 - ADV+ - 04/25 - JG 2025	04/22/2025 9:49:13 am		350	UNDEFINED	0			No				No	[]	o:101883605856765	tp:465289858755756			PURCHASE		http://www.olivadis.com/jahresvorrat-2025-kampagne							AT, DE															home, recent																				18	65																																							Olivadis GmbH	Olivadis GmbH														FACEBOOK_RELAXED, AN_RELAXED	OFFSITE_CONVERSIONS	"[{""event_type"":""CLICK_THROUGH"",""window_days"":7},{""event_type"":""VIEW_THROUGH"",""window_days"":1},{""event_type"":""ENGAGED_VIDEO_VIEW"",""window_days"":1}]"	IMPRESSIONS		Highest volume or value														s:510902258657048	a:120227447906550454	PAUSED	https://www.facebook.com/?feed_demo_ad=120227447906550454&h=AQJICafETlKq-VCcxlEndzLFaJM	https://www.instagram.com/p/DKb7tHRADi1/	Aufgemischt 3.3 - Nicki - griechisch																						"‼️Wir haben den Olivenölmarkt in den letzten zwei Jahren ordentlich aufgemischt…
+
+🤦‍♂️Während unsere Konkurrenten immer wieder kräftig ihre alten und neuen Öle zusammenmischen, um billiges,  minderwertiges Öl unter die Leute zu bringen, setzen wir nach wie vor auf unser Olivadis Reinheitsgebot 👌. 
+
+Wie bei den besten Weinen dieser Welt, sind die Oliven für unser Öl …
+🫒handgepflückt 
+🫒aus einer einzigen Sorte, der Amphissis Olive
+🫒aus einem Hang im familieneigenen Olivenhain in Pteleos
+🫒aus einem Jahrgang, jedes Jahr frisch
+🫒von bis zu 300 Jahre alten Olivenbäumen
+🫒Limitierte Menge aus unserer Familienproduktion.
+
+🥸 Aber ist auch irgendwie egal, oder? Soll doch nur schmecken…
+
+Stimmt 😎
+
+👉 Unser Olivenöl schmeckt fruchtig, mild, mit fein ausgewogenen Schärfe- und Bitternoten für einen harmonisch abgerundeten Geschmack.
+
+👑 Für die höchste Gütestufe “Natives Olivenöl Extra” ist ein Säuregehalt von 0,8% vorgeschrieben. Wir haben gerade einmal 0,4%.
+
+𝐎𝐥𝐢𝐯𝐚𝐝𝐢𝐬 𝐰𝐢𝐫𝐝 𝟗 𝐯𝐨𝐧 𝟏𝟎 𝐦𝐚𝐥 𝐛𝐞𝐢 𝐁𝐥𝐢𝐧𝐝𝐯𝐞𝐫𝐤𝐨𝐬𝐭𝐮𝐧𝐠𝐞𝐧 𝐚𝐮𝐟 𝐝𝐢𝐞 𝐍𝐮𝐦𝐦𝐞𝐫 𝟏 𝐠𝐞𝐬𝐞𝐭𝐳𝐭.
+Weil es einfach perfekt ist. Das sagen nicht nur wir, sondern auch über 2000 treue Stammkunden, die jedes Jahr unseren neuen Jahrgang vorbestellen ⭐⭐⭐⭐⭐.
+
+😍 Sichere dir bis zu 246€ kostenlose Goodies, wie unsere griechischen Bergtees, eingelegte Olivadis-Oliven der Sonderklasse und unsere göttlichen Gewürzkräuter.
+
+Probier’s aus und schmecke auch du den Unterschied!
+http://www.olivadis.com/jahresvorrat-2025-kampagne"																																																											No				tp:465289858755756	No																																															Video Page Post Ad	utm_source={{site_source_name}}&utm_medium={{placement}}&utm_campaign={{campaign.name}}&utm_content={{ad.name}}			v:510902258657048																																								x:4610719345700861					LEARN_MORE								[]	No		https://www.facebook.com/100081610752007/videos/510902258657048																												No																																																																																																																																																																																												USER_ENROLLED_AUTOFLOW						
+cg:120223540644860454	cp:368028505538585	1 - ADV+ - 04/25 - JG 2025			PAUSED	Outcome Sales	AUCTION							04/22/2025 9:49:13 am				Yes	NONE	No	[]	NONE	c:120223540644840454	ACTIVE	0	1 - ADV+ - 04/25 - JG 2025	04/22/2025 9:49:13 am		350	UNDEFINED	0			No				No	[]	o:101883605856765	tp:465289858755756			PURCHASE		http://www.olivadis.com/jahresvorrat-2025-kampagne							AT, DE															home, recent																				18	65																																							Olivadis GmbH	Olivadis GmbH														FACEBOOK_RELAXED, AN_RELAXED	OFFSITE_CONVERSIONS	"[{""event_type"":""CLICK_THROUGH"",""window_days"":7},{""event_type"":""VIEW_THROUGH"",""window_days"":1},{""event_type"":""ENGAGED_VIDEO_VIEW"",""window_days"":1}]"	IMPRESSIONS		Highest volume or value														s:596358929700580	a:120223540819280454	PAUSED	https://www.facebook.com/?feed_demo_ad=120223540819280454&h=AQL5EX6R_DZb4rhbLgrIgxCV2pQ	https://www.instagram.com/p/DFcul2_g_LC/	CB#1 - 1 - aufgemischt																						"‼️Wir haben den Olivenölmarkt in den letzten zwei Jahren ordentlich aufgemischt…
+
+🤦‍♂️Während unsere Konkurrenten immer wieder kräftig ihre alten und neuen Öle zusammenmischen, um billiges,  minderwertiges Öl unter die Leute zu bringen, setzen wir nach wie vor auf unser Olivadis Reinheitsgebot 👌. 
+
+Wie bei den besten Weinen dieser Welt, sind die Oliven für unser Öl …
+🫒handgepflückt 
+🫒aus einer einzigen Sorte, der Amphissis Olive
+🫒aus einem Hang im familieneigenen Olivenhain in Pteleos
+🫒aus einem Jahrgang, jedes Jahr frisch
+🫒von bis zu 300 Jahre alten Olivenbäumen
+🫒Limitierte Menge aus unserer Familienproduktion.
+
+🥸 Aber ist auch irgendwie egal, oder? Soll doch nur schmecken…
+
+Stimmt 😎
+
+👉 Unser Olivenöl schmeckt fruchtig, mild, mit fein ausgewogenen Schärfe- und Bitternoten für einen harmonisch abgerundeten Geschmack.
+
+👑 Für die höchste Gütestufe “Natives Olivenöl Extra” ist ein Säuregehalt von 0,8% vorgeschrieben. Wir haben gerade einmal 0,4%.
+
+𝐎𝐥𝐢𝐯𝐚𝐝𝐢𝐬 𝐰𝐢𝐫𝐝 𝟗 𝐯𝐨𝐧 𝟏𝟎 𝐦𝐚𝐥 𝐛𝐞𝐢 𝐁𝐥𝐢𝐧𝐝𝐯𝐞𝐫𝐤𝐨𝐬𝐭𝐮𝐧𝐠𝐞𝐧 𝐚𝐮𝐟 𝐝𝐢𝐞 𝐍𝐮𝐦𝐦𝐞𝐫 𝟏 𝐠𝐞𝐬𝐞𝐭𝐳𝐭.
+Weil es einfach perfekt ist. Das sagen nicht nur wir, sondern auch über 2000 treue Stammkunden, die jedes Jahr unseren neuen Jahrgang vorbestellen ⭐⭐⭐⭐⭐.
+
+😍 Sichere dir bis zu 246€ kostenlose Goodies, wie unsere griechischen Bergtees, eingelegte Olivadis-Oliven der Sonderklasse und unsere göttlichen Gewürzkräuter.
+
+Probier’s aus und schmecke auch du den Unterschied!
+http://www.olivadis.com/jahresvorrat-2025-kampagne"																																																											No				tp:465289858755756	No																																															Video Page Post Ad	utm_source={{site_source_name}}&utm_medium={{placement}}&utm_campaign={{campaign.name}}&utm_content={{ad.name}}			v:596358929700580																																								x:4610719345700861					LEARN_MORE								[]	No		https://www.facebook.com/100081610752007/videos/596358929700580																												No																																																																																																																																																																																																		
+cg:120223540644860454	cp:368028505538585	1 - ADV+ - 04/25 - JG 2025			PAUSED	Outcome Sales	AUCTION							04/22/2025 9:49:13 am				Yes	NONE	No	[]	NONE	c:120223540644840454	ACTIVE	0	1 - ADV+ - 04/25 - JG 2025	04/22/2025 9:49:13 am		350	UNDEFINED	0			No				No	[]	o:101883605856765	tp:465289858755756			PURCHASE		http://www.olivadis.com/jahresvorrat-2025-kampagne							AT, DE															home, recent																				18	65																																							Olivadis GmbH	Olivadis GmbH														FACEBOOK_RELAXED, AN_RELAXED	OFFSITE_CONVERSIONS	"[{""event_type"":""CLICK_THROUGH"",""window_days"":7},{""event_type"":""VIEW_THROUGH"",""window_days"":1},{""event_type"":""ENGAGED_VIDEO_VIEW"",""window_days"":1}]"	IMPRESSIONS		Highest volume or value														s:1147656010413216	a:120223540819270454	ACTIVE	https://www.facebook.com/?feed_demo_ad=120223540819270454&h=AQKNuJZQaVGc7gypyjbr44dnMFk	https://www.instagram.com/p/DFculXfAdKR/	CB#1 - 2 - Industrieprobleme																						"Du hast sicher schon von den massiven Problemen in der Olivenöl Industrie gehört. 
+❌Oliven Ernten sind ausgefallen, Hersteller mischen altes Öl mit Frischem, um durch die Kontrollen zu kommen. Olivenöle großer Hersteller lagern teilweise jahrelang, bevor sie überhaupt in den Handel kommen, wo sie dann weitere Monate herumstehen. 
+
+😩Bevor du herkömmliches Supermarkt Öl in deinen Salat gießt oder dein Fleisch/Fisch/Gemüse damit anbrätst, ist es in den vielen Fällen schon ziemlich alt, obwohl es mit “Natives Olivenöl extra” gekennzeichnet ist. 
+
+Leider kennen viel zu wenige den Geschmack von wirklich frischem Olivenöl.
+
+Wir haben einen Gegentrend gestartet und damit einen riesigen Nerv getroffen 😍
+
+Wir behandeln unser Olivadis Olivenöl wie die großen Weingüter aus Frankreich und Italien 🫒❤️ 
+
+Ein paar Fakten über die Oliven in unserem Öl…
+🫒 Handgepflückt, sorgfältig ausgewählt – keine Maschinen, keine Kompromisse.
+🫒 Wir verwenden ausschließlich eine einzige Sorte: die Amphissis Olive.
+🫒 Geerntet aus einem Hang im familieneigenen Olivenhain in Pteleos, Griechenland.
+🫒 Jedes Jahr frisch – immer aus einem Jahrgang.
+🫒 Von Olivenbäumen, die bis zu 300 Jahre alt sind.
+🫒 Limitierte Menge – reine Handarbeit aus unserer Familienproduktion.
+
+🥸 Aber ist auch irgendwie egal, oder? Soll doch nur schmecken…
+
+Stimmt 😎
+
+👉 Unser Olivenöl schmeckt fruchtig, mild, mit fein ausgewogenen Schärfe- und Bitternoten für einen harmonisch abgerundeten Geschmack.
+
+👑 Für die höchste Gütestufe “Natives Olivenöl Extra” ist ein Säuregehalt von 0,8% vorgeschrieben. Wir haben gerade einmal 0,4%.
+
+𝐎𝐥𝐢𝐯𝐚𝐝𝐢𝐬 𝐰𝐢𝐫𝐝 𝟗 𝐯𝐨𝐧 𝟏𝟎 𝐦𝐚𝐥 𝐛𝐞𝐢 𝐁𝐥𝐢𝐧𝐝𝐯𝐞𝐫𝐤𝐨𝐬𝐭𝐮𝐧𝐠𝐞𝐧 𝐚𝐮𝐟 𝐝𝐢𝐞 𝐍𝐮𝐦𝐦𝐞𝐫 𝟏 𝐠𝐞𝐬𝐞𝐭𝐳𝐭.
+Weil es einfach perfekt ist. Das sagen nicht nur wir, sondern auch über 2000 treue Stammkunden, die jedes Jahr unseren neuen Jahrgang vorbestellen ⭐⭐⭐⭐⭐.
+
+😍 Sichere dir bis zu 246€ kostenlose Goodies, wie unsere griechischen Bergtees, eingelegte Olivadis-Oliven der Sonderklasse und unsere göttlichen Gewürzkräuter.
+
+Probier’s aus und schmecke auch du den Unterschied!
+http://www.olivadis.com/jahresvorrat-2025-kampagne"																																																											No				tp:465289858755756	No																																															Video Page Post Ad	utm_source={{site_source_name}}&utm_medium={{placement}}&utm_campaign={{campaign.name}}&utm_content={{ad.name}}			v:1147656010413216																																								x:4610719345700861					LEARN_MORE								[]	No		https://www.facebook.com/100081610752007/videos/1147656010413216																												No																																																																																																																																																																																																		
+cg:120223540644860454	cp:368028505538585	1 - ADV+ - 04/25 - JG 2025			PAUSED	Outcome Sales	AUCTION							04/22/2025 9:49:13 am				Yes	NONE	No	[]	NONE	c:120223540644840454	ACTIVE	0	1 - ADV+ - 04/25 - JG 2025	04/22/2025 9:49:13 am		350	UNDEFINED	0			No				No	[]	o:101883605856765	tp:465289858755756			PURCHASE		http://www.olivadis.com/jahresvorrat-2025-kampagne							AT, DE															home, recent																				18	65																																							Olivadis GmbH	Olivadis GmbH														FACEBOOK_RELAXED, AN_RELAXED	OFFSITE_CONVERSIONS	"[{""event_type"":""CLICK_THROUGH"",""window_days"":7},{""event_type"":""VIEW_THROUGH"",""window_days"":1},{""event_type"":""ENGAGED_VIDEO_VIEW"",""window_days"":1}]"	IMPRESSIONS		Highest volume or value														s:1529077357782209	a:120223540819250454	ACTIVE	https://www.facebook.com/?feed_demo_ad=120223540819250454&h=AQI4Y13JfgCMzvShjMLQ6254fs4	https://www.instagram.com/p/DFculfSgtsj/	CB#1 - 3 - Tradition																						"„Unsere Geschichte steckt in jeder Flasche. 🫒❤️
+Seit über 100 Jahren bewirtschaftet unsere Familie Olivenhaine in Griechenland.
+Unsere Olivenbäume sind bis zu 300 Jahre alt, und jede Flasche Olivadis erzählt die Geschichte von Tradition, Handarbeit und Hingabe.
+
+Warum Olivadis so besonders ist:
+🫒handgepflückt 
+🫒aus einer einzigen Sorte, der Amphisis Olive
+🫒aus einem Hang im familieneigenen Olivenhain in Pteleos
+🫒aus einem Jahrgang, jedes Jahr frisch
+🫒von bis zu 300 Jahre alten Olivenbäumen
+🫒Limitierte Menge aus unserer Familienproduktion.
+
+Erlebe den Geschmack von Tradition und gönne dir jetzt ein Stück Griechenland.
+👉 Sichere dir unser limitiertes Angebot mit kostenfreien Goodies im Wert von bis zu 246 €.
+
+http://www.olivadis.com/jahresvorrat-2025-kampagne"																																																											No				tp:465289858755756	No																																															Video Page Post Ad	utm_source={{site_source_name}}&utm_medium={{placement}}&utm_campaign={{campaign.name}}&utm_content={{ad.name}}			v:1529077357782209																																								x:4610719345700861					LEARN_MORE								[]	No		https://www.facebook.com/100081610752007/videos/1529077357782209																												No																																																																																																																																																																																																		
+cg:120223540644860454	cp:368028505538585	1 - ADV+ - 04/25 - JG 2025			PAUSED	Outcome Sales	AUCTION							04/22/2025 9:49:13 am				Yes	NONE	No	[]	NONE	c:120223540644840454	ACTIVE	0	1 - ADV+ - 04/25 - JG 2025	04/22/2025 9:49:13 am		350	UNDEFINED	0			No				No	[]	o:101883605856765	tp:465289858755756			PURCHASE		http://www.olivadis.com/jahresvorrat-2025-kampagne							AT, DE															home, recent																				18	65																																							Olivadis GmbH	Olivadis GmbH														FACEBOOK_RELAXED, AN_RELAXED	OFFSITE_CONVERSIONS	"[{""event_type"":""CLICK_THROUGH"",""window_days"":7},{""event_type"":""VIEW_THROUGH"",""window_days"":1},{""event_type"":""ENGAGED_VIDEO_VIEW"",""window_days"":1}]"	IMPRESSIONS		Highest volume or value														s:1826413858196410	a:120223540819240454	PAUSED	https://www.facebook.com/?feed_demo_ad=120223540819240454&h=AQKnbss_gXdhF8RGTbAfFMY7fSM	https://www.instagram.com/p/DFculXigV1w/	CB#1 - 5 - Massenproduktion																						"Wenn du dieses Video zu Ende schaust, wirst du kein Olivenöl mehr im Supermarkt kaufen wollen 🤯
+
+𝐇𝐢𝐞𝐫 𝐢𝐬𝐭 𝐝𝐢𝐞 𝐛𝐢𝐭𝐭𝐞𝐫𝐞 𝐖𝐚𝐡𝐫𝐡𝐞𝐢𝐭 (𝐣𝐚, 𝐝𝐚𝐬 𝐖𝐨𝐫𝐭𝐬𝐩𝐢𝐞𝐥 𝐰𝐚𝐫 𝐀𝐛𝐬𝐢𝐜𝐡𝐭): Supermarkt Olivenöle werden oft tausende Kilometer transportiert und in Tanks zusammengeschüttet, in denen sie 1-2 Jahre lagern, bevor sie überhaupt erst abgefüllt werden. Dafür werden laut Berichten  immer wieder auch minderwertige Olivenöle verwendet, die aus teils faulen Oliven gepresst wurden. Diese werden mit dann mit etwas besserem Olivenöl gemischt und somit die mindere Qualität verschleiert.
+
+𝐖𝐚𝐬 𝐡𝐞𝐢ß𝐭 𝐝𝐚𝐬 𝐢𝐦 𝐊𝐥𝐚𝐫𝐭𝐞𝐱𝐭? Wenn du im Supermarkt ein Olivenöl kaufst, kann es durchaus sein, dass dein Öl  schon mehrere Jahre alt ist. Für das aufgedruckte Mindesthaltbarkeitsdatum ist nämlich nicht der Erntezeitpunkt, sondern das Datum der Abfüllung in die Flasche ausschlaggebend.
+
+𝐖𝐢𝐫 𝐟𝐢𝐧𝐝𝐞𝐧: Das muss nicht so sein und haben dafür die perfekte Lösung – unser selbstgemachtes Olivenöl in einer feinen Glasflasche.
+
+Wir sind ein Familienbetrieb aus Pteleos in Griechenland und produzieren jedes Jahr auf unseren eigenen Olivenhainen eine limitierte Menge an flüssigem Gold.
+
+𝐇𝐢𝐞𝐫 𝐬𝐢𝐧𝐝 𝐝𝐢𝐞 𝐰𝐢𝐜𝐡𝐭𝐢𝐠𝐬𝐭𝐞𝐧 𝐅𝐚𝐤𝐭𝐨𝐫𝐞𝐧, 𝐝𝐢𝐞 𝐮𝐧𝐬𝐞𝐫 𝐎𝐥𝐢𝐯𝐞𝐧ö𝐥 𝐠𝐞𝐬𝐜𝐡𝐦𝐚𝐜𝐤𝐥𝐢𝐜𝐡 𝐮𝐧𝐝 𝐪𝐮𝐚𝐥𝐢𝐭𝐚𝐭𝐢𝐯 𝐛𝐞𝐬𝐬𝐞𝐫 𝐚𝐥𝐬 𝐚𝐥𝐥𝐞𝐬 𝐦𝐚𝐜𝐡𝐞𝐧, 𝐰𝐚𝐬 𝐝𝐮 𝐢𝐦 𝐒𝐮𝐩𝐞𝐫𝐦𝐚𝐫𝐤𝐭 𝐟𝐢𝐧𝐝𝐞𝐧 𝐰𝐢𝐫𝐬𝐭:
+
+🫒 In unserem Olivenöl befinden sich ausschließlich handgepflückte Oliven aus unserem hauseigenen Olivenhain in Griechenland. Deshalb können wir jedes Jahr auch nur eine sehr begrenzte Menge Olivenöl produzieren. Das limitiert uns zwar, dadurch erreichen wir aber eine unvergleichliche Qualität.
+
+🫒 Unsere Oliven legen von der Ernte über das Pressen, Abfüllen und Verpacken nur wenige Meter zurück. Mit dieser Frische im Geschmack können Produkte aus dem Supermarkt niemals mithalten.
+
+🫒 Als „Natives Olivenöl Extra“ befinden wir uns in der allerhöchsten Güteklasse der Olivenöle. Dafür ist ein Säuregehalt von maximal 0,8% erforderlich. Unser Olivenöl übertrifft diese Anforderung mit einem Säuregehalt von 0,4% bei Weitem.
+
+𝐃𝐢𝐞𝐬𝐞𝐧 𝐔𝐧𝐭𝐞𝐫𝐬𝐜𝐡𝐢𝐞𝐝 𝐬𝐜𝐡𝐦𝐞𝐜𝐤𝐭 𝐦𝐚𝐧. Mittlerweile haben mehr als 2.000 Kunden unser Olivenöl probiert, von tausenden verkauften Flaschen haben wir keine einzige retour bekommen. Darüber berichten unsere Kunden regelmäßig auf Trustpilot, in Form von 5-Sterne-Bewertungen ⭐⭐⭐⭐⭐
+
+Probier’s aus und schmecke auch du den Unterschied!
+http://www.olivadis.com/jahresvorrat-2025-kampagne"																																																											No				tp:465289858755756	No																																															Video Page Post Ad	utm_source={{site_source_name}}&utm_medium={{placement}}&utm_campaign={{campaign.name}}&utm_content={{ad.name}}			v:1826413858196410																																								x:4610719345700861					LEARN_MORE								[]	No		https://www.facebook.com/100081610752007/videos/1826413858196410																												No																																																																																																																																																																																																		
+cg:120238554963640454		1 - ADV+ - CB#0-3			PAUSED	Outcome Sales	AUCTION		400		Highest volume or value			12/03/2025 4:37:49 pm				Yes	NONE	No	[]	NONE	c:120238554963630454	ACTIVE	0	1 - ADV+ - CB#0-3	12/03/2025 4:37:49 pm			UNDEFINED				No				No	[]	o:101883605856765	tp:465289858755756			PURCHASE		https://olivadis.com/jahresvorrat-2025-kampagne/							AT, DE															home, recent																				18	65																														1	18, 65	expansion_all							Olivadis GmbH	Olivadis GmbH														FACEBOOK_RELAXED, AN_RELAXED	VALUE	"[{""event_type"":""CLICK_THROUGH"",""window_days"":7}]"	IMPRESSIONS																	a:120239251825760454	ACTIVE	https://www.facebook.com/?feed_demo_ad=120239251825760454&h=AQLTcM6BWEIhtl5ej_YHUE2XRSg	https://www.instagram.com/p/DSSlEkUgN9P/	Weihnachten 1	Automatic Format	🎄 Das perfekte Weihnachtsgeschenk	Default, audience_network classic, audience_network rewarded_video, facebook facebook_reels, facebook facebook_reels_overlay, facebook story, instagram ig_search, instagram profile_reels, instagram reels, instagram story, messenger story																			"‼️ Weihnachten steht vor der Tür und du suchst das perfekte Geschenk für deine Liebsten?
+
+🎄 Schluss mit Gutscheinen ohne Gefühl oder Geschenken, die nach ein paar Tagen vergessen sind.
+Schenke dieses Jahr etwas, das wirklich begeistert und jeden Tag Freude macht.
+
+🫒 Olivadis ist mehr als nur Olivenöl.
+Es ist ein Geschenk mit Herkunft, Handwerk und Herz.
+
+Wie bei den besten Weinen der Welt, sind die Oliven für unser Öl
+🫒 handgepflückt
+🫒 aus nur einer Sorte, der Amphissis Olive
+🫒 aus einem Hang im familieneigenen Olivenhain in Pteleos
+🫒 aus einem Jahrgang, jedes Jahr frisch
+🫒 von bis zu 300 Jahre alten Olivenbäumen
+🫒 streng limitierte Menge aus unserer Familienproduktion
+
+🎁 Perfekt für alle, die gutes Essen lieben und Wert auf Qualität legen.
+🕯️ Perfekt für gemeinsame Weihnachtsmomente am Tisch.
+❤️ Perfekt, um zu zeigen, wie viel dir jemand bedeutet.
+
+👉 Geschmacklich fruchtig und mild, mit fein ausbalancierter Schärfe und Bitternoten für ein harmonisches Genusserlebnis.
+👑 Während für „Natives Olivenöl Extra“ bis zu 0,8 Prozent Säure erlaubt sind, liegt Olivadis bei gerade einmal 0,3 Prozent.
+
+𝐎𝐥𝐢𝐯𝐚𝐝𝐢𝐬 𝐰𝐢𝐫𝐝 𝟗 𝐯𝐨𝐧 𝟏𝟎 𝐌𝐚𝐥𝐞𝐧 𝐛𝐞𝐢 𝐁𝐥𝐢𝐧𝐝𝐯𝐞𝐫𝐤𝐨𝐬𝐭𝐮𝐧𝐠𝐞𝐧 𝐚𝐮𝐟 𝐏𝐥𝐚𝐭𝐳 𝟏 𝐠𝐞𝐰𝐚̈𝐡𝐥𝐭.
+
+⭐ Über 2000 treue Stammkunden sichern sich jedes Jahr ihren neuen Jahrgang im Voraus.
+Weil echte Qualität das schönste Geschenk ist.
+
+😍 Schenke Genuss. Schenke Herkunft. Schenke Olivadis.
+Probier es aus und mache dieses Weihnachten unvergesslich.
+
+http://www.olivadis.com/jahresvorrat-2025-kampagne"	Default, audience_network classic, audience_network rewarded_video, facebook facebook_reels, facebook facebook_reels_overlay, facebook story, instagram ig_search, instagram profile_reels, instagram reels, instagram story, messenger story																				Default, audience_network classic, audience_network rewarded_video, facebook facebook_reels, facebook facebook_reels_overlay, facebook story, instagram ig_search, instagram profile_reels, instagram reels, instagram story, messenger story																																						No				tp:465289858755756	No				https://scontent-vie1-1.xx.fbcdn.net/v/t15.5256-10/599595144_873970135374261_541837671856512642_n.jpg?stp=dst-jpg_p110x80_tt6&_nc_cat=110&ccb=1-7&_nc_sid=b696e2&_nc_ohc=d40vA1FOZCEQ7kNvwG-i1sB&_nc_oc=AdlbUWMbUNUl94Gw1x9_QsAQK26ZcZTrDhdEb8KUU1c9Rbs8coxmpolVHwNp4a5hNPU&_nc_zt=23&_nc_ht=scontent-vie1-1.xx&_nc_gid=RyMS6M6jyo49z3eEyHxEsQ&oh=00_Afulz-d_rSV3FVrQh7N9KGJnfbnHkS72PCQj3DPLJBHFWg&oe=698F6D73																																											Link Page Post Ad	utm_source={{site_source_name}}&utm_medium={{placement}}&utm_campaign={{campaign.name}}&utm_content={{ad.name}}			v:882183287673891			Default	v:4398936403724362		Default, audience_network classic, audience_network rewarded_video, facebook facebook_reels, facebook facebook_reels_overlay, facebook story, instagram ig_search, instagram profile_reels, instagram reels, instagram story, messenger story	https://scontent-vie1-1.xx.fbcdn.net/v/t15.5256-10/596207021_1164186199078404_8299307569717232126_n.jpg?stp=dst-jpg_s160x160_tt6&_nc_cat=108&ccb=1-7&_nc_sid=b696e2&_nc_ohc=6wvMpplEGqIQ7kNvwEcoci4&_nc_oc=AdlV9rEUsQvus8PQQLDAbermpGJ0w0KB2PFEffU4FtEmqabTcT_sIaEgL-4fAtt30vg&_nc_zt=23&_nc_ht=scontent-vie1-1.xx&_nc_gid=RyMS6M6jyo49z3eEyHxEsQ&oh=00_AfswzS8SjlF_GU3arxaoeq7raAcwXnro2m3JzNAUYaVKyQ&oe=698F84E6																																	x:4610719345700861					LEARN_MORE								[]	No		https://www.facebook.com/100081610752007/posts/pfbid0XvQ5ENJG12jjEp2XKqxM747KGbTw3kMs9PBrP2M1tbr6j9EBS1BKRJ27YJndq8Uhl?dco_ad_id=120239251825760454																												No																																																																																																																																																																																						LEARN_MORE						USER_ENROLLED_AUTOFLOW						
+cg:120238554963640454		1 - ADV+ - CB#0-3			PAUSED	Outcome Sales	AUCTION		400		Highest volume or value			12/03/2025 4:37:49 pm				Yes	NONE	No	[]	NONE	c:120238554963630454	ACTIVE	0	1 - ADV+ - CB#0-3	12/03/2025 4:37:49 pm			UNDEFINED				No				No	[]	o:101883605856765	tp:465289858755756			PURCHASE		https://olivadis.com/jahresvorrat-2025-kampagne/							AT, DE															home, recent																				18	65																														1	18, 65	expansion_all							Olivadis GmbH	Olivadis GmbH														FACEBOOK_RELAXED, AN_RELAXED	VALUE	"[{""event_type"":""CLICK_THROUGH"",""window_days"":7}]"	IMPRESSIONS																	a:120239251980860454	ACTIVE	https://www.facebook.com/?feed_demo_ad=120239251980860454&h=AQLe9MvrEJOdeoCQUq0c6-cd3jI	https://www.instagram.com/p/DSSlEwbAJrp/	Weihnachten 2	Automatic Format	🎄 Das perfekte Weihnachtsgeschenk	Default, audience_network classic, audience_network rewarded_video, facebook facebook_reels, facebook facebook_reels_overlay, facebook story, instagram ig_search, instagram profile_reels, instagram reels, instagram story, messenger story																			"‼️ Weihnachten steht vor der Tür und du suchst das perfekte Geschenk für deine Liebsten?
+
+🎄 Schluss mit Gutscheinen ohne Gefühl oder Geschenken, die nach ein paar Tagen vergessen sind.
+Schenke dieses Jahr etwas, das wirklich begeistert und jeden Tag Freude macht.
+
+🫒 Olivadis ist mehr als nur Olivenöl.
+Es ist ein Geschenk mit Herkunft, Handwerk und Herz.
+
+Wie bei den besten Weinen der Welt, sind die Oliven für unser Öl
+🫒 handgepflückt
+🫒 aus nur einer Sorte, der Amphissis Olive
+🫒 aus einem Hang im familieneigenen Olivenhain in Pteleos
+🫒 aus einem Jahrgang, jedes Jahr frisch
+🫒 von bis zu 300 Jahre alten Olivenbäumen
+🫒 streng limitierte Menge aus unserer Familienproduktion
+
+🎁 Perfekt für alle, die gutes Essen lieben und Wert auf Qualität legen.
+🕯️ Perfekt für gemeinsame Weihnachtsmomente am Tisch.
+❤️ Perfekt, um zu zeigen, wie viel dir jemand bedeutet.
+
+👉 Geschmacklich fruchtig und mild, mit fein ausbalancierter Schärfe und Bitternoten für ein harmonisches Genusserlebnis.
+👑 Während für „Natives Olivenöl Extra“ bis zu 0,8 Prozent Säure erlaubt sind, liegt Olivadis bei gerade einmal 0,3 Prozent.
+
+𝐎𝐥𝐢𝐯𝐚𝐝𝐢𝐬 𝐰𝐢𝐫𝐝 𝟗 𝐯𝐨𝐧 𝟏𝟎 𝐌𝐚𝐥𝐞𝐧 𝐛𝐞𝐢 𝐁𝐥𝐢𝐧𝐝𝐯𝐞𝐫𝐤𝐨𝐬𝐭𝐮𝐧𝐠𝐞𝐧 𝐚𝐮𝐟 𝐏𝐥𝐚𝐭𝐳 𝟏 𝐠𝐞𝐰𝐚̈𝐡𝐥𝐭.
+
+⭐ Über 2000 treue Stammkunden sichern sich jedes Jahr ihren neuen Jahrgang im Voraus.
+Weil echte Qualität das schönste Geschenk ist.
+
+😍 Schenke Genuss. Schenke Herkunft. Schenke Olivadis.
+Probier es aus und mache dieses Weihnachten unvergesslich.
+
+http://www.olivadis.com/jahresvorrat-2025-kampagne"	Default, audience_network classic, audience_network rewarded_video, facebook facebook_reels, facebook facebook_reels_overlay, facebook story, instagram ig_search, instagram profile_reels, instagram reels, instagram story, messenger story																				Default, audience_network classic, audience_network rewarded_video, facebook facebook_reels, facebook facebook_reels_overlay, facebook story, instagram ig_search, instagram profile_reels, instagram reels, instagram story, messenger story																																						No				tp:465289858755756	No				https://scontent-vie1-1.xx.fbcdn.net/v/t15.5256-10/597888840_1862673734340023_6598033915458742985_n.jpg?stp=dst-jpg_p110x80_tt6&_nc_cat=100&ccb=1-7&_nc_sid=b696e2&_nc_ohc=LXnHcolDjQUQ7kNvwE_kBA9&_nc_oc=AdnepcsjCuSo-_ux1leDnXrvclLxLeQcz-xgwZAuYE7LlP2X6coBWH_kM4EyR3Zk5Ic&_nc_zt=23&_nc_ht=scontent-vie1-1.xx&_nc_gid=RyMS6M6jyo49z3eEyHxEsQ&oh=00_Afsrq7dRMrojXb2ozBuG6ybhwlVf3_qRPCT3tT-v5I2kXQ&oe=698F591F																																											Link Page Post Ad	utm_source={{site_source_name}}&utm_medium={{placement}}&utm_campaign={{campaign.name}}&utm_content={{ad.name}}			v:1468115520955229			Default	v:744959374681604		Default, audience_network classic, audience_network rewarded_video, facebook facebook_reels, facebook facebook_reels_overlay, facebook story, instagram ig_search, instagram profile_reels, instagram reels, instagram story, messenger story	https://scontent-vie1-1.xx.fbcdn.net/v/t15.5256-10/599549626_1534652677588367_5435062223676247135_n.jpg?stp=dst-jpg_s160x160_tt6&_nc_cat=110&ccb=1-7&_nc_sid=b696e2&_nc_ohc=m6PGsQv-8vcQ7kNvwEDlOsB&_nc_oc=Adngr3BnlHbJBFEB1ZcinO-cD4xtiiDAmsGMyaVUX0XBhh4Ap2juPJUIj1Q9yTgu9jI&_nc_zt=23&_nc_ht=scontent-vie1-1.xx&_nc_gid=RyMS6M6jyo49z3eEyHxEsQ&oh=00_Afu3bPb1OQZoJPvtlUHoDwxYE1qD3AISfgE05D1_6afQUQ&oe=698F7AF6																																	x:4610719345700861					LEARN_MORE								[]	No		https://www.facebook.com/100081610752007/posts/pfbid02xRDn3rVzf3S5ACf4jwELT7T8ST7oEXdi68QJu3jpfsczNom1gBJW6dur6txpEUqtl?dco_ad_id=120239251980860454																												No																																																																																																																																																																																						LEARN_MORE						USER_ENROLLED_AUTOFLOW						
+cg:120217163857880454		1 - 01/30 - Launch JG 2025 - CT			PAUSED	Outcome Sales	AUCTION							01/30/2025 12:57:06 pm				Yes	NONE	No	[]	NONE	c:120219822138130454	PAUSED	0	250313 - PUR - Interior Shops	03/13/2025 9:10:51 am		220	UNDEFINED	0			No				No	[]	o:101883605856765	tp:465289858755756			PURCHASE		http://www.olivadis.com/jahresvorrat-2025-kampagne							AT, DE															home, recent																				18	65																											120217163885590454:PUR 90	"[{""interests"":[{""id"":""6003178845152"",""name"":""The Home Depot""},{""id"":""6005609274313"",""name"":""Made.com""},{""id"":""6007925187168"",""name"":""Zara Home""},{""id"":""6019246244638"",""name"":""Butlers (company)""}]}]"		0									Olivadis GmbH	Olivadis GmbH														FACEBOOK_STANDARD, AN_STANDARD	OFFSITE_CONVERSIONS	"[{""event_type"":""CLICK_THROUGH"",""window_days"":7},{""event_type"":""VIEW_THROUGH"",""window_days"":1},{""event_type"":""ENGAGED_VIDEO_VIEW"",""window_days"":1}]"	IMPRESSIONS		Highest volume or value														s:596358929700580	a:120219822138100454	ACTIVE	https://www.facebook.com/?feed_demo_ad=120219822138100454&h=AQKjn9eSavTPNPHHFNDDefwP8pI	https://www.instagram.com/p/DFcul2_g_LC/	CB#1 - 1 - aufgemischt																						"‼️Wir haben den Olivenölmarkt in den letzten zwei Jahren ordentlich aufgemischt…
+
+🤦‍♂️Während unsere Konkurrenten immer wieder kräftig ihre alten und neuen Öle zusammenmischen, um billiges,  minderwertiges Öl unter die Leute zu bringen, setzen wir nach wie vor auf unser Olivadis Reinheitsgebot 👌. 
+
+Wie bei den besten Weinen dieser Welt, sind die Oliven für unser Öl …
+🫒handgepflückt 
+🫒aus einer einzigen Sorte, der Amphissis Olive
+🫒aus einem Hang im familieneigenen Olivenhain in Pteleos
+🫒aus einem Jahrgang, jedes Jahr frisch
+🫒von bis zu 300 Jahre alten Olivenbäumen
+🫒Limitierte Menge aus unserer Familienproduktion.
+
+🥸 Aber ist auch irgendwie egal, oder? Soll doch nur schmecken…
+
+Stimmt 😎
+
+👉 Unser Olivenöl schmeckt fruchtig, mild, mit fein ausgewogenen Schärfe- und Bitternoten für einen harmonisch abgerundeten Geschmack.
+
+👑 Für die höchste Gütestufe “Natives Olivenöl Extra” ist ein Säuregehalt von 0,8% vorgeschrieben. Wir haben gerade einmal 0,4%.
+
+𝐎𝐥𝐢𝐯𝐚𝐝𝐢𝐬 𝐰𝐢𝐫𝐝 𝟗 𝐯𝐨𝐧 𝟏𝟎 𝐦𝐚𝐥 𝐛𝐞𝐢 𝐁𝐥𝐢𝐧𝐝𝐯𝐞𝐫𝐤𝐨𝐬𝐭𝐮𝐧𝐠𝐞𝐧 𝐚𝐮𝐟 𝐝𝐢𝐞 𝐍𝐮𝐦𝐦𝐞𝐫 𝟏 𝐠𝐞𝐬𝐞𝐭𝐳𝐭.
+Weil es einfach perfekt ist. Das sagen nicht nur wir, sondern auch über 2000 treue Stammkunden, die jedes Jahr unseren neuen Jahrgang vorbestellen ⭐⭐⭐⭐⭐.
+
+😍 Sichere dir bis zu 246€ kostenlose Goodies, wie unsere griechischen Bergtees, eingelegte Olivadis-Oliven der Sonderklasse und unsere göttlichen Gewürzkräuter.
+
+Probier’s aus und schmecke auch du den Unterschied!
+http://www.olivadis.com/jahresvorrat-2025-kampagne"																																																											No				tp:465289858755756	No																																															Video Page Post Ad	utm_source={{site_source_name}}&utm_medium={{placement}}&utm_campaign={{campaign.name}}&utm_content={{ad.name}}			v:596358929700580																																								x:4610719345700861					LEARN_MORE								[]	No		https://www.facebook.com/100081610752007/videos/596358929700580																												No																																																																																																																																																																																																		
+cg:120217163857880454		1 - 01/30 - Launch JG 2025 - CT			PAUSED	Outcome Sales	AUCTION							01/30/2025 12:57:06 pm				Yes	NONE	No	[]	NONE	c:120219822138130454	PAUSED	0	250313 - PUR - Interior Shops	03/13/2025 9:10:51 am		220	UNDEFINED	0			No				No	[]	o:101883605856765	tp:465289858755756			PURCHASE		http://www.olivadis.com/jahresvorrat-2025-kampagne							AT, DE															home, recent																				18	65																											120217163885590454:PUR 90	"[{""interests"":[{""id"":""6003178845152"",""name"":""The Home Depot""},{""id"":""6005609274313"",""name"":""Made.com""},{""id"":""6007925187168"",""name"":""Zara Home""},{""id"":""6019246244638"",""name"":""Butlers (company)""}]}]"		0									Olivadis GmbH	Olivadis GmbH														FACEBOOK_STANDARD, AN_STANDARD	OFFSITE_CONVERSIONS	"[{""event_type"":""CLICK_THROUGH"",""window_days"":7},{""event_type"":""VIEW_THROUGH"",""window_days"":1},{""event_type"":""ENGAGED_VIDEO_VIEW"",""window_days"":1}]"	IMPRESSIONS		Highest volume or value														s:1147656010413216	a:120219822138110454	ACTIVE	https://www.facebook.com/?feed_demo_ad=120219822138110454&h=AQJwYS5trU_ZniZmkEvc09rpRHw	https://www.instagram.com/p/DFculXfAdKR/	CB#1 - 2 - Industrieprobleme																						"Du hast sicher schon von den massiven Problemen in der Olivenöl Industrie gehört. 
+❌Oliven Ernten sind ausgefallen, Hersteller mischen altes Öl mit Frischem, um durch die Kontrollen zu kommen. Olivenöle großer Hersteller lagern teilweise jahrelang, bevor sie überhaupt in den Handel kommen, wo sie dann weitere Monate herumstehen. 
+
+😩Bevor du herkömmliches Supermarkt Öl in deinen Salat gießt oder dein Fleisch/Fisch/Gemüse damit anbrätst, ist es in den vielen Fällen schon ziemlich alt, obwohl es mit “Natives Olivenöl extra” gekennzeichnet ist. 
+
+Leider kennen viel zu wenige den Geschmack von wirklich frischem Olivenöl.
+
+Wir haben einen Gegentrend gestartet und damit einen riesigen Nerv getroffen 😍
+
+Wir behandeln unser Olivadis Olivenöl wie die großen Weingüter aus Frankreich und Italien 🫒❤️ 
+
+Ein paar Fakten über die Oliven in unserem Öl…
+🫒 Handgepflückt, sorgfältig ausgewählt – keine Maschinen, keine Kompromisse.
+🫒 Wir verwenden ausschließlich eine einzige Sorte: die Amphissis Olive.
+🫒 Geerntet aus einem Hang im familieneigenen Olivenhain in Pteleos, Griechenland.
+🫒 Jedes Jahr frisch – immer aus einem Jahrgang.
+🫒 Von Olivenbäumen, die bis zu 300 Jahre alt sind.
+🫒 Limitierte Menge – reine Handarbeit aus unserer Familienproduktion.
+
+🥸 Aber ist auch irgendwie egal, oder? Soll doch nur schmecken…
+
+Stimmt 😎
+
+👉 Unser Olivenöl schmeckt fruchtig, mild, mit fein ausgewogenen Schärfe- und Bitternoten für einen harmonisch abgerundeten Geschmack.
+
+👑 Für die höchste Gütestufe “Natives Olivenöl Extra” ist ein Säuregehalt von 0,8% vorgeschrieben. Wir haben gerade einmal 0,4%.
+
+𝐎𝐥𝐢𝐯𝐚𝐝𝐢𝐬 𝐰𝐢𝐫𝐝 𝟗 𝐯𝐨𝐧 𝟏𝟎 𝐦𝐚𝐥 𝐛𝐞𝐢 𝐁𝐥𝐢𝐧𝐝𝐯𝐞𝐫𝐤𝐨𝐬𝐭𝐮𝐧𝐠𝐞𝐧 𝐚𝐮𝐟 𝐝𝐢𝐞 𝐍𝐮𝐦𝐦𝐞𝐫 𝟏 𝐠𝐞𝐬𝐞𝐭𝐳𝐭.
+Weil es einfach perfekt ist. Das sagen nicht nur wir, sondern auch über 2000 treue Stammkunden, die jedes Jahr unseren neuen Jahrgang vorbestellen ⭐⭐⭐⭐⭐.
+
+😍 Sichere dir bis zu 246€ kostenlose Goodies, wie unsere griechischen Bergtees, eingelegte Olivadis-Oliven der Sonderklasse und unsere göttlichen Gewürzkräuter.
+
+Probier’s aus und schmecke auch du den Unterschied!
+http://www.olivadis.com/jahresvorrat-2025-kampagne"																																																											No				tp:465289858755756	No																																															Video Page Post Ad	utm_source={{site_source_name}}&utm_medium={{placement}}&utm_campaign={{campaign.name}}&utm_content={{ad.name}}			v:1147656010413216																																								x:4610719345700861					LEARN_MORE								[]	No		https://www.facebook.com/100081610752007/videos/1147656010413216																												No																																																																																																																																																																																																		
+cg:120217163857880454		1 - 01/30 - Launch JG 2025 - CT			PAUSED	Outcome Sales	AUCTION							01/30/2025 12:57:06 pm				Yes	NONE	No	[]	NONE	c:120219822138130454	PAUSED	0	250313 - PUR - Interior Shops	03/13/2025 9:10:51 am		220	UNDEFINED	0			No				No	[]	o:101883605856765	tp:465289858755756			PURCHASE		http://www.olivadis.com/jahresvorrat-2025-kampagne							AT, DE															home, recent																				18	65																											120217163885590454:PUR 90	"[{""interests"":[{""id"":""6003178845152"",""name"":""The Home Depot""},{""id"":""6005609274313"",""name"":""Made.com""},{""id"":""6007925187168"",""name"":""Zara Home""},{""id"":""6019246244638"",""name"":""Butlers (company)""}]}]"		0									Olivadis GmbH	Olivadis GmbH														FACEBOOK_STANDARD, AN_STANDARD	OFFSITE_CONVERSIONS	"[{""event_type"":""CLICK_THROUGH"",""window_days"":7},{""event_type"":""VIEW_THROUGH"",""window_days"":1},{""event_type"":""ENGAGED_VIDEO_VIEW"",""window_days"":1}]"	IMPRESSIONS		Highest volume or value														s:1529077357782209	a:120219822138140454	ACTIVE	https://www.facebook.com/?feed_demo_ad=120219822138140454&h=AQIlfEM89PE7ZMWoKgDRYQdPIUU	https://www.instagram.com/p/DFculfSgtsj/	CB#1 - 3 - Tradition																						"„Unsere Geschichte steckt in jeder Flasche. 🫒❤️
+Seit über 100 Jahren bewirtschaftet unsere Familie Olivenhaine in Griechenland.
+Unsere Olivenbäume sind bis zu 300 Jahre alt, und jede Flasche Olivadis erzählt die Geschichte von Tradition, Handarbeit und Hingabe.
+
+Warum Olivadis so besonders ist:
+🫒handgepflückt 
+🫒aus einer einzigen Sorte, der Amphisis Olive
+🫒aus einem Hang im familieneigenen Olivenhain in Pteleos
+🫒aus einem Jahrgang, jedes Jahr frisch
+🫒von bis zu 300 Jahre alten Olivenbäumen
+🫒Limitierte Menge aus unserer Familienproduktion.
+
+Erlebe den Geschmack von Tradition und gönne dir jetzt ein Stück Griechenland.
+👉 Sichere dir unser limitiertes Angebot mit kostenfreien Goodies im Wert von bis zu 246 €.
+
+http://www.olivadis.com/jahresvorrat-2025-kampagne"																																																											No				tp:465289858755756	No																																															Video Page Post Ad	utm_source={{site_source_name}}&utm_medium={{placement}}&utm_campaign={{campaign.name}}&utm_content={{ad.name}}			v:1529077357782209																																								x:4610719345700861					LEARN_MORE								[]	No		https://www.facebook.com/100081610752007/videos/1529077357782209																												No																																																																																																																																																																																																		
+cg:120217163857880454		1 - 01/30 - Launch JG 2025 - CT			PAUSED	Outcome Sales	AUCTION							01/30/2025 12:57:06 pm				Yes	NONE	No	[]	NONE	c:120219822138130454	PAUSED	0	250313 - PUR - Interior Shops	03/13/2025 9:10:51 am		220	UNDEFINED	0			No				No	[]	o:101883605856765	tp:465289858755756			PURCHASE		http://www.olivadis.com/jahresvorrat-2025-kampagne							AT, DE															home, recent																				18	65																											120217163885590454:PUR 90	"[{""interests"":[{""id"":""6003178845152"",""name"":""The Home Depot""},{""id"":""6005609274313"",""name"":""Made.com""},{""id"":""6007925187168"",""name"":""Zara Home""},{""id"":""6019246244638"",""name"":""Butlers (company)""}]}]"		0									Olivadis GmbH	Olivadis GmbH														FACEBOOK_STANDARD, AN_STANDARD	OFFSITE_CONVERSIONS	"[{""event_type"":""CLICK_THROUGH"",""window_days"":7},{""event_type"":""VIEW_THROUGH"",""window_days"":1},{""event_type"":""ENGAGED_VIDEO_VIEW"",""window_days"":1}]"	IMPRESSIONS		Highest volume or value														s:1826413858196410	a:120219822138120454	ACTIVE	https://www.facebook.com/?feed_demo_ad=120219822138120454&h=AQKxsOfmhyv7qR2Vs_XLvuEQoKg	https://www.instagram.com/p/DFculXigV1w/	CB#1 - 5 - Massenproduktion																						"Wenn du dieses Video zu Ende schaust, wirst du kein Olivenöl mehr im Supermarkt kaufen wollen 🤯
+
+𝐇𝐢𝐞𝐫 𝐢𝐬𝐭 𝐝𝐢𝐞 𝐛𝐢𝐭𝐭𝐞𝐫𝐞 𝐖𝐚𝐡𝐫𝐡𝐞𝐢𝐭 (𝐣𝐚, 𝐝𝐚𝐬 𝐖𝐨𝐫𝐭𝐬𝐩𝐢𝐞𝐥 𝐰𝐚𝐫 𝐀𝐛𝐬𝐢𝐜𝐡𝐭): Supermarkt Olivenöle werden oft tausende Kilometer transportiert und in Tanks zusammengeschüttet, in denen sie 1-2 Jahre lagern, bevor sie überhaupt erst abgefüllt werden. Dafür werden laut Berichten  immer wieder auch minderwertige Olivenöle verwendet, die aus teils faulen Oliven gepresst wurden. Diese werden mit dann mit etwas besserem Olivenöl gemischt und somit die mindere Qualität verschleiert.
+
+𝐖𝐚𝐬 𝐡𝐞𝐢ß𝐭 𝐝𝐚𝐬 𝐢𝐦 𝐊𝐥𝐚𝐫𝐭𝐞𝐱𝐭? Wenn du im Supermarkt ein Olivenöl kaufst, kann es durchaus sein, dass dein Öl  schon mehrere Jahre alt ist. Für das aufgedruckte Mindesthaltbarkeitsdatum ist nämlich nicht der Erntezeitpunkt, sondern das Datum der Abfüllung in die Flasche ausschlaggebend.
+
+𝐖𝐢𝐫 𝐟𝐢𝐧𝐝𝐞𝐧: Das muss nicht so sein und haben dafür die perfekte Lösung – unser selbstgemachtes Olivenöl in einer feinen Glasflasche.
+
+Wir sind ein Familienbetrieb aus Pteleos in Griechenland und produzieren jedes Jahr auf unseren eigenen Olivenhainen eine limitierte Menge an flüssigem Gold.
+
+𝐇𝐢𝐞𝐫 𝐬𝐢𝐧𝐝 𝐝𝐢𝐞 𝐰𝐢𝐜𝐡𝐭𝐢𝐠𝐬𝐭𝐞𝐧 𝐅𝐚𝐤𝐭𝐨𝐫𝐞𝐧, 𝐝𝐢𝐞 𝐮𝐧𝐬𝐞𝐫 𝐎𝐥𝐢𝐯𝐞𝐧ö𝐥 𝐠𝐞𝐬𝐜𝐡𝐦𝐚𝐜𝐤𝐥𝐢𝐜𝐡 𝐮𝐧𝐝 𝐪𝐮𝐚𝐥𝐢𝐭𝐚𝐭𝐢𝐯 𝐛𝐞𝐬𝐬𝐞𝐫 𝐚𝐥𝐬 𝐚𝐥𝐥𝐞𝐬 𝐦𝐚𝐜𝐡𝐞𝐧, 𝐰𝐚𝐬 𝐝𝐮 𝐢𝐦 𝐒𝐮𝐩𝐞𝐫𝐦𝐚𝐫𝐤𝐭 𝐟𝐢𝐧𝐝𝐞𝐧 𝐰𝐢𝐫𝐬𝐭:
+
+🫒 In unserem Olivenöl befinden sich ausschließlich handgepflückte Oliven aus unserem hauseigenen Olivenhain in Griechenland. Deshalb können wir jedes Jahr auch nur eine sehr begrenzte Menge Olivenöl produzieren. Das limitiert uns zwar, dadurch erreichen wir aber eine unvergleichliche Qualität.
+
+🫒 Unsere Oliven legen von der Ernte über das Pressen, Abfüllen und Verpacken nur wenige Meter zurück. Mit dieser Frische im Geschmack können Produkte aus dem Supermarkt niemals mithalten.
+
+🫒 Als „Natives Olivenöl Extra“ befinden wir uns in der allerhöchsten Güteklasse der Olivenöle. Dafür ist ein Säuregehalt von maximal 0,8% erforderlich. Unser Olivenöl übertrifft diese Anforderung mit einem Säuregehalt von 0,4% bei Weitem.
+
+𝐃𝐢𝐞𝐬𝐞𝐧 𝐔𝐧𝐭𝐞𝐫𝐬𝐜𝐡𝐢𝐞𝐝 𝐬𝐜𝐡𝐦𝐞𝐜𝐤𝐭 𝐦𝐚𝐧. Mittlerweile haben mehr als 2.000 Kunden unser Olivenöl probiert, von tausenden verkauften Flaschen haben wir keine einzige retour bekommen. Darüber berichten unsere Kunden regelmäßig auf Trustpilot, in Form von 5-Sterne-Bewertungen ⭐⭐⭐⭐⭐
+
+Probier’s aus und schmecke auch du den Unterschied!
+http://www.olivadis.com/jahresvorrat-2025-kampagne"																																																											No				tp:465289858755756	No																																															Video Page Post Ad	utm_source={{site_source_name}}&utm_medium={{placement}}&utm_campaign={{campaign.name}}&utm_content={{ad.name}}			v:1826413858196410																																								x:4610719345700861					LEARN_MORE								[]	No		https://www.facebook.com/100081610752007/videos/1826413858196410																												No																																																																																																																																																																																																		
+cg:120217163857880454		1 - 01/30 - Launch JG 2025 - CT			PAUSED	Outcome Sales	AUCTION							01/30/2025 12:57:06 pm				Yes	NONE	No	[]	NONE	c:120219398300470454	PAUSED	0	250306 - PUR - Engaged Buyer	03/06/2025 4:18:42 pm		150	UNDEFINED	0			No				No	[]	o:101883605856765	tp:465289858755756			PURCHASE		http://www.olivadis.com/jahresvorrat-2025-kampagne							AT, DE															home, recent																				18	65																											120217163885590454:PUR 90	"[{""behaviors"":[{""id"":""6071631541183"",""name"":""Engaged Shoppers""}]}]"		0									Olivadis GmbH	Olivadis GmbH														FACEBOOK_STANDARD, AN_STANDARD	OFFSITE_CONVERSIONS	"[{""event_type"":""CLICK_THROUGH"",""window_days"":7},{""event_type"":""VIEW_THROUGH"",""window_days"":1},{""event_type"":""ENGAGED_VIDEO_VIEW"",""window_days"":1}]"	IMPRESSIONS		Highest volume or value														s:596358929700580	a:120219398300440454	ACTIVE	https://www.facebook.com/?feed_demo_ad=120219398300440454&h=AQKbGpsRgYGvVrPDMYA1RWb6yEM	https://www.instagram.com/p/DFcul2_g_LC/	CB#1 - 1 - aufgemischt																						"‼️Wir haben den Olivenölmarkt in den letzten zwei Jahren ordentlich aufgemischt…
+
+🤦‍♂️Während unsere Konkurrenten immer wieder kräftig ihre alten und neuen Öle zusammenmischen, um billiges,  minderwertiges Öl unter die Leute zu bringen, setzen wir nach wie vor auf unser Olivadis Reinheitsgebot 👌. 
+
+Wie bei den besten Weinen dieser Welt, sind die Oliven für unser Öl …
+🫒handgepflückt 
+🫒aus einer einzigen Sorte, der Amphissis Olive
+🫒aus einem Hang im familieneigenen Olivenhain in Pteleos
+🫒aus einem Jahrgang, jedes Jahr frisch
+🫒von bis zu 300 Jahre alten Olivenbäumen
+🫒Limitierte Menge aus unserer Familienproduktion.
+
+🥸 Aber ist auch irgendwie egal, oder? Soll doch nur schmecken…
+
+Stimmt 😎
+
+👉 Unser Olivenöl schmeckt fruchtig, mild, mit fein ausgewogenen Schärfe- und Bitternoten für einen harmonisch abgerundeten Geschmack.
+
+👑 Für die höchste Gütestufe “Natives Olivenöl Extra” ist ein Säuregehalt von 0,8% vorgeschrieben. Wir haben gerade einmal 0,4%.
+
+𝐎𝐥𝐢𝐯𝐚𝐝𝐢𝐬 𝐰𝐢𝐫𝐝 𝟗 𝐯𝐨𝐧 𝟏𝟎 𝐦𝐚𝐥 𝐛𝐞𝐢 𝐁𝐥𝐢𝐧𝐝𝐯𝐞𝐫𝐤𝐨𝐬𝐭𝐮𝐧𝐠𝐞𝐧 𝐚𝐮𝐟 𝐝𝐢𝐞 𝐍𝐮𝐦𝐦𝐞𝐫 𝟏 𝐠𝐞𝐬𝐞𝐭𝐳𝐭.
+Weil es einfach perfekt ist. Das sagen nicht nur wir, sondern auch über 2000 treue Stammkunden, die jedes Jahr unseren neuen Jahrgang vorbestellen ⭐⭐⭐⭐⭐.
+
+😍 Sichere dir bis zu 246€ kostenlose Goodies, wie unsere griechischen Bergtees, eingelegte Olivadis-Oliven der Sonderklasse und unsere göttlichen Gewürzkräuter.
+
+Probier’s aus und schmecke auch du den Unterschied!
+http://www.olivadis.com/jahresvorrat-2025-kampagne"																																																											No				tp:465289858755756	No																																															Video Page Post Ad	utm_source={{site_source_name}}&utm_medium={{placement}}&utm_campaign={{campaign.name}}&utm_content={{ad.name}}			v:596358929700580																																								x:4610719345700861					LEARN_MORE								[]	No		https://www.facebook.com/100081610752007/videos/596358929700580																												No																																																																																																																																																																																																		
+cg:120217163857880454		1 - 01/30 - Launch JG 2025 - CT			PAUSED	Outcome Sales	AUCTION							01/30/2025 12:57:06 pm				Yes	NONE	No	[]	NONE	c:120219398300470454	PAUSED	0	250306 - PUR - Engaged Buyer	03/06/2025 4:18:42 pm		150	UNDEFINED	0			No				No	[]	o:101883605856765	tp:465289858755756			PURCHASE		http://www.olivadis.com/jahresvorrat-2025-kampagne							AT, DE															home, recent																				18	65																											120217163885590454:PUR 90	"[{""behaviors"":[{""id"":""6071631541183"",""name"":""Engaged Shoppers""}]}]"		0									Olivadis GmbH	Olivadis GmbH														FACEBOOK_STANDARD, AN_STANDARD	OFFSITE_CONVERSIONS	"[{""event_type"":""CLICK_THROUGH"",""window_days"":7},{""event_type"":""VIEW_THROUGH"",""window_days"":1},{""event_type"":""ENGAGED_VIDEO_VIEW"",""window_days"":1}]"	IMPRESSIONS		Highest volume or value														s:1147656010413216	a:120219398300460454	ACTIVE	https://www.facebook.com/?feed_demo_ad=120219398300460454&h=AQLS4cflSN2U43767gJbqWQzdDE	https://www.instagram.com/p/DFculXfAdKR/	CB#1 - 2 - Industrieprobleme																						"Du hast sicher schon von den massiven Problemen in der Olivenöl Industrie gehört. 
+❌Oliven Ernten sind ausgefallen, Hersteller mischen altes Öl mit Frischem, um durch die Kontrollen zu kommen. Olivenöle großer Hersteller lagern teilweise jahrelang, bevor sie überhaupt in den Handel kommen, wo sie dann weitere Monate herumstehen. 
+
+😩Bevor du herkömmliches Supermarkt Öl in deinen Salat gießt oder dein Fleisch/Fisch/Gemüse damit anbrätst, ist es in den vielen Fällen schon ziemlich alt, obwohl es mit “Natives Olivenöl extra” gekennzeichnet ist. 
+
+Leider kennen viel zu wenige den Geschmack von wirklich frischem Olivenöl.
+
+Wir haben einen Gegentrend gestartet und damit einen riesigen Nerv getroffen 😍
+
+Wir behandeln unser Olivadis Olivenöl wie die großen Weingüter aus Frankreich und Italien 🫒❤️ 
+
+Ein paar Fakten über die Oliven in unserem Öl…
+🫒 Handgepflückt, sorgfältig ausgewählt – keine Maschinen, keine Kompromisse.
+🫒 Wir verwenden ausschließlich eine einzige Sorte: die Amphissis Olive.
+🫒 Geerntet aus einem Hang im familieneigenen Olivenhain in Pteleos, Griechenland.
+🫒 Jedes Jahr frisch – immer aus einem Jahrgang.
+🫒 Von Olivenbäumen, die bis zu 300 Jahre alt sind.
+🫒 Limitierte Menge – reine Handarbeit aus unserer Familienproduktion.
+
+🥸 Aber ist auch irgendwie egal, oder? Soll doch nur schmecken…
+
+Stimmt 😎
+
+👉 Unser Olivenöl schmeckt fruchtig, mild, mit fein ausgewogenen Schärfe- und Bitternoten für einen harmonisch abgerundeten Geschmack.
+
+👑 Für die höchste Gütestufe “Natives Olivenöl Extra” ist ein Säuregehalt von 0,8% vorgeschrieben. Wir haben gerade einmal 0,4%.
+
+𝐎𝐥𝐢𝐯𝐚𝐝𝐢𝐬 𝐰𝐢𝐫𝐝 𝟗 𝐯𝐨𝐧 𝟏𝟎 𝐦𝐚𝐥 𝐛𝐞𝐢 𝐁𝐥𝐢𝐧𝐝𝐯𝐞𝐫𝐤𝐨𝐬𝐭𝐮𝐧𝐠𝐞𝐧 𝐚𝐮𝐟 𝐝𝐢𝐞 𝐍𝐮𝐦𝐦𝐞𝐫 𝟏 𝐠𝐞𝐬𝐞𝐭𝐳𝐭.
+Weil es einfach perfekt ist. Das sagen nicht nur wir, sondern auch über 2000 treue Stammkunden, die jedes Jahr unseren neuen Jahrgang vorbestellen ⭐⭐⭐⭐⭐.
+
+😍 Sichere dir bis zu 246€ kostenlose Goodies, wie unsere griechischen Bergtees, eingelegte Olivadis-Oliven der Sonderklasse und unsere göttlichen Gewürzkräuter.
+
+Probier’s aus und schmecke auch du den Unterschied!
+http://www.olivadis.com/jahresvorrat-2025-kampagne"																																																											No				tp:465289858755756	No																																															Video Page Post Ad	utm_source={{site_source_name}}&utm_medium={{placement}}&utm_campaign={{campaign.name}}&utm_content={{ad.name}}			v:1147656010413216																																								x:4610719345700861					LEARN_MORE								[]	No		https://www.facebook.com/100081610752007/videos/1147656010413216																												No																																																																																																																																																																																																		
+cg:120217163857880454		1 - 01/30 - Launch JG 2025 - CT			PAUSED	Outcome Sales	AUCTION							01/30/2025 12:57:06 pm				Yes	NONE	No	[]	NONE	c:120219398300470454	PAUSED	0	250306 - PUR - Engaged Buyer	03/06/2025 4:18:42 pm		150	UNDEFINED	0			No				No	[]	o:101883605856765	tp:465289858755756			PURCHASE		http://www.olivadis.com/jahresvorrat-2025-kampagne							AT, DE															home, recent																				18	65																											120217163885590454:PUR 90	"[{""behaviors"":[{""id"":""6071631541183"",""name"":""Engaged Shoppers""}]}]"		0									Olivadis GmbH	Olivadis GmbH														FACEBOOK_STANDARD, AN_STANDARD	OFFSITE_CONVERSIONS	"[{""event_type"":""CLICK_THROUGH"",""window_days"":7},{""event_type"":""VIEW_THROUGH"",""window_days"":1},{""event_type"":""ENGAGED_VIDEO_VIEW"",""window_days"":1}]"	IMPRESSIONS		Highest volume or value														s:1529077357782209	a:120219398300480454	ACTIVE	https://www.facebook.com/?feed_demo_ad=120219398300480454&h=AQKQPBXkog0qg7ghyimqUwcyfuw	https://www.instagram.com/p/DFculfSgtsj/	CB#1 - 3 - Tradition																						"„Unsere Geschichte steckt in jeder Flasche. 🫒❤️
+Seit über 100 Jahren bewirtschaftet unsere Familie Olivenhaine in Griechenland.
+Unsere Olivenbäume sind bis zu 300 Jahre alt, und jede Flasche Olivadis erzählt die Geschichte von Tradition, Handarbeit und Hingabe.
+
+Warum Olivadis so besonders ist:
+🫒handgepflückt 
+🫒aus einer einzigen Sorte, der Amphisis Olive
+🫒aus einem Hang im familieneigenen Olivenhain in Pteleos
+🫒aus einem Jahrgang, jedes Jahr frisch
+🫒von bis zu 300 Jahre alten Olivenbäumen
+🫒Limitierte Menge aus unserer Familienproduktion.
+
+Erlebe den Geschmack von Tradition und gönne dir jetzt ein Stück Griechenland.
+👉 Sichere dir unser limitiertes Angebot mit kostenfreien Goodies im Wert von bis zu 246 €.
+
+http://www.olivadis.com/jahresvorrat-2025-kampagne"																																																											No				tp:465289858755756	No																																															Video Page Post Ad	utm_source={{site_source_name}}&utm_medium={{placement}}&utm_campaign={{campaign.name}}&utm_content={{ad.name}}			v:1529077357782209																																								x:4610719345700861					LEARN_MORE								[]	No		https://www.facebook.com/100081610752007/videos/1529077357782209																												No																																																																																																																																																																																																		
+cg:120217163857880454		1 - 01/30 - Launch JG 2025 - CT			PAUSED	Outcome Sales	AUCTION							01/30/2025 12:57:06 pm				Yes	NONE	No	[]	NONE	c:120219398300470454	PAUSED	0	250306 - PUR - Engaged Buyer	03/06/2025 4:18:42 pm		150	UNDEFINED	0			No				No	[]	o:101883605856765	tp:465289858755756			PURCHASE		http://www.olivadis.com/jahresvorrat-2025-kampagne							AT, DE															home, recent																				18	65																											120217163885590454:PUR 90	"[{""behaviors"":[{""id"":""6071631541183"",""name"":""Engaged Shoppers""}]}]"		0									Olivadis GmbH	Olivadis GmbH														FACEBOOK_STANDARD, AN_STANDARD	OFFSITE_CONVERSIONS	"[{""event_type"":""CLICK_THROUGH"",""window_days"":7},{""event_type"":""VIEW_THROUGH"",""window_days"":1},{""event_type"":""ENGAGED_VIDEO_VIEW"",""window_days"":1}]"	IMPRESSIONS		Highest volume or value														s:1826413858196410	a:120219398300450454	ACTIVE	https://www.facebook.com/?feed_demo_ad=120219398300450454&h=AQKq0IH3JIxXIpmxeLyAUhfRzK8	https://www.instagram.com/p/DFculXigV1w/	CB#1 - 5 - Massenproduktion																						"Wenn du dieses Video zu Ende schaust, wirst du kein Olivenöl mehr im Supermarkt kaufen wollen 🤯
+
+𝐇𝐢𝐞𝐫 𝐢𝐬𝐭 𝐝𝐢𝐞 𝐛𝐢𝐭𝐭𝐞𝐫𝐞 𝐖𝐚𝐡𝐫𝐡𝐞𝐢𝐭 (𝐣𝐚, 𝐝𝐚𝐬 𝐖𝐨𝐫𝐭𝐬𝐩𝐢𝐞𝐥 𝐰𝐚𝐫 𝐀𝐛𝐬𝐢𝐜𝐡𝐭): Supermarkt Olivenöle werden oft tausende Kilometer transportiert und in Tanks zusammengeschüttet, in denen sie 1-2 Jahre lagern, bevor sie überhaupt erst abgefüllt werden. Dafür werden laut Berichten  immer wieder auch minderwertige Olivenöle verwendet, die aus teils faulen Oliven gepresst wurden. Diese werden mit dann mit etwas besserem Olivenöl gemischt und somit die mindere Qualität verschleiert.
+
+𝐖𝐚𝐬 𝐡𝐞𝐢ß𝐭 𝐝𝐚𝐬 𝐢𝐦 𝐊𝐥𝐚𝐫𝐭𝐞𝐱𝐭? Wenn du im Supermarkt ein Olivenöl kaufst, kann es durchaus sein, dass dein Öl  schon mehrere Jahre alt ist. Für das aufgedruckte Mindesthaltbarkeitsdatum ist nämlich nicht der Erntezeitpunkt, sondern das Datum der Abfüllung in die Flasche ausschlaggebend.
+
+𝐖𝐢𝐫 𝐟𝐢𝐧𝐝𝐞𝐧: Das muss nicht so sein und haben dafür die perfekte Lösung – unser selbstgemachtes Olivenöl in einer feinen Glasflasche.
+
+Wir sind ein Familienbetrieb aus Pteleos in Griechenland und produzieren jedes Jahr auf unseren eigenen Olivenhainen eine limitierte Menge an flüssigem Gold.
+
+𝐇𝐢𝐞𝐫 𝐬𝐢𝐧𝐝 𝐝𝐢𝐞 𝐰𝐢𝐜𝐡𝐭𝐢𝐠𝐬𝐭𝐞𝐧 𝐅𝐚𝐤𝐭𝐨𝐫𝐞𝐧, 𝐝𝐢𝐞 𝐮𝐧𝐬𝐞𝐫 𝐎𝐥𝐢𝐯𝐞𝐧ö𝐥 𝐠𝐞𝐬𝐜𝐡𝐦𝐚𝐜𝐤𝐥𝐢𝐜𝐡 𝐮𝐧𝐝 𝐪𝐮𝐚𝐥𝐢𝐭𝐚𝐭𝐢𝐯 𝐛𝐞𝐬𝐬𝐞𝐫 𝐚𝐥𝐬 𝐚𝐥𝐥𝐞𝐬 𝐦𝐚𝐜𝐡𝐞𝐧, 𝐰𝐚𝐬 𝐝𝐮 𝐢𝐦 𝐒𝐮𝐩𝐞𝐫𝐦𝐚𝐫𝐤𝐭 𝐟𝐢𝐧𝐝𝐞𝐧 𝐰𝐢𝐫𝐬𝐭:
+
+🫒 In unserem Olivenöl befinden sich ausschließlich handgepflückte Oliven aus unserem hauseigenen Olivenhain in Griechenland. Deshalb können wir jedes Jahr auch nur eine sehr begrenzte Menge Olivenöl produzieren. Das limitiert uns zwar, dadurch erreichen wir aber eine unvergleichliche Qualität.
+
+🫒 Unsere Oliven legen von der Ernte über das Pressen, Abfüllen und Verpacken nur wenige Meter zurück. Mit dieser Frische im Geschmack können Produkte aus dem Supermarkt niemals mithalten.
+
+🫒 Als „Natives Olivenöl Extra“ befinden wir uns in der allerhöchsten Güteklasse der Olivenöle. Dafür ist ein Säuregehalt von maximal 0,8% erforderlich. Unser Olivenöl übertrifft diese Anforderung mit einem Säuregehalt von 0,4% bei Weitem.
+
+𝐃𝐢𝐞𝐬𝐞𝐧 𝐔𝐧𝐭𝐞𝐫𝐬𝐜𝐡𝐢𝐞𝐝 𝐬𝐜𝐡𝐦𝐞𝐜𝐤𝐭 𝐦𝐚𝐧. Mittlerweile haben mehr als 2.000 Kunden unser Olivenöl probiert, von tausenden verkauften Flaschen haben wir keine einzige retour bekommen. Darüber berichten unsere Kunden regelmäßig auf Trustpilot, in Form von 5-Sterne-Bewertungen ⭐⭐⭐⭐⭐
+
+Probier’s aus und schmecke auch du den Unterschied!
+http://www.olivadis.com/jahresvorrat-2025-kampagne"																																																											No				tp:465289858755756	No																																															Video Page Post Ad	utm_source={{site_source_name}}&utm_medium={{placement}}&utm_campaign={{campaign.name}}&utm_content={{ad.name}}			v:1826413858196410																																								x:4610719345700861					LEARN_MORE								[]	No		https://www.facebook.com/100081610752007/videos/1826413858196410																												No																																																																																																																																																																																																		
+cg:120217163857880454		1 - 01/30 - Launch JG 2025 - CT			PAUSED	Outcome Sales	AUCTION							01/30/2025 12:57:06 pm				Yes	NONE	No	[]	NONE	c:120218026849850454	PAUSED	0	250130 - PUR - Griechenland, Olivenöl Creative Test	02/18/2025 2:29:58 pm		150	UNDEFINED	0			No				No	[]	o:101883605856765	tp:465289858755756			PURCHASE		http://www.olivadis.com/jahresvorrat-2025-kampagne							AT, DE															home, recent																				18	65																											120217163885590454:PUR 90	"[{""interests"":[{""id"":""6003075824815"",""name"":""Greece""},{""id"":""6003184482902"",""name"":""Olive oil""}]}]"		0									Olivadis GmbH	Olivadis GmbH														FACEBOOK_STANDARD, AN_STANDARD	VALUE	"[{""event_type"":""CLICK_THROUGH"",""window_days"":7}]"	IMPRESSIONS		Highest Value														s:596358929700580	a:120218026849870454	PAUSED	https://www.facebook.com/?feed_demo_ad=120218026849870454&h=AQJtuhfWq3V0Y6NVOxWSggvW4dQ	https://www.instagram.com/p/DGN0U0VApn_/	CB#1 - 1 - aufgemischt																						"‼️Wir haben den Olivenölmarkt in den letzten zwei Jahren ordentlich aufgemischt…
+
+🤦‍♂️Während unsere Konkurrenten immer wieder kräftig ihre alten und neuen Öle zusammenmischen, um billiges,  minderwertiges Öl unter die Leute zu bringen, setzen wir nach wie vor auf unser Olivadis Reinheitsgebot 👌. 
+
+Wie bei den besten Weinen dieser Welt, sind die Oliven für unser Öl …
+🫒handgepflückt 
+🫒aus einer einzigen Sorte, der Amphissis Olive
+🫒aus einem Hang im familieneigenen Olivenhain in Pteleos
+🫒aus einem Jahrgang, jedes Jahr frisch
+🫒von bis zu 300 Jahre alten Olivenbäumen
+🫒Limitierte Menge aus unserer Familienproduktion.
+
+🥸 Aber ist auch irgendwie egal, oder? Soll doch nur schmecken…
+
+Stimmt 😎
+
+👉 Unser Olivenöl schmeckt fruchtig, mild, mit fein ausgewogenen Schärfe- und Bitternoten für einen harmonisch abgerundeten Geschmack.
+
+👑 Für die höchste Gütestufe “Natives Olivenöl Extra” ist ein Säuregehalt von 0,8% vorgeschrieben. Wir haben gerade einmal 0,4%.
+
+𝐎𝐥𝐢𝐯𝐚𝐝𝐢𝐬 𝐰𝐢𝐫𝐝 𝟗 𝐯𝐨𝐧 𝟏𝟎 𝐦𝐚𝐥 𝐛𝐞𝐢 𝐁𝐥𝐢𝐧𝐝𝐯𝐞𝐫𝐤𝐨𝐬𝐭𝐮𝐧𝐠𝐞𝐧 𝐚𝐮𝐟 𝐝𝐢𝐞 𝐍𝐮𝐦𝐦𝐞𝐫 𝟏 𝐠𝐞𝐬𝐞𝐭𝐳𝐭.
+Weil es einfach perfekt ist. Das sagen nicht nur wir, sondern auch über 2000 treue Stammkunden, die jedes Jahr unseren neuen Jahrgang vorbestellen ⭐⭐⭐⭐⭐.
+
+😍 Sichere dir bis zu 246€ kostenlose Goodies, wie unsere griechischen Bergtees, eingelegte Olivadis-Oliven der Sonderklasse und unsere göttlichen Gewürzkräuter.
+
+Probier’s aus und schmecke auch du den Unterschied!
+http://www.olivadis.com/jahresvorrat-2025-kampagne"																																																											No				tp:465289858755756	No																																															Video Page Post Ad	utm_source={{site_source_name}}&utm_medium={{placement}}&utm_campaign={{campaign.name}}&utm_content={{ad.name}}			v:596358929700580																																								x:4610719345700861					LEARN_MORE								[]	No		https://www.facebook.com/100081610752007/videos/596358929700580																												No																																																																																																																																																																																																		
+cg:120217163857880454		1 - 01/30 - Launch JG 2025 - CT			PAUSED	Outcome Sales	AUCTION							01/30/2025 12:57:06 pm				Yes	NONE	No	[]	NONE	c:120218026849850454	PAUSED	0	250130 - PUR - Griechenland, Olivenöl Creative Test	02/18/2025 2:29:58 pm		150	UNDEFINED	0			No				No	[]	o:101883605856765	tp:465289858755756			PURCHASE		http://www.olivadis.com/jahresvorrat-2025-kampagne							AT, DE															home, recent																				18	65																											120217163885590454:PUR 90	"[{""interests"":[{""id"":""6003075824815"",""name"":""Greece""},{""id"":""6003184482902"",""name"":""Olive oil""}]}]"		0									Olivadis GmbH	Olivadis GmbH														FACEBOOK_STANDARD, AN_STANDARD	VALUE	"[{""event_type"":""CLICK_THROUGH"",""window_days"":7}]"	IMPRESSIONS		Highest Value														s:1147656010413216	a:120218026849890454	ACTIVE	https://www.facebook.com/?feed_demo_ad=120218026849890454&h=AQJyIcZsMBDAV9bM9k6JOzLh-FM	https://www.instagram.com/p/DGN0UtxARYk/	CB#1 - 2 - Industrieprobleme																						"Du hast sicher schon von den massiven Problemen in der Olivenöl Industrie gehört. 
+❌Oliven Ernten sind ausgefallen, Hersteller mischen altes Öl mit Frischem, um durch die Kontrollen zu kommen. Olivenöle großer Hersteller lagern teilweise jahrelang, bevor sie überhaupt in den Handel kommen, wo sie dann weitere Monate herumstehen. 
+
+😩Bevor du herkömmliches Supermarkt Öl in deinen Salat gießt oder dein Fleisch/Fisch/Gemüse damit anbrätst, ist es in den vielen Fällen schon ziemlich alt, obwohl es mit “Natives Olivenöl extra” gekennzeichnet ist. 
+
+Leider kennen viel zu wenige den Geschmack von wirklich frischem Olivenöl.
+
+Wir haben einen Gegentrend gestartet und damit einen riesigen Nerv getroffen 😍
+
+Wir behandeln unser Olivadis Olivenöl wie die großen Weingüter aus Frankreich und Italien 🫒❤️ 
+
+Ein paar Fakten über die Oliven in unserem Öl…
+🫒 Handgepflückt, sorgfältig ausgewählt – keine Maschinen, keine Kompromisse.
+🫒 Wir verwenden ausschließlich eine einzige Sorte: die Amphissis Olive.
+🫒 Geerntet aus einem Hang im familieneigenen Olivenhain in Pteleos, Griechenland.
+🫒 Jedes Jahr frisch – immer aus einem Jahrgang.
+🫒 Von Olivenbäumen, die bis zu 300 Jahre alt sind.
+🫒 Limitierte Menge – reine Handarbeit aus unserer Familienproduktion.
+
+🥸 Aber ist auch irgendwie egal, oder? Soll doch nur schmecken…
+
+Stimmt 😎
+
+👉 Unser Olivenöl schmeckt fruchtig, mild, mit fein ausgewogenen Schärfe- und Bitternoten für einen harmonisch abgerundeten Geschmack.
+
+👑 Für die höchste Gütestufe “Natives Olivenöl Extra” ist ein Säuregehalt von 0,8% vorgeschrieben. Wir haben gerade einmal 0,4%.
+
+𝐎𝐥𝐢𝐯𝐚𝐝𝐢𝐬 𝐰𝐢𝐫𝐝 𝟗 𝐯𝐨𝐧 𝟏𝟎 𝐦𝐚𝐥 𝐛𝐞𝐢 𝐁𝐥𝐢𝐧𝐝𝐯𝐞𝐫𝐤𝐨𝐬𝐭𝐮𝐧𝐠𝐞𝐧 𝐚𝐮𝐟 𝐝𝐢𝐞 𝐍𝐮𝐦𝐦𝐞𝐫 𝟏 𝐠𝐞𝐬𝐞𝐭𝐳𝐭.
+Weil es einfach perfekt ist. Das sagen nicht nur wir, sondern auch über 2000 treue Stammkunden, die jedes Jahr unseren neuen Jahrgang vorbestellen ⭐⭐⭐⭐⭐.
+
+😍 Sichere dir bis zu 246€ kostenlose Goodies, wie unsere griechischen Bergtees, eingelegte Olivadis-Oliven der Sonderklasse und unsere göttlichen Gewürzkräuter.
+
+Probier’s aus und schmecke auch du den Unterschied!
+http://www.olivadis.com/jahresvorrat-2025-kampagne"																																																											No				tp:465289858755756	No																																															Video Page Post Ad	utm_source={{site_source_name}}&utm_medium={{placement}}&utm_campaign={{campaign.name}}&utm_content={{ad.name}}			v:1147656010413216																																								x:4610719345700861					LEARN_MORE								[]	No		https://www.facebook.com/100081610752007/videos/1147656010413216																												No																																																																																																																																																																																																		
+cg:120217163857880454		1 - 01/30 - Launch JG 2025 - CT			PAUSED	Outcome Sales	AUCTION							01/30/2025 12:57:06 pm				Yes	NONE	No	[]	NONE	c:120218026849850454	PAUSED	0	250130 - PUR - Griechenland, Olivenöl Creative Test	02/18/2025 2:29:58 pm		150	UNDEFINED	0			No				No	[]	o:101883605856765	tp:465289858755756			PURCHASE		http://www.olivadis.com/jahresvorrat-2025-kampagne							AT, DE															home, recent																				18	65																											120217163885590454:PUR 90	"[{""interests"":[{""id"":""6003075824815"",""name"":""Greece""},{""id"":""6003184482902"",""name"":""Olive oil""}]}]"		0									Olivadis GmbH	Olivadis GmbH														FACEBOOK_STANDARD, AN_STANDARD	VALUE	"[{""event_type"":""CLICK_THROUGH"",""window_days"":7}]"	IMPRESSIONS		Highest Value														s:1529077357782209	a:120218026849860454	ACTIVE	https://www.facebook.com/?feed_demo_ad=120218026849860454&h=AQJQlzTGwQ83OHvGi6VZ5JzQoxI	https://www.instagram.com/p/DGN0UXVgNRF/	CB#1 - 3 - Tradition																						"„Unsere Geschichte steckt in jeder Flasche. 🫒❤️
+Seit über 100 Jahren bewirtschaftet unsere Familie Olivenhaine in Griechenland.
+Unsere Olivenbäume sind bis zu 300 Jahre alt, und jede Flasche Olivadis erzählt die Geschichte von Tradition, Handarbeit und Hingabe.
+
+Warum Olivadis so besonders ist:
+🫒handgepflückt 
+🫒aus einer einzigen Sorte, der Amphisis Olive
+🫒aus einem Hang im familieneigenen Olivenhain in Pteleos
+🫒aus einem Jahrgang, jedes Jahr frisch
+🫒von bis zu 300 Jahre alten Olivenbäumen
+🫒Limitierte Menge aus unserer Familienproduktion.
+
+Erlebe den Geschmack von Tradition und gönne dir jetzt ein Stück Griechenland.
+👉 Sichere dir unser limitiertes Angebot mit kostenfreien Goodies im Wert von bis zu 246 €.
+
+http://www.olivadis.com/jahresvorrat-2025-kampagne"																																																											No				tp:465289858755756	No																																															Video Page Post Ad	utm_source={{site_source_name}}&utm_medium={{placement}}&utm_campaign={{campaign.name}}&utm_content={{ad.name}}			v:1529077357782209																																								x:4610719345700861					LEARN_MORE								[]	No		https://www.facebook.com/100081610752007/videos/1529077357782209																												No																																																																																																																																																																																																		
+cg:120217163857880454		1 - 01/30 - Launch JG 2025 - CT			PAUSED	Outcome Sales	AUCTION							01/30/2025 12:57:06 pm				Yes	NONE	No	[]	NONE	c:120218026849850454	PAUSED	0	250130 - PUR - Griechenland, Olivenöl Creative Test	02/18/2025 2:29:58 pm		150	UNDEFINED	0			No				No	[]	o:101883605856765	tp:465289858755756			PURCHASE		http://www.olivadis.com/jahresvorrat-2025-kampagne							AT, DE															home, recent																				18	65																											120217163885590454:PUR 90	"[{""interests"":[{""id"":""6003075824815"",""name"":""Greece""},{""id"":""6003184482902"",""name"":""Olive oil""}]}]"		0									Olivadis GmbH	Olivadis GmbH														FACEBOOK_STANDARD, AN_STANDARD	VALUE	"[{""event_type"":""CLICK_THROUGH"",""window_days"":7}]"	IMPRESSIONS		Highest Value														s:1826413858196410	a:120218026849880454	ACTIVE	https://www.facebook.com/?feed_demo_ad=120218026849880454&h=AQKW1U0ypOXZRvJhiIf-y-Wnqjc	https://www.instagram.com/p/DGN0UjygBlQ/	CB#1 - 5 - Massenproduktion																						"Wenn du dieses Video zu Ende schaust, wirst du kein Olivenöl mehr im Supermarkt kaufen wollen 🤯
+
+𝐇𝐢𝐞𝐫 𝐢𝐬𝐭 𝐝𝐢𝐞 𝐛𝐢𝐭𝐭𝐞𝐫𝐞 𝐖𝐚𝐡𝐫𝐡𝐞𝐢𝐭 (𝐣𝐚, 𝐝𝐚𝐬 𝐖𝐨𝐫𝐭𝐬𝐩𝐢𝐞𝐥 𝐰𝐚𝐫 𝐀𝐛𝐬𝐢𝐜𝐡𝐭): Supermarkt Olivenöle werden oft tausende Kilometer transportiert und in Tanks zusammengeschüttet, in denen sie 1-2 Jahre lagern, bevor sie überhaupt erst abgefüllt werden. Dafür werden laut Berichten  immer wieder auch minderwertige Olivenöle verwendet, die aus teils faulen Oliven gepresst wurden. Diese werden mit dann mit etwas besserem Olivenöl gemischt und somit die mindere Qualität verschleiert.
+
+𝐖𝐚𝐬 𝐡𝐞𝐢ß𝐭 𝐝𝐚𝐬 𝐢𝐦 𝐊𝐥𝐚𝐫𝐭𝐞𝐱𝐭? Wenn du im Supermarkt ein Olivenöl kaufst, kann es durchaus sein, dass dein Öl  schon mehrere Jahre alt ist. Für das aufgedruckte Mindesthaltbarkeitsdatum ist nämlich nicht der Erntezeitpunkt, sondern das Datum der Abfüllung in die Flasche ausschlaggebend.
+
+𝐖𝐢𝐫 𝐟𝐢𝐧𝐝𝐞𝐧: Das muss nicht so sein und haben dafür die perfekte Lösung – unser selbstgemachtes Olivenöl in einer feinen Glasflasche.
+
+Wir sind ein Familienbetrieb aus Pteleos in Griechenland und produzieren jedes Jahr auf unseren eigenen Olivenhainen eine limitierte Menge an flüssigem Gold.
+
+𝐇𝐢𝐞𝐫 𝐬𝐢𝐧𝐝 𝐝𝐢𝐞 𝐰𝐢𝐜𝐡𝐭𝐢𝐠𝐬𝐭𝐞𝐧 𝐅𝐚𝐤𝐭𝐨𝐫𝐞𝐧, 𝐝𝐢𝐞 𝐮𝐧𝐬𝐞𝐫 𝐎𝐥𝐢𝐯𝐞𝐧ö𝐥 𝐠𝐞𝐬𝐜𝐡𝐦𝐚𝐜𝐤𝐥𝐢𝐜𝐡 𝐮𝐧𝐝 𝐪𝐮𝐚𝐥𝐢𝐭𝐚𝐭𝐢𝐯 𝐛𝐞𝐬𝐬𝐞𝐫 𝐚𝐥𝐬 𝐚𝐥𝐥𝐞𝐬 𝐦𝐚𝐜𝐡𝐞𝐧, 𝐰𝐚𝐬 𝐝𝐮 𝐢𝐦 𝐒𝐮𝐩𝐞𝐫𝐦𝐚𝐫𝐤𝐭 𝐟𝐢𝐧𝐝𝐞𝐧 𝐰𝐢𝐫𝐬𝐭:
+
+🫒 In unserem Olivenöl befinden sich ausschließlich handgepflückte Oliven aus unserem hauseigenen Olivenhain in Griechenland. Deshalb können wir jedes Jahr auch nur eine sehr begrenzte Menge Olivenöl produzieren. Das limitiert uns zwar, dadurch erreichen wir aber eine unvergleichliche Qualität.
+
+🫒 Unsere Oliven legen von der Ernte über das Pressen, Abfüllen und Verpacken nur wenige Meter zurück. Mit dieser Frische im Geschmack können Produkte aus dem Supermarkt niemals mithalten.
+
+🫒 Als „Natives Olivenöl Extra“ befinden wir uns in der allerhöchsten Güteklasse der Olivenöle. Dafür ist ein Säuregehalt von maximal 0,8% erforderlich. Unser Olivenöl übertrifft diese Anforderung mit einem Säuregehalt von 0,4% bei Weitem.
+
+𝐃𝐢𝐞𝐬𝐞𝐧 𝐔𝐧𝐭𝐞𝐫𝐬𝐜𝐡𝐢𝐞𝐝 𝐬𝐜𝐡𝐦𝐞𝐜𝐤𝐭 𝐦𝐚𝐧. Mittlerweile haben mehr als 2.000 Kunden unser Olivenöl probiert, von tausenden verkauften Flaschen haben wir keine einzige retour bekommen. Darüber berichten unsere Kunden regelmäßig auf Trustpilot, in Form von 5-Sterne-Bewertungen ⭐⭐⭐⭐⭐
+
+Probier’s aus und schmecke auch du den Unterschied!
+http://www.olivadis.com/jahresvorrat-2025-kampagne"																																																											No				tp:465289858755756	No																																															Video Page Post Ad	utm_source={{site_source_name}}&utm_medium={{placement}}&utm_campaign={{campaign.name}}&utm_content={{ad.name}}			v:1826413858196410																																								x:4610719345700861					LEARN_MORE								[]	No		https://www.facebook.com/100081610752007/videos/1826413858196410																												No																																																																																																																																																																																																		
+cg:120217163857880454		1 - 01/30 - Launch JG 2025 - CT			PAUSED	Outcome Sales	AUCTION							01/30/2025 12:57:06 pm				Yes	NONE	No	[]	NONE	c:120217164089050454	PAUSED	0	Test – 250130 - PUR - Griechenland, Olivenöl	01/30/2025 12:57:23 pm		220	UNDEFINED	0			No				No	[]	o:101883605856765	tp:465289858755756			PURCHASE		http://www.olivadis.com/jahresvorrat-2025-kampagne							AT, DE															home, recent																				18	65																											120217163885590454:PUR 90	"[{""interests"":[{""id"":""6003075824815"",""name"":""Greece""},{""id"":""6003184482902"",""name"":""Olive oil""}]}]"		1	18, 65	expansion_all							Olivadis GmbH	Olivadis GmbH														FACEBOOK_STANDARD, AN_STANDARD	OFFSITE_CONVERSIONS	"[{""event_type"":""CLICK_THROUGH"",""window_days"":7},{""event_type"":""VIEW_THROUGH"",""window_days"":1},{""event_type"":""ENGAGED_VIDEO_VIEW"",""window_days"":1}]"	IMPRESSIONS		Highest volume or value														s:596358929700580	a:120217164089070454	ACTIVE	https://www.facebook.com/?feed_demo_ad=120217164089070454&h=AQJ0UZJ3R3-wHFrkB_G-AyH_S-M	https://www.instagram.com/p/DFcunihgumz/	CB#1 - 1 - aufgemischt																						"‼️Wir haben den Olivenölmarkt in den letzten zwei Jahren ordentlich aufgemischt…
+
+🤦‍♂️Während unsere Konkurrenten immer wieder kräftig ihre alten und neuen Öle zusammenmischen, um billiges,  minderwertiges Öl unter die Leute zu bringen, setzen wir nach wie vor auf unser Olivadis Reinheitsgebot 👌. 
+
+Wie bei den besten Weinen dieser Welt, sind die Oliven für unser Öl …
+🫒handgepflückt 
+🫒aus einer einzigen Sorte, der Amphissis Olive
+🫒aus einem Hang im familieneigenen Olivenhain in Pteleos
+🫒aus einem Jahrgang, jedes Jahr frisch
+🫒von bis zu 300 Jahre alten Olivenbäumen
+🫒Limitierte Menge aus unserer Familienproduktion.
+
+🥸 Aber ist auch irgendwie egal, oder? Soll doch nur schmecken…
+
+Stimmt 😎
+
+👉 Unser Olivenöl schmeckt fruchtig, mild, mit fein ausgewogenen Schärfe- und Bitternoten für einen harmonisch abgerundeten Geschmack.
+
+👑 Für die höchste Gütestufe “Natives Olivenöl Extra” ist ein Säuregehalt von 0,8% vorgeschrieben. Wir haben gerade einmal 0,4%.
+
+𝐎𝐥𝐢𝐯𝐚𝐝𝐢𝐬 𝐰𝐢𝐫𝐝 𝟗 𝐯𝐨𝐧 𝟏𝟎 𝐦𝐚𝐥 𝐛𝐞𝐢 𝐁𝐥𝐢𝐧𝐝𝐯𝐞𝐫𝐤𝐨𝐬𝐭𝐮𝐧𝐠𝐞𝐧 𝐚𝐮𝐟 𝐝𝐢𝐞 𝐍𝐮𝐦𝐦𝐞𝐫 𝟏 𝐠𝐞𝐬𝐞𝐭𝐳𝐭.
+Weil es einfach perfekt ist. Das sagen nicht nur wir, sondern auch über 2000 treue Stammkunden, die jedes Jahr unseren neuen Jahrgang vorbestellen ⭐⭐⭐⭐⭐.
+
+😍 Sichere dir bis zu 246€ kostenlose Goodies, wie unsere griechischen Bergtees, eingelegte Olivadis-Oliven der Sonderklasse und unsere göttlichen Gewürzkräuter.
+
+Probier’s aus und schmecke auch du den Unterschied!
+http://www.olivadis.com/jahresvorrat-2025-kampagne"																																																											No				tp:465289858755756	No																																															Video Page Post Ad	utm_source={{site_source_name}}&utm_medium={{placement}}&utm_campaign={{campaign.name}}&utm_content={{ad.name}}			v:596358929700580																																								x:4610719345700861					LEARN_MORE								[]	No		https://www.facebook.com/100081610752007/videos/596358929700580																												No																																																																																																																																																																																																		
+cg:120217163857880454		1 - 01/30 - Launch JG 2025 - CT			PAUSED	Outcome Sales	AUCTION							01/30/2025 12:57:06 pm				Yes	NONE	No	[]	NONE	c:120217164089050454	PAUSED	0	Test – 250130 - PUR - Griechenland, Olivenöl	01/30/2025 12:57:23 pm		220	UNDEFINED	0			No				No	[]	o:101883605856765	tp:465289858755756			PURCHASE		http://www.olivadis.com/jahresvorrat-2025-kampagne							AT, DE															home, recent																				18	65																											120217163885590454:PUR 90	"[{""interests"":[{""id"":""6003075824815"",""name"":""Greece""},{""id"":""6003184482902"",""name"":""Olive oil""}]}]"		1	18, 65	expansion_all							Olivadis GmbH	Olivadis GmbH														FACEBOOK_STANDARD, AN_STANDARD	OFFSITE_CONVERSIONS	"[{""event_type"":""CLICK_THROUGH"",""window_days"":7},{""event_type"":""VIEW_THROUGH"",""window_days"":1},{""event_type"":""ENGAGED_VIDEO_VIEW"",""window_days"":1}]"	IMPRESSIONS		Highest volume or value														s:1147656010413216	a:120217164089080454	ACTIVE	https://www.facebook.com/?feed_demo_ad=120217164089080454&h=AQKS6FD77ymcQsGK3h6stF-F0so	https://www.instagram.com/p/DFcunaTgJFr/	CB#1 - 2 - Industrieprobleme																						"Du hast sicher schon von den massiven Problemen in der Olivenöl Industrie gehört. 
+❌Oliven Ernten sind ausgefallen, Hersteller mischen altes Öl mit Frischem, um durch die Kontrollen zu kommen. Olivenöle großer Hersteller lagern teilweise jahrelang, bevor sie überhaupt in den Handel kommen, wo sie dann weitere Monate herumstehen. 
+
+😩Bevor du herkömmliches Supermarkt Öl in deinen Salat gießt oder dein Fleisch/Fisch/Gemüse damit anbrätst, ist es in den vielen Fällen schon ziemlich alt, obwohl es mit “Natives Olivenöl extra” gekennzeichnet ist. 
+
+Leider kennen viel zu wenige den Geschmack von wirklich frischem Olivenöl.
+
+Wir haben einen Gegentrend gestartet und damit einen riesigen Nerv getroffen 😍
+
+Wir behandeln unser Olivadis Olivenöl wie die großen Weingüter aus Frankreich und Italien 🫒❤️ 
+
+Ein paar Fakten über die Oliven in unserem Öl…
+🫒 Handgepflückt, sorgfältig ausgewählt – keine Maschinen, keine Kompromisse.
+🫒 Wir verwenden ausschließlich eine einzige Sorte: die Amphissis Olive.
+🫒 Geerntet aus einem Hang im familieneigenen Olivenhain in Pteleos, Griechenland.
+🫒 Jedes Jahr frisch – immer aus einem Jahrgang.
+🫒 Von Olivenbäumen, die bis zu 300 Jahre alt sind.
+🫒 Limitierte Menge – reine Handarbeit aus unserer Familienproduktion.
+
+🥸 Aber ist auch irgendwie egal, oder? Soll doch nur schmecken…
+
+Stimmt 😎
+
+👉 Unser Olivenöl schmeckt fruchtig, mild, mit fein ausgewogenen Schärfe- und Bitternoten für einen harmonisch abgerundeten Geschmack.
+
+👑 Für die höchste Gütestufe “Natives Olivenöl Extra” ist ein Säuregehalt von 0,8% vorgeschrieben. Wir haben gerade einmal 0,4%.
+
+𝐎𝐥𝐢𝐯𝐚𝐝𝐢𝐬 𝐰𝐢𝐫𝐝 𝟗 𝐯𝐨𝐧 𝟏𝟎 𝐦𝐚𝐥 𝐛𝐞𝐢 𝐁𝐥𝐢𝐧𝐝𝐯𝐞𝐫𝐤𝐨𝐬𝐭𝐮𝐧𝐠𝐞𝐧 𝐚𝐮𝐟 𝐝𝐢𝐞 𝐍𝐮𝐦𝐦𝐞𝐫 𝟏 𝐠𝐞𝐬𝐞𝐭𝐳𝐭.
+Weil es einfach perfekt ist. Das sagen nicht nur wir, sondern auch über 2000 treue Stammkunden, die jedes Jahr unseren neuen Jahrgang vorbestellen ⭐⭐⭐⭐⭐.
+
+😍 Sichere dir bis zu 246€ kostenlose Goodies, wie unsere griechischen Bergtees, eingelegte Olivadis-Oliven der Sonderklasse und unsere göttlichen Gewürzkräuter.
+
+Probier’s aus und schmecke auch du den Unterschied!
+http://www.olivadis.com/jahresvorrat-2025-kampagne"																																																											No				tp:465289858755756	No																																															Video Page Post Ad	utm_source={{site_source_name}}&utm_medium={{placement}}&utm_campaign={{campaign.name}}&utm_content={{ad.name}}			v:1147656010413216																																								x:4610719345700861					LEARN_MORE								[]	No		https://www.facebook.com/100081610752007/videos/1147656010413216																												No																																																																																																																																																																																																		
+cg:120217163857880454		1 - 01/30 - Launch JG 2025 - CT			PAUSED	Outcome Sales	AUCTION							01/30/2025 12:57:06 pm				Yes	NONE	No	[]	NONE	c:120217164089050454	PAUSED	0	Test – 250130 - PUR - Griechenland, Olivenöl	01/30/2025 12:57:23 pm		220	UNDEFINED	0			No				No	[]	o:101883605856765	tp:465289858755756			PURCHASE		http://www.olivadis.com/jahresvorrat-2025-kampagne							AT, DE															home, recent																				18	65																											120217163885590454:PUR 90	"[{""interests"":[{""id"":""6003075824815"",""name"":""Greece""},{""id"":""6003184482902"",""name"":""Olive oil""}]}]"		1	18, 65	expansion_all							Olivadis GmbH	Olivadis GmbH														FACEBOOK_STANDARD, AN_STANDARD	OFFSITE_CONVERSIONS	"[{""event_type"":""CLICK_THROUGH"",""window_days"":7},{""event_type"":""VIEW_THROUGH"",""window_days"":1},{""event_type"":""ENGAGED_VIDEO_VIEW"",""window_days"":1}]"	IMPRESSIONS		Highest volume or value														s:1529077357782209	a:120217164089060454	ACTIVE	https://www.facebook.com/?feed_demo_ad=120217164089060454&h=AQIRtSyHjH0nuSxeMpuQrklzRYI	https://www.instagram.com/p/DFcunicAzBq/	CB#1 - 3 - Tradition																						"„Unsere Geschichte steckt in jeder Flasche. 🫒❤️
+Seit über 100 Jahren bewirtschaftet unsere Familie Olivenhaine in Griechenland.
+Unsere Olivenbäume sind bis zu 300 Jahre alt, und jede Flasche Olivadis erzählt die Geschichte von Tradition, Handarbeit und Hingabe.
+
+Warum Olivadis so besonders ist:
+🫒handgepflückt 
+🫒aus einer einzigen Sorte, der Amphisis Olive
+🫒aus einem Hang im familieneigenen Olivenhain in Pteleos
+🫒aus einem Jahrgang, jedes Jahr frisch
+🫒von bis zu 300 Jahre alten Olivenbäumen
+🫒Limitierte Menge aus unserer Familienproduktion.
+
+Erlebe den Geschmack von Tradition und gönne dir jetzt ein Stück Griechenland.
+👉 Sichere dir unser limitiertes Angebot mit kostenfreien Goodies im Wert von bis zu 246 €.
+
+http://www.olivadis.com/jahresvorrat-2025-kampagne"																																																											No				tp:465289858755756	No																																															Video Page Post Ad	utm_source={{site_source_name}}&utm_medium={{placement}}&utm_campaign={{campaign.name}}&utm_content={{ad.name}}			v:1529077357782209																																								x:4610719345700861					LEARN_MORE								[]	No		https://www.facebook.com/100081610752007/videos/1529077357782209																												No																																																																																																																																																																																																		
+cg:120217163857880454		1 - 01/30 - Launch JG 2025 - CT			PAUSED	Outcome Sales	AUCTION							01/30/2025 12:57:06 pm				Yes	NONE	No	[]	NONE	c:120217164089050454	PAUSED	0	Test – 250130 - PUR - Griechenland, Olivenöl	01/30/2025 12:57:23 pm		220	UNDEFINED	0			No				No	[]	o:101883605856765	tp:465289858755756			PURCHASE		http://www.olivadis.com/jahresvorrat-2025-kampagne							AT, DE															home, recent																				18	65																											120217163885590454:PUR 90	"[{""interests"":[{""id"":""6003075824815"",""name"":""Greece""},{""id"":""6003184482902"",""name"":""Olive oil""}]}]"		1	18, 65	expansion_all							Olivadis GmbH	Olivadis GmbH														FACEBOOK_STANDARD, AN_STANDARD	OFFSITE_CONVERSIONS	"[{""event_type"":""CLICK_THROUGH"",""window_days"":7},{""event_type"":""VIEW_THROUGH"",""window_days"":1},{""event_type"":""ENGAGED_VIDEO_VIEW"",""window_days"":1}]"	IMPRESSIONS		Highest volume or value														s:1826413858196410	a:120217164089040454	ACTIVE	https://www.facebook.com/?feed_demo_ad=120217164089040454&h=AQIXChaEgPoqVHYWT6WlYW68ZXY	https://www.instagram.com/p/DFcundiAnYY/	CB#1 - 5 - Massenproduktion																						"Wenn du dieses Video zu Ende schaust, wirst du kein Olivenöl mehr im Supermarkt kaufen wollen 🤯
+
+𝐇𝐢𝐞𝐫 𝐢𝐬𝐭 𝐝𝐢𝐞 𝐛𝐢𝐭𝐭𝐞𝐫𝐞 𝐖𝐚𝐡𝐫𝐡𝐞𝐢𝐭 (𝐣𝐚, 𝐝𝐚𝐬 𝐖𝐨𝐫𝐭𝐬𝐩𝐢𝐞𝐥 𝐰𝐚𝐫 𝐀𝐛𝐬𝐢𝐜𝐡𝐭): Supermarkt Olivenöle werden oft tausende Kilometer transportiert und in Tanks zusammengeschüttet, in denen sie 1-2 Jahre lagern, bevor sie überhaupt erst abgefüllt werden. Dafür werden laut Berichten  immer wieder auch minderwertige Olivenöle verwendet, die aus teils faulen Oliven gepresst wurden. Diese werden mit dann mit etwas besserem Olivenöl gemischt und somit die mindere Qualität verschleiert.
+
+𝐖𝐚𝐬 𝐡𝐞𝐢ß𝐭 𝐝𝐚𝐬 𝐢𝐦 𝐊𝐥𝐚𝐫𝐭𝐞𝐱𝐭? Wenn du im Supermarkt ein Olivenöl kaufst, kann es durchaus sein, dass dein Öl  schon mehrere Jahre alt ist. Für das aufgedruckte Mindesthaltbarkeitsdatum ist nämlich nicht der Erntezeitpunkt, sondern das Datum der Abfüllung in die Flasche ausschlaggebend.
+
+𝐖𝐢𝐫 𝐟𝐢𝐧𝐝𝐞𝐧: Das muss nicht so sein und haben dafür die perfekte Lösung – unser selbstgemachtes Olivenöl in einer feinen Glasflasche.
+
+Wir sind ein Familienbetrieb aus Pteleos in Griechenland und produzieren jedes Jahr auf unseren eigenen Olivenhainen eine limitierte Menge an flüssigem Gold.
+
+𝐇𝐢𝐞𝐫 𝐬𝐢𝐧𝐝 𝐝𝐢𝐞 𝐰𝐢𝐜𝐡𝐭𝐢𝐠𝐬𝐭𝐞𝐧 𝐅𝐚𝐤𝐭𝐨𝐫𝐞𝐧, 𝐝𝐢𝐞 𝐮𝐧𝐬𝐞𝐫 𝐎𝐥𝐢𝐯𝐞𝐧ö𝐥 𝐠𝐞𝐬𝐜𝐡𝐦𝐚𝐜𝐤𝐥𝐢𝐜𝐡 𝐮𝐧𝐝 𝐪𝐮𝐚𝐥𝐢𝐭𝐚𝐭𝐢𝐯 𝐛𝐞𝐬𝐬𝐞𝐫 𝐚𝐥𝐬 𝐚𝐥𝐥𝐞𝐬 𝐦𝐚𝐜𝐡𝐞𝐧, 𝐰𝐚𝐬 𝐝𝐮 𝐢𝐦 𝐒𝐮𝐩𝐞𝐫𝐦𝐚𝐫𝐤𝐭 𝐟𝐢𝐧𝐝𝐞𝐧 𝐰𝐢𝐫𝐬𝐭:
+
+🫒 In unserem Olivenöl befinden sich ausschließlich handgepflückte Oliven aus unserem hauseigenen Olivenhain in Griechenland. Deshalb können wir jedes Jahr auch nur eine sehr begrenzte Menge Olivenöl produzieren. Das limitiert uns zwar, dadurch erreichen wir aber eine unvergleichliche Qualität.
+
+🫒 Unsere Oliven legen von der Ernte über das Pressen, Abfüllen und Verpacken nur wenige Meter zurück. Mit dieser Frische im Geschmack können Produkte aus dem Supermarkt niemals mithalten.
+
+🫒 Als „Natives Olivenöl Extra“ befinden wir uns in der allerhöchsten Güteklasse der Olivenöle. Dafür ist ein Säuregehalt von maximal 0,8% erforderlich. Unser Olivenöl übertrifft diese Anforderung mit einem Säuregehalt von 0,4% bei Weitem.
+
+𝐃𝐢𝐞𝐬𝐞𝐧 𝐔𝐧𝐭𝐞𝐫𝐬𝐜𝐡𝐢𝐞𝐝 𝐬𝐜𝐡𝐦𝐞𝐜𝐤𝐭 𝐦𝐚𝐧. Mittlerweile haben mehr als 2.000 Kunden unser Olivenöl probiert, von tausenden verkauften Flaschen haben wir keine einzige retour bekommen. Darüber berichten unsere Kunden regelmäßig auf Trustpilot, in Form von 5-Sterne-Bewertungen ⭐⭐⭐⭐⭐
+
+Probier’s aus und schmecke auch du den Unterschied!
+http://www.olivadis.com/jahresvorrat-2025-kampagne"																																																											No				tp:465289858755756	No																																															Video Page Post Ad	utm_source={{site_source_name}}&utm_medium={{placement}}&utm_campaign={{campaign.name}}&utm_content={{ad.name}}			v:1826413858196410																																								x:4610719345700861					LEARN_MORE								[]	No		https://www.facebook.com/100081610752007/videos/1826413858196410																												No																																																																																																																																																																																																		
+cg:120217163857880454		1 - 01/30 - Launch JG 2025 - CT			PAUSED	Outcome Sales	AUCTION							01/30/2025 12:57:06 pm				Yes	NONE	No	[]	NONE	c:120217163857890454	PAUSED	0	250130 - PUR - Griechenland, Olivenöl	01/30/2025 12:57:06 pm		450	UNDEFINED	0			No				No	[]	o:101883605856765	tp:465289858755756			PURCHASE		http://www.olivadis.com/jahresvorrat-2025-kampagne							AT, DE															home, recent																				18	65																											120217163885590454:PUR 90	"[{""interests"":[{""id"":""6003075824815"",""name"":""Greece""},{""id"":""6003184482902"",""name"":""Olive oil""}]}]"		0									Olivadis GmbH	Olivadis GmbH														FACEBOOK_STANDARD, AN_STANDARD	OFFSITE_CONVERSIONS	"[{""event_type"":""CLICK_THROUGH"",""window_days"":7},{""event_type"":""VIEW_THROUGH"",""window_days"":1},{""event_type"":""ENGAGED_VIDEO_VIEW"",""window_days"":1}]"	IMPRESSIONS		Highest volume or value														s:596358929700580	a:120217163857900454	ACTIVE	https://www.facebook.com/?feed_demo_ad=120217163857900454&h=AQJr6Sk2K-QxKpOURzYYrYQ4pvM	https://www.instagram.com/p/DFcul2_g_LC/	CB#1 - 1 - aufgemischt																						"‼️Wir haben den Olivenölmarkt in den letzten zwei Jahren ordentlich aufgemischt…
+
+🤦‍♂️Während unsere Konkurrenten immer wieder kräftig ihre alten und neuen Öle zusammenmischen, um billiges,  minderwertiges Öl unter die Leute zu bringen, setzen wir nach wie vor auf unser Olivadis Reinheitsgebot 👌. 
+
+Wie bei den besten Weinen dieser Welt, sind die Oliven für unser Öl …
+🫒handgepflückt 
+🫒aus einer einzigen Sorte, der Amphissis Olive
+🫒aus einem Hang im familieneigenen Olivenhain in Pteleos
+🫒aus einem Jahrgang, jedes Jahr frisch
+🫒von bis zu 300 Jahre alten Olivenbäumen
+🫒Limitierte Menge aus unserer Familienproduktion.
+
+🥸 Aber ist auch irgendwie egal, oder? Soll doch nur schmecken…
+
+Stimmt 😎
+
+👉 Unser Olivenöl schmeckt fruchtig, mild, mit fein ausgewogenen Schärfe- und Bitternoten für einen harmonisch abgerundeten Geschmack.
+
+👑 Für die höchste Gütestufe “Natives Olivenöl Extra” ist ein Säuregehalt von 0,8% vorgeschrieben. Wir haben gerade einmal 0,4%.
+
+𝐎𝐥𝐢𝐯𝐚𝐝𝐢𝐬 𝐰𝐢𝐫𝐝 𝟗 𝐯𝐨𝐧 𝟏𝟎 𝐦𝐚𝐥 𝐛𝐞𝐢 𝐁𝐥𝐢𝐧𝐝𝐯𝐞𝐫𝐤𝐨𝐬𝐭𝐮𝐧𝐠𝐞𝐧 𝐚𝐮𝐟 𝐝𝐢𝐞 𝐍𝐮𝐦𝐦𝐞𝐫 𝟏 𝐠𝐞𝐬𝐞𝐭𝐳𝐭.
+Weil es einfach perfekt ist. Das sagen nicht nur wir, sondern auch über 2000 treue Stammkunden, die jedes Jahr unseren neuen Jahrgang vorbestellen ⭐⭐⭐⭐⭐.
+
+😍 Sichere dir bis zu 246€ kostenlose Goodies, wie unsere griechischen Bergtees, eingelegte Olivadis-Oliven der Sonderklasse und unsere göttlichen Gewürzkräuter.
+
+Probier’s aus und schmecke auch du den Unterschied!
+http://www.olivadis.com/jahresvorrat-2025-kampagne"																																																											No				tp:465289858755756	No																																															Video Page Post Ad	utm_source={{site_source_name}}&utm_medium={{placement}}&utm_campaign={{campaign.name}}&utm_content={{ad.name}}			v:596358929700580																																								x:4610719345700861					LEARN_MORE								[]	No		https://www.facebook.com/100081610752007/videos/596358929700580																												No																																																																																																																																																																																																		
+cg:120217163857880454		1 - 01/30 - Launch JG 2025 - CT			PAUSED	Outcome Sales	AUCTION							01/30/2025 12:57:06 pm				Yes	NONE	No	[]	NONE	c:120217163857890454	PAUSED	0	250130 - PUR - Griechenland, Olivenöl	01/30/2025 12:57:06 pm		450	UNDEFINED	0			No				No	[]	o:101883605856765	tp:465289858755756			PURCHASE		http://www.olivadis.com/jahresvorrat-2025-kampagne							AT, DE															home, recent																				18	65																											120217163885590454:PUR 90	"[{""interests"":[{""id"":""6003075824815"",""name"":""Greece""},{""id"":""6003184482902"",""name"":""Olive oil""}]}]"		0									Olivadis GmbH	Olivadis GmbH														FACEBOOK_STANDARD, AN_STANDARD	OFFSITE_CONVERSIONS	"[{""event_type"":""CLICK_THROUGH"",""window_days"":7},{""event_type"":""VIEW_THROUGH"",""window_days"":1},{""event_type"":""ENGAGED_VIDEO_VIEW"",""window_days"":1}]"	IMPRESSIONS		Highest volume or value														s:1147656010413216	a:120217163987250454	ACTIVE	https://www.facebook.com/?feed_demo_ad=120217163987250454&h=AQL9tAdpXZN1KAfghfpfOA76b-M	https://www.instagram.com/p/DFculXfAdKR/	CB#1 - 2 - Industrieprobleme																						"Du hast sicher schon von den massiven Problemen in der Olivenöl Industrie gehört. 
+❌Oliven Ernten sind ausgefallen, Hersteller mischen altes Öl mit Frischem, um durch die Kontrollen zu kommen. Olivenöle großer Hersteller lagern teilweise jahrelang, bevor sie überhaupt in den Handel kommen, wo sie dann weitere Monate herumstehen. 
+
+😩Bevor du herkömmliches Supermarkt Öl in deinen Salat gießt oder dein Fleisch/Fisch/Gemüse damit anbrätst, ist es in den vielen Fällen schon ziemlich alt, obwohl es mit “Natives Olivenöl extra” gekennzeichnet ist. 
+
+Leider kennen viel zu wenige den Geschmack von wirklich frischem Olivenöl.
+
+Wir haben einen Gegentrend gestartet und damit einen riesigen Nerv getroffen 😍
+
+Wir behandeln unser Olivadis Olivenöl wie die großen Weingüter aus Frankreich und Italien 🫒❤️ 
+
+Ein paar Fakten über die Oliven in unserem Öl…
+🫒 Handgepflückt, sorgfältig ausgewählt – keine Maschinen, keine Kompromisse.
+🫒 Wir verwenden ausschließlich eine einzige Sorte: die Amphissis Olive.
+🫒 Geerntet aus einem Hang im familieneigenen Olivenhain in Pteleos, Griechenland.
+🫒 Jedes Jahr frisch – immer aus einem Jahrgang.
+🫒 Von Olivenbäumen, die bis zu 300 Jahre alt sind.
+🫒 Limitierte Menge – reine Handarbeit aus unserer Familienproduktion.
+
+🥸 Aber ist auch irgendwie egal, oder? Soll doch nur schmecken…
+
+Stimmt 😎
+
+👉 Unser Olivenöl schmeckt fruchtig, mild, mit fein ausgewogenen Schärfe- und Bitternoten für einen harmonisch abgerundeten Geschmack.
+
+👑 Für die höchste Gütestufe “Natives Olivenöl Extra” ist ein Säuregehalt von 0,8% vorgeschrieben. Wir haben gerade einmal 0,4%.
+
+𝐎𝐥𝐢𝐯𝐚𝐝𝐢𝐬 𝐰𝐢𝐫𝐝 𝟗 𝐯𝐨𝐧 𝟏𝟎 𝐦𝐚𝐥 𝐛𝐞𝐢 𝐁𝐥𝐢𝐧𝐝𝐯𝐞𝐫𝐤𝐨𝐬𝐭𝐮𝐧𝐠𝐞𝐧 𝐚𝐮𝐟 𝐝𝐢𝐞 𝐍𝐮𝐦𝐦𝐞𝐫 𝟏 𝐠𝐞𝐬𝐞𝐭𝐳𝐭.
+Weil es einfach perfekt ist. Das sagen nicht nur wir, sondern auch über 2000 treue Stammkunden, die jedes Jahr unseren neuen Jahrgang vorbestellen ⭐⭐⭐⭐⭐.
+
+😍 Sichere dir bis zu 246€ kostenlose Goodies, wie unsere griechischen Bergtees, eingelegte Olivadis-Oliven der Sonderklasse und unsere göttlichen Gewürzkräuter.
+
+Probier’s aus und schmecke auch du den Unterschied!
+http://www.olivadis.com/jahresvorrat-2025-kampagne"																																																											No				tp:465289858755756	No																																															Video Page Post Ad	utm_source={{site_source_name}}&utm_medium={{placement}}&utm_campaign={{campaign.name}}&utm_content={{ad.name}}			v:1147656010413216																																								x:4610719345700861					LEARN_MORE								[]	No		https://www.facebook.com/100081610752007/videos/1147656010413216																												No																																																																																																																																																																																																		
+cg:120217163857880454		1 - 01/30 - Launch JG 2025 - CT			PAUSED	Outcome Sales	AUCTION							01/30/2025 12:57:06 pm				Yes	NONE	No	[]	NONE	c:120217163857890454	PAUSED	0	250130 - PUR - Griechenland, Olivenöl	01/30/2025 12:57:06 pm		450	UNDEFINED	0			No				No	[]	o:101883605856765	tp:465289858755756			PURCHASE		http://www.olivadis.com/jahresvorrat-2025-kampagne							AT, DE															home, recent																				18	65																											120217163885590454:PUR 90	"[{""interests"":[{""id"":""6003075824815"",""name"":""Greece""},{""id"":""6003184482902"",""name"":""Olive oil""}]}]"		0									Olivadis GmbH	Olivadis GmbH														FACEBOOK_STANDARD, AN_STANDARD	OFFSITE_CONVERSIONS	"[{""event_type"":""CLICK_THROUGH"",""window_days"":7},{""event_type"":""VIEW_THROUGH"",""window_days"":1},{""event_type"":""ENGAGED_VIDEO_VIEW"",""window_days"":1}]"	IMPRESSIONS		Highest volume or value														s:1529077357782209	a:120217164001220454	ACTIVE	https://www.facebook.com/?feed_demo_ad=120217164001220454&h=AQIloov2PB1M_UA8fMFYdevD4xc	https://www.instagram.com/p/DFculfSgtsj/	CB#1 - 3 - Tradition																						"„Unsere Geschichte steckt in jeder Flasche. 🫒❤️
+Seit über 100 Jahren bewirtschaftet unsere Familie Olivenhaine in Griechenland.
+Unsere Olivenbäume sind bis zu 300 Jahre alt, und jede Flasche Olivadis erzählt die Geschichte von Tradition, Handarbeit und Hingabe.
+
+Warum Olivadis so besonders ist:
+🫒handgepflückt 
+🫒aus einer einzigen Sorte, der Amphisis Olive
+🫒aus einem Hang im familieneigenen Olivenhain in Pteleos
+🫒aus einem Jahrgang, jedes Jahr frisch
+🫒von bis zu 300 Jahre alten Olivenbäumen
+🫒Limitierte Menge aus unserer Familienproduktion.
+
+Erlebe den Geschmack von Tradition und gönne dir jetzt ein Stück Griechenland.
+👉 Sichere dir unser limitiertes Angebot mit kostenfreien Goodies im Wert von bis zu 246 €.
+
+http://www.olivadis.com/jahresvorrat-2025-kampagne"																																																											No				tp:465289858755756	No																																															Video Page Post Ad	utm_source={{site_source_name}}&utm_medium={{placement}}&utm_campaign={{campaign.name}}&utm_content={{ad.name}}			v:1529077357782209																																								x:4610719345700861					LEARN_MORE								[]	No		https://www.facebook.com/100081610752007/videos/1529077357782209																												No																																																																																																																																																																																																		
+cg:120217163857880454		1 - 01/30 - Launch JG 2025 - CT			PAUSED	Outcome Sales	AUCTION							01/30/2025 12:57:06 pm				Yes	NONE	No	[]	NONE	c:120217163857890454	PAUSED	0	250130 - PUR - Griechenland, Olivenöl	01/30/2025 12:57:06 pm		450	UNDEFINED	0			No				No	[]	o:101883605856765	tp:465289858755756			PURCHASE		http://www.olivadis.com/jahresvorrat-2025-kampagne							AT, DE															home, recent																				18	65																											120217163885590454:PUR 90	"[{""interests"":[{""id"":""6003075824815"",""name"":""Greece""},{""id"":""6003184482902"",""name"":""Olive oil""}]}]"		0									Olivadis GmbH	Olivadis GmbH														FACEBOOK_STANDARD, AN_STANDARD	OFFSITE_CONVERSIONS	"[{""event_type"":""CLICK_THROUGH"",""window_days"":7},{""event_type"":""VIEW_THROUGH"",""window_days"":1},{""event_type"":""ENGAGED_VIDEO_VIEW"",""window_days"":1}]"	IMPRESSIONS		Highest volume or value														s:1826413858196410	a:120217164018500454	ACTIVE	https://www.facebook.com/?feed_demo_ad=120217164018500454&h=AQKj027Ycmb6E4LJGV5skPUrBJo	https://www.instagram.com/p/DFculXigV1w/	CB#1 - 5 - Massenproduktion																						"Wenn du dieses Video zu Ende schaust, wirst du kein Olivenöl mehr im Supermarkt kaufen wollen 🤯
+
+𝐇𝐢𝐞𝐫 𝐢𝐬𝐭 𝐝𝐢𝐞 𝐛𝐢𝐭𝐭𝐞𝐫𝐞 𝐖𝐚𝐡𝐫𝐡𝐞𝐢𝐭 (𝐣𝐚, 𝐝𝐚𝐬 𝐖𝐨𝐫𝐭𝐬𝐩𝐢𝐞𝐥 𝐰𝐚𝐫 𝐀𝐛𝐬𝐢𝐜𝐡𝐭): Supermarkt Olivenöle werden oft tausende Kilometer transportiert und in Tanks zusammengeschüttet, in denen sie 1-2 Jahre lagern, bevor sie überhaupt erst abgefüllt werden. Dafür werden laut Berichten  immer wieder auch minderwertige Olivenöle verwendet, die aus teils faulen Oliven gepresst wurden. Diese werden mit dann mit etwas besserem Olivenöl gemischt und somit die mindere Qualität verschleiert.
+
+𝐖𝐚𝐬 𝐡𝐞𝐢ß𝐭 𝐝𝐚𝐬 𝐢𝐦 𝐊𝐥𝐚𝐫𝐭𝐞𝐱𝐭? Wenn du im Supermarkt ein Olivenöl kaufst, kann es durchaus sein, dass dein Öl  schon mehrere Jahre alt ist. Für das aufgedruckte Mindesthaltbarkeitsdatum ist nämlich nicht der Erntezeitpunkt, sondern das Datum der Abfüllung in die Flasche ausschlaggebend.
+
+𝐖𝐢𝐫 𝐟𝐢𝐧𝐝𝐞𝐧: Das muss nicht so sein und haben dafür die perfekte Lösung – unser selbstgemachtes Olivenöl in einer feinen Glasflasche.
+
+Wir sind ein Familienbetrieb aus Pteleos in Griechenland und produzieren jedes Jahr auf unseren eigenen Olivenhainen eine limitierte Menge an flüssigem Gold.
+
+𝐇𝐢𝐞𝐫 𝐬𝐢𝐧𝐝 𝐝𝐢𝐞 𝐰𝐢𝐜𝐡𝐭𝐢𝐠𝐬𝐭𝐞𝐧 𝐅𝐚𝐤𝐭𝐨𝐫𝐞𝐧, 𝐝𝐢𝐞 𝐮𝐧𝐬𝐞𝐫 𝐎𝐥𝐢𝐯𝐞𝐧ö𝐥 𝐠𝐞𝐬𝐜𝐡𝐦𝐚𝐜𝐤𝐥𝐢𝐜𝐡 𝐮𝐧𝐝 𝐪𝐮𝐚𝐥𝐢𝐭𝐚𝐭𝐢𝐯 𝐛𝐞𝐬𝐬𝐞𝐫 𝐚𝐥𝐬 𝐚𝐥𝐥𝐞𝐬 𝐦𝐚𝐜𝐡𝐞𝐧, 𝐰𝐚𝐬 𝐝𝐮 𝐢𝐦 𝐒𝐮𝐩𝐞𝐫𝐦𝐚𝐫𝐤𝐭 𝐟𝐢𝐧𝐝𝐞𝐧 𝐰𝐢𝐫𝐬𝐭:
+
+🫒 In unserem Olivenöl befinden sich ausschließlich handgepflückte Oliven aus unserem hauseigenen Olivenhain in Griechenland. Deshalb können wir jedes Jahr auch nur eine sehr begrenzte Menge Olivenöl produzieren. Das limitiert uns zwar, dadurch erreichen wir aber eine unvergleichliche Qualität.
+
+🫒 Unsere Oliven legen von der Ernte über das Pressen, Abfüllen und Verpacken nur wenige Meter zurück. Mit dieser Frische im Geschmack können Produkte aus dem Supermarkt niemals mithalten.
+
+🫒 Als „Natives Olivenöl Extra“ befinden wir uns in der allerhöchsten Güteklasse der Olivenöle. Dafür ist ein Säuregehalt von maximal 0,8% erforderlich. Unser Olivenöl übertrifft diese Anforderung mit einem Säuregehalt von 0,4% bei Weitem.
+
+𝐃𝐢𝐞𝐬𝐞𝐧 𝐔𝐧𝐭𝐞𝐫𝐬𝐜𝐡𝐢𝐞𝐝 𝐬𝐜𝐡𝐦𝐞𝐜𝐤𝐭 𝐦𝐚𝐧. Mittlerweile haben mehr als 2.000 Kunden unser Olivenöl probiert, von tausenden verkauften Flaschen haben wir keine einzige retour bekommen. Darüber berichten unsere Kunden regelmäßig auf Trustpilot, in Form von 5-Sterne-Bewertungen ⭐⭐⭐⭐⭐
+
+Probier’s aus und schmecke auch du den Unterschied!
+http://www.olivadis.com/jahresvorrat-2025-kampagne"																																																											No				tp:465289858755756	No																																															Video Page Post Ad	utm_source={{site_source_name}}&utm_medium={{placement}}&utm_campaign={{campaign.name}}&utm_content={{ad.name}}			v:1826413858196410																																								x:4610719345700861					LEARN_MORE								[]	No		https://www.facebook.com/100081610752007/videos/1826413858196410																												No																																																																																																																																																																																																		

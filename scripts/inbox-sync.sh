@@ -5,7 +5,7 @@
 
 set -e
 
-DIETER_API="https://dieter-hq.vercel.app/api/inbox/items"
+DIETER_API="https://dieter.dergreg.com/api/inbox/items"
 LAST_SYNC_FILE="$HOME/.openclaw/workspace/.inbox-last-sync"
 CONVERSATION_WINDOW_MINUTES=15
 
@@ -117,10 +117,21 @@ for ACCOUNT in "${ACCOUNTS[@]}"; do
     FROM=$(echo "$email" | jq -r '.from')
     DATE=$(echo "$email" | jq -r '.date')
     
+    # Fetch full email body via thread
+    THREAD_ID=$(echo "$email" | jq -r '.threadId')
+    
+    # Get full thread with body (capture text output, first 5000 chars)
+    BODY=$(gog gmail thread get "$THREAD_ID" --account "$ACCOUNT" --full 2>/dev/null | tail -n +9 | head -c 5000)
+    
+    # Fallback: use snippet if body fetch fails
+    if [ -z "$BODY" ] || [ "$BODY" = "null" ]; then
+      BODY=$(echo "$email" | jq -r '.snippet // ""')
+    fi
+    
     # Convert date to ISO format
     RECEIVED=$(date -j -f "%Y-%m-%d %H:%M" "$DATE" +%Y-%m-%dT%H:%M:00Z 2>/dev/null || echo "${DATE}:00Z")
     
-    # Post to DieterHQ  
+    # Post to DieterHQ with full content
     curl -s -X POST "$DIETER_API" \
       -H "Content-Type: application/json" \
       -d "{
@@ -129,7 +140,8 @@ for ACCOUNT in "${ACCOUNTS[@]}"; do
         \"sourceAccount\": \"$ACCOUNT\",
         \"sender\": $(echo "$FROM" | jq -Rs .),
         \"subject\": $(echo "$SUBJECT" | jq -Rs .),
-        \"preview\": $(echo "$SUBJECT" | jq -Rs .),
+        \"preview\": $(echo "${SUBJECT:0:100}" | jq -Rs .),
+        \"content\": $(echo "$BODY" | jq -Rs .),
         \"receivedAt\": \"$RECEIVED\"
       }" > /dev/null
       

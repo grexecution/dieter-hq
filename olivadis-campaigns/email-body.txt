@@ -1,0 +1,26 @@
+Hi Greg,
+
+Hier sind die Olivadis Retargeting Kampagnen-Files:
+
+📁 README.md
+- Komplette Schritt-für-Schritt Anleitung
+- Custom Audiences erstellen
+- Budget- und Bidding-Strategie
+
+📁 campaigns-structure.csv  
+- Kampagnen-Struktur (4 Kampagnen, 8 Ads)
+- Zum Nachbauen im Ads Manager
+
+📁 ad-copy-variations.md
+- 12 Ad Copy Varianten
+- Für alle Audience-Typen
+- Testing-Strategie
+
+Quick Start:
+1. Custom Audiences im Ads Manager erstellen (siehe README)
+2. Kampagnen nach CSV aufsetzen
+3. Ad Copies auswählen
+
+Erwarteter Impact: 4-6x ROAS auf Cart Abandoners, 3-5x auf Website Visitors.
+
+🐕 Dieter

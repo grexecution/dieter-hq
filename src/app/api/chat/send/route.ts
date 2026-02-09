@@ -232,8 +232,8 @@ export async function POST(req: NextRequest) {
     }
     const contextualMessage = contextPrefix + content;
 
-    // 📎 ATTACHMENTS: Convert to image content blocks for OpenClaw
-    type ImageBlock = { type: 'image'; source: { type: 'base64'; media_type: string; data: string } };
+    // 📎 ATTACHMENTS: Convert to image content blocks for OpenClaw (OpenAI format)
+    type ImageBlock = { type: 'image_url'; image_url: { url: string } };
     type TextBlock = { type: 'text'; text: string };
     type ContentBlock = TextBlock | ImageBlock;
     const imageBlocks: ImageBlock[] = [];
@@ -259,11 +259,9 @@ export async function POST(req: NextRequest) {
         
         if (base64Data) {
           imageBlocks.push({
-            type: 'image',
-            source: {
-              type: 'base64',
-              media_type: att.mimeType,
-              data: base64Data,
+            type: 'image_url',
+            image_url: {
+              url: `data:${att.mimeType};base64,${base64Data}`,
             }
           });
         }
@@ -377,6 +375,9 @@ export async function POST(req: NextRequest) {
           }
 
           // 🧠 INFINITE CONTEXT: Send full context to OpenClaw
+          if (imageBlocks.length > 0) {
+            console.log(`[Gateway Request] Sending ${imageBlocks.length} image(s), first URL: ${imageBlocks[0].image_url.url.substring(0, 100)}...`);
+          }
           const response = await fetch(`${GATEWAY_HTTP_URL}/v1/chat/completions`, {
             method: 'POST',
             headers: {

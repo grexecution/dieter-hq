@@ -83,6 +83,7 @@ type Payload = {
   threadId?: string;
   content?: string;
   skipUserMessage?: boolean; // For voice messages where user message already exists
+  attachmentIds?: string[]; // Artefact IDs to include as images
 };
 
 function fmtLabel(d: Date): string {
@@ -118,6 +119,27 @@ export async function POST(req: NextRequest) {
 
   const now = new Date();
   const id = crypto.randomUUID();
+  
+  // 📎 Load attachment info for user message display AND for sending to OpenClaw
+  const attachmentIds = body.attachmentIds || [];
+  type AttachmentRow = typeof artefacts.$inferSelect;
+  let attachmentRows: AttachmentRow[] = [];
+  let userMessageContent = content;
+  
+  if (attachmentIds.length > 0) {
+    const { inArray } = await import("drizzle-orm");
+    attachmentRows = await db.select().from(artefacts).where(inArray(artefacts.id, attachmentIds));
+    
+    // Add attachment links to the message content (for display in chat)
+    const attachmentLinks = attachmentRows
+      .filter(a => a.mimeType.startsWith('image/'))
+      .map(a => `📎 ${a.originalName}\n/api/artefacts/${encodeURIComponent(a.id)}`)
+      .join('\n');
+    
+    if (attachmentLinks) {
+      userMessageContent = attachmentLinks + (content ? '\n\n' + content : '');
+    }
+  }
 
   // Skip creating user message if it already exists (e.g., voice messages)
   if (!skipUserMessage) {
@@ -125,14 +147,14 @@ export async function POST(req: NextRequest) {
       id,
       threadId,
       role: "user",
-      content,
+      content: userMessageContent,
       createdAt: now,
     });
 
     await logEvent({
       threadId,
       type: "message.create",
-      payload: { role: "user" },
+      payload: { role: "user", hasAttachments: attachmentIds.length > 0 },
     });
   }
 
@@ -210,6 +232,50 @@ export async function POST(req: NextRequest) {
     }
     const contextualMessage = contextPrefix + content;
 
+    // 📎 ATTACHMENTS: Convert to image content blocks for OpenClaw
+    type ImageBlock = { type: 'image'; source: { type: 'base64'; media_type: string; data: string } };
+    type TextBlock = { type: 'text'; text: string };
+    type ContentBlock = TextBlock | ImageBlock;
+    const imageBlocks: ImageBlock[] = [];
+    
+    // Use already-loaded attachmentRows from above
+    for (const att of attachmentRows) {
+      // Only process images
+      if (!att.mimeType.startsWith('image/')) continue;
+      
+      try {
+        let base64Data: string | undefined;
+        
+        // Try DB storage first (Vercel-compatible)
+        if (att.dataBase64) {
+          base64Data = att.dataBase64;
+        } 
+        // Fall back to file storage
+        else if (att.storagePath) {
+          const abs = path.join(artefactsBaseDir(), att.storagePath);
+          const buf = await fs.readFile(abs);
+          base64Data = buf.toString('base64');
+        }
+        
+        if (base64Data) {
+          imageBlocks.push({
+            type: 'image',
+            source: {
+              type: 'base64',
+              media_type: att.mimeType,
+              data: base64Data,
+            }
+          });
+        }
+      } catch (err) {
+        console.error(`[Attachment] Failed to load ${att.id}:`, err);
+      }
+    }
+    
+    if (imageBlocks.length > 0) {
+      console.log(`[Attachments] Loaded ${imageBlocks.length} images for thread ${threadId}`);
+    }
+
     // 🧠 INFINITE CONTEXT: Process message with memory management
     let infiniteContextResult;
     try {
@@ -284,6 +350,32 @@ export async function POST(req: NextRequest) {
         }, 3000); // Ping every 3 seconds (reduced from 5)
 
         try {
+          // 📎 Prepare messages with image attachments if present
+          let messagesToSend = infiniteContextResult.contextMessages;
+          
+          if (imageBlocks.length > 0) {
+            // Find the last user message and convert to content array with images
+            const msgs = [...infiniteContextResult.contextMessages];
+            for (let i = msgs.length - 1; i >= 0; i--) {
+              if (msgs[i].role === 'user') {
+                const textContent = typeof msgs[i].content === 'string' 
+                  ? msgs[i].content 
+                  : '(image)';
+                
+                // Create content array with text + images
+                const contentArray: ContentBlock[] = [
+                  { type: 'text', text: textContent },
+                  ...imageBlocks
+                ];
+                
+                msgs[i] = { ...msgs[i], content: contentArray as unknown as string };
+                break;
+              }
+            }
+            messagesToSend = msgs;
+            console.log(`[Attachments] Added ${imageBlocks.length} images to user message`);
+          }
+
           // 🧠 INFINITE CONTEXT: Send full context to OpenClaw
           const response = await fetch(`${GATEWAY_HTTP_URL}/v1/chat/completions`, {
             method: 'POST',
@@ -296,8 +388,8 @@ export async function POST(req: NextRequest) {
             },
             body: JSON.stringify({
               model: `openclaw:${agentId}`,
-              // Use the full context from infinite context system
-              messages: infiniteContextResult.contextMessages,
+              // Use the full context from infinite context system (with images if present)
+              messages: messagesToSend,
               user: `dieter-hq:${threadId}`,
               stream: true,
             }),

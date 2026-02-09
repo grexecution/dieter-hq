@@ -5,7 +5,6 @@ import { motion } from "framer-motion";
 import { Home, MessageCircle, Calendar, LayoutGrid, Settings } from "lucide-react";
 
 import { ThemeToggle } from "@/components/theme-toggle";
-import { MobileHeader } from "./AppShell";
 import { cn } from "@/lib/utils";
 
 interface ChatShellProps {
@@ -80,9 +79,6 @@ export function ChatShell({ children }: ChatShellProps) {
     <div className="relative flex min-h-dvh flex-col bg-zinc-50 dark:bg-zinc-950">
       {/* Desktop Header */}
       <ChatDesktopHeader />
-
-      {/* Mobile Header - shared component from AppShell */}
-      <MobileHeader active="chat" />
 
       {/* Main Content - Full Height */}
       <main

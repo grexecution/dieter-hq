@@ -101,12 +101,37 @@ function FilePreviewItem({ file, onRemove }: { file: FilePreview; onRemove: (id:
 }
 
 // ============================================
+// Types for attachment callbacks
+// ============================================
+
+export type PendingAttachment = {
+  id: string;
+  artefactId: string;
+  url: string;
+  mimeType: string;
+  originalName: string;
+};
+
+// ============================================
 // Main ChatComposer Component
 // ============================================
 
-export function ChatComposer({ threadId, disabled }: { threadId: string; disabled?: boolean }) {
+export function ChatComposer({ 
+  threadId, 
+  disabled,
+  onAttachmentReady,
+  onAttachmentRemoved,
+  clearTrigger,
+}: { 
+  threadId: string; 
+  disabled?: boolean;
+  onAttachmentReady?: (attachment: PendingAttachment) => void;
+  onAttachmentRemoved?: (id: string) => void;
+  clearTrigger?: number; // Increment to clear all files
+}) {
   const [files, setFiles] = useState<FilePreview[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const lastClearTrigger = useRef<number>(0);
 
   const uppy = useMemo(() => {
     const u = new Uppy({
@@ -130,6 +155,17 @@ export function ChatComposer({ threadId, disabled }: { threadId: string; disable
   useEffect(() => {
     uppy.setMeta({ threadId });
   }, [uppy, threadId]);
+
+  // Clear files when clearTrigger changes
+  useEffect(() => {
+    if (clearTrigger !== undefined && clearTrigger !== lastClearTrigger.current) {
+      lastClearTrigger.current = clearTrigger;
+      // Clear all files from uppy
+      const fileIds = uppy.getFiles().map(f => f.id);
+      fileIds.forEach(id => uppy.removeFile(id));
+      setFiles([]);
+    }
+  }, [clearTrigger, uppy]);
 
   // Handle file added
   useEffect(() => {
@@ -161,15 +197,25 @@ export function ChatComposer({ threadId, disabled }: { threadId: string; disable
     };
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const handleUploadSuccess = (file: any) => {
+    const handleUploadSuccess = (file: any, response: any) => {
       if (!file?.id) return;
       setFiles(prev => prev.map(f => 
         f.id === file.id ? { ...f, progress: 100, status: "complete" } : f
       ));
-      // Remove after 2s
-      setTimeout(() => {
-        setFiles(prev => prev.filter(f => f.id !== file.id));
-      }, 2000);
+      
+      // Notify parent about the ready attachment
+      const body = response?.body;
+      if (body?.artefactId && onAttachmentReady) {
+        onAttachmentReady({
+          id: file.id,
+          artefactId: body.artefactId,
+          url: body.url,
+          mimeType: body.mimeType,
+          originalName: body.originalName,
+        });
+      }
+      
+      // Don't auto-remove - let parent control when to clear after send
     };
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -189,6 +235,10 @@ export function ChatComposer({ threadId, disabled }: { threadId: string; disable
         }
         return prev.filter(f => f.id !== file.id);
       });
+      // Notify parent
+      if (onAttachmentRemoved) {
+        onAttachmentRemoved(file.id);
+      }
     };
 
     uppy.on("file-added", handleFileAdded);

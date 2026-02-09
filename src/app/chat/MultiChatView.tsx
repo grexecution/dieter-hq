@@ -9,7 +9,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 
-import { ChatComposer } from "./ChatComposer";
+import { ChatComposer, type PendingAttachment } from "./ChatComposer";
 // import { NowBar } from "./NowBar"; // TODO: make functional before re-enabling
 import { OpenClawStatusSidebar } from "./OpenClawStatusSidebar";
 import { StatusBar } from "./_components/StatusBar";
@@ -427,9 +427,14 @@ interface ComposerProps {
   onTranscriptionEnd: () => void;
   threadId: string;
   activeTab: string;
+  // Attachment handling
+  onAttachmentReady?: (attachment: PendingAttachment) => void;
+  onAttachmentRemoved?: (id: string) => void;
+  clearTrigger?: number;
+  pendingAttachmentCount?: number;
 }
 
-function Composer({ draft, setDraft, isSending, queueCount, onSubmit, onVoiceTranscript, onVoiceMessage, onTranscriptionStart, onTranscriptionEnd, threadId, activeTab }: ComposerProps) {
+function Composer({ draft, setDraft, isSending, queueCount, onSubmit, onVoiceTranscript, onVoiceMessage, onTranscriptionStart, onTranscriptionEnd, threadId, activeTab, onAttachmentReady, onAttachmentRemoved, clearTrigger, pendingAttachmentCount }: ComposerProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const currentTab = CHAT_TABS.find(tab => tab.id === activeTab);
 
@@ -463,7 +468,20 @@ function Composer({ draft, setDraft, isSending, queueCount, onSubmit, onVoiceTra
           }}
         >
           {/* Attachment - Left side - aligned with bottom of input */}
-          <ChatComposer threadId={threadId} disabled={isSending} />
+          <ChatComposer 
+            threadId={threadId} 
+            disabled={isSending}
+            onAttachmentReady={onAttachmentReady}
+            onAttachmentRemoved={onAttachmentRemoved}
+            clearTrigger={clearTrigger}
+          />
+          
+          {/* Pending attachment indicator */}
+          {pendingAttachmentCount && pendingAttachmentCount > 0 && (
+            <div className="absolute -top-6 left-0 text-xs text-indigo-600 dark:text-indigo-400">
+              📎 {pendingAttachmentCount} Anhang{pendingAttachmentCount > 1 ? 'e' : ''} bereit
+            </div>
+          )}
 
           {/* Text Input */}
           <div className="relative flex-1 min-w-0">
@@ -539,6 +557,10 @@ export function MultiChatView({
   
   // Voice transcription status per thread
   const [transcribingStates, setTranscribingStates] = useState<Record<string, boolean>>({});
+  
+  // Pending attachments per thread (images/files waiting to be sent with next message)
+  const [pendingAttachments, setPendingAttachments] = useState<Record<string, PendingAttachment[]>>({});
+  const [clearTrigger, setClearTrigger] = useState<Record<string, number>>({});
   
   // Workspace state (for Dev tab)
   const [activeProject, setActiveProject] = useState<WorkspaceProject | null>(null);
@@ -689,7 +711,10 @@ export function MultiChatView({
   // Send message handler for current thread (reads SSE stream)
   const handleSend = async () => {
     const content = currentDraft.trim();
-    if (!content) return;
+    const attachments = pendingAttachments[effectiveThreadId] || [];
+    
+    // Allow sending if there's content OR attachments
+    if (!content && attachments.length === 0) return;
 
     // Capture threadId at send time to avoid stale closure issues
     const sendThreadId = effectiveThreadId;
@@ -706,12 +731,20 @@ export function MultiChatView({
 
     setSendingStates(prev => ({ ...prev, [sendThreadId]: true }));
     setDrafts(prev => ({ ...prev, [sendThreadId]: "" }));
+    
+    // Clear pending attachments and trigger composer clear
+    setPendingAttachments(prev => ({ ...prev, [sendThreadId]: [] }));
+    setClearTrigger(prev => ({ ...prev, [sendThreadId]: (prev[sendThreadId] || 0) + 1 }));
 
     try {
       const r = await fetch("/api/chat/send", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ threadId: sendThreadId, content }),
+        body: JSON.stringify({ 
+          threadId: sendThreadId, 
+          content: content || "(attached image)", // Fallback if only image
+          attachmentIds: attachments.map(a => a.artefactId),
+        }),
       });
 
       if (!r.ok) {
@@ -814,9 +847,10 @@ export function MultiChatView({
       const newProject: WorkspaceProject = {
         id: `project-${Date.now()}`,
         name: suggestion.payload,
-        description: `Workspace für: ${suggestion.payload}`,
+        threadId: `dev:${suggestion.payload.toLowerCase().replace(/\s+/g, '-')}`,
         createdAt: Date.now(),
         lastActiveAt: Date.now(),
+        archived: false,
       };
       setWorkspaceProjects(prev => [...prev, newProject]);
       setActiveProject(newProject);
@@ -1244,6 +1278,20 @@ export function MultiChatView({
               }}
               threadId={effectiveThreadId}
               activeTab={activeTab}
+              onAttachmentReady={(attachment) => {
+                setPendingAttachments(prev => ({
+                  ...prev,
+                  [effectiveThreadId]: [...(prev[effectiveThreadId] || []), attachment]
+                }));
+              }}
+              onAttachmentRemoved={(id) => {
+                setPendingAttachments(prev => ({
+                  ...prev,
+                  [effectiveThreadId]: (prev[effectiveThreadId] || []).filter(a => a.id !== id)
+                }));
+              }}
+              clearTrigger={clearTrigger[effectiveThreadId] || 0}
+              pendingAttachmentCount={(pendingAttachments[effectiveThreadId] || []).length}
             />
           </>
         )}

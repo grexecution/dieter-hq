@@ -65,16 +65,9 @@ export async function POST(req: Request) {
     createdAt: now,
   });
 
-  // Create a message referencing the artefact
+  // DON'T create a message here - let the chat send handle it
+  // This allows images to be sent as content blocks to OpenClaw
   const url = `/api/artefacts/${encodeURIComponent(id)}`;
-  const messageId = crypto.randomUUID();
-  await db.insert(messages).values({
-    id: messageId,
-    threadId,
-    role: "user",
-    content: `📎 ${originalName}\n${url}`,
-    createdAt: now,
-  });
 
   await logEvent({
     threadId,
@@ -114,5 +107,5 @@ export async function POST(req: Request) {
     })();
   }
 
-  return NextResponse.json({ ok: true, artefactId: id, messageId, url });
+  return NextResponse.json({ ok: true, artefactId: id, url, mimeType, originalName });
 }

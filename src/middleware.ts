@@ -7,8 +7,9 @@ export async function middleware(req: NextRequest) {
   if (p.startsWith("/login")) return NextResponse.next();
   if (p.startsWith("/manifest.webmanifest")) return NextResponse.next();
 
-  // Allow unauthenticated health check if we add one later.
+  // Allow unauthenticated API routes
   if (p.startsWith("/api/health")) return NextResponse.next();
+  if (p.startsWith("/api/push")) return NextResponse.next();  // Push notifications (has own auth check)
 
   const res = await enforceAuth(req);
   return res ?? NextResponse.next();

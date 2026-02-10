@@ -7,6 +7,11 @@
  * - Proper client.id and client.mode values
  */
 
+// Production-safe logging (only in development)
+const isDev = process.env.NODE_ENV === 'development';
+const log = isDev ? (...args: unknown[]) => console.log('[OpenClaw]', ...args) : () => {};
+const logError = (...args: unknown[]) => console.error('[OpenClaw]', ...args);
+
 // ===========================================================================
 // Types
 // ===========================================================================
@@ -119,17 +124,15 @@ export class OpenClawClient {
 
   async connect(): Promise<void> {
     if (this.connectionState === 'connected' || this.connectionState === 'connecting') {
-      console.log('[OpenClaw] Already connected or connecting, skipping');
       return;
     }
 
     // Don't try to connect if URL is disabled
     if (this.config.url === 'wss://disabled') {
-      console.log('[OpenClaw] WebSocket disabled (no URL configured)');
       return;
     }
 
-    console.log('[OpenClaw] Connecting to:', this.config.url);
+    log('Connecting...');
     this.setConnectionState('connecting');
     this.clearReconnectTimer();
 
@@ -140,7 +143,6 @@ export class OpenClawClient {
         this.ws = new WebSocket(this.config.url);
 
         this.ws.onopen = () => {
-          console.log('[OpenClaw] WebSocket opened, waiting for challenge...');
           // Don't resolve yet - wait for connect.challenge and auth
         };
 
@@ -148,14 +150,11 @@ export class OpenClawClient {
           this.handleMessage(event.data);
         };
 
-        this.ws.onerror = (err) => {
-          console.error('[OpenClaw] WebSocket error:', err);
-          console.error('[OpenClaw] URL was:', this.config.url);
+        this.ws.onerror = () => {
           // Error handling in onclose
         };
 
         this.ws.onclose = (event) => {
-          console.log('[OpenClaw] WebSocket closed:', event.code, event.reason);
           const wasConnected = this.connectionState === 'connected';
           const wasConnecting = this.connectionState === 'connecting';
           
@@ -186,7 +185,7 @@ export class OpenClawClient {
       this.ws = null;
     }
 
-    for (const [id, pending] of this.pendingRequests) {
+    for (const [, pending] of this.pendingRequests) {
       clearTimeout(pending.timeout);
       pending.reject(new Error('Client disconnected'));
     }
@@ -243,7 +242,7 @@ export class OpenClawClient {
 
       this.pendingRequests.set(requestId, {
         resolve: () => {
-          console.log('[OpenClaw] ✅ Connected and authenticated!');
+          log('✅ Connected');
           this.reconnectAttempts = 0;
           this.setConnectionState('connected');
           if (this.connectPromise) {
@@ -281,7 +280,7 @@ export class OpenClawClient {
 
     this.reconnectTimer = setTimeout(() => {
       this.connect().catch((error) => {
-        console.error('[OpenClaw] Reconnection failed:', error);
+        logError('Reconnection failed:', error);
         this.scheduleReconnect();
       });
     }, delay);
@@ -315,7 +314,7 @@ export class OpenClawClient {
         this.handleResponse(frame as ResponseFrame);
         break;
       case 'req':
-        console.warn('[OpenClaw] Received unexpected request from server');
+        // Unexpected request from server
         break;
     }
   }
@@ -323,17 +322,10 @@ export class OpenClawClient {
   private handleEvent(frame: EventFrame): void {
     // Handle connect.challenge - this triggers the actual connect request
     if (frame.event === 'connect.challenge') {
-      console.log('[OpenClaw] Received challenge, authenticating...');
       this.sendConnectRequest().catch((err) => {
-        console.error('[OpenClaw] Auth failed:', err);
+        logError('Auth failed:', err);
       });
       return;
-    }
-    
-    // Only log important events (not health/tick/agent stream spam)
-    const quietEvents = ['health', 'tick', 'agent', 'presence'];
-    if (!quietEvents.includes(frame.event)) {
-      console.log('[OpenClaw] Event:', frame.event);
     }
 
     // Broadcast to event handlers
@@ -468,15 +460,7 @@ export function getOpenClawClient(): OpenClawClient {
       ? (process.env.NEXT_PUBLIC_OPENCLAW_TOKEN ?? process.env.NEXT_PUBLIC_OPENCLAW_PASSWORD)
       : undefined;
 
-    // Log for debugging
-    console.log('[OpenClaw] Client init:', {
-      url: url ?? '(not set)',
-      hasPassword: !!password,
-      envSet: !!url && !!password,
-    });
-
     if (!url) {
-      console.warn('[OpenClaw] NEXT_PUBLIC_OPENCLAW_WS_URL not set - WebSocket disabled');
       // Create a dummy client that won't connect
       defaultClient = new OpenClawClient({ url: 'wss://disabled' });
       return defaultClient;

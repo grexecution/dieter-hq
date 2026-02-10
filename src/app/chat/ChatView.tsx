@@ -462,18 +462,8 @@ export function ChatView({
   newThreadAction: (formData: FormData) => void;
   logoutAction: (formData: FormData) => void;
 }) {
-  // Debug: Log when ChatView mounts
-  console.log('[ChatView] Mounted, activeThread:', activeThreadId);
-  
   // OpenClaw WebSocket connection
   const connection = useOpenClawConnection();
-  
-  // Debug: Log connection state
-  console.log('[ChatView] Connection:', { 
-    connected: connection.connected, 
-    connecting: connection.connecting,
-    error: connection.error?.message 
-  });
   
   // Session key for the current thread
   const sessionKey = useMemo(() => getSessionKey(activeThreadId), [activeThreadId]);
@@ -524,7 +514,6 @@ export function ChatView({
 
     const timer = setTimeout(() => {
       if (!connection.connected && !connection.connecting) {
-        console.log("[ChatView] WebSocket unavailable, using HTTP fallback");
         setUseHttpFallback(true);
       }
     }, 5000);
@@ -594,8 +583,6 @@ export function ChatView({
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 30 * 60 * 1000); // 30 minutes
         
-        console.log('[ChatView] Sending via HTTP fallback...');
-        
         const r = await fetch("/api/chat/send", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -639,9 +626,6 @@ export function ChatView({
 
                 if (event.type === "keepalive") {
                   // Agent is still working - keep connection alive
-                  // Log for debugging, update activity state
-                  console.log(`[ChatView] Keepalive: ${event.message}`);
-                  // Could show "Dieter denkt nach..." in UI here
                 } else if (event.type === "user_confirmed" && event.item) {
                   setLiveMessages((prev) => {
                     if (prev.some((m) => m.id === event.item!.id)) return prev;

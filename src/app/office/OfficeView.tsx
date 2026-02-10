@@ -2,7 +2,6 @@
 
 import * as React from "react";
 import { AppShell } from "../_ui/AppShell";
-import { cn } from "@/lib/utils";
 import {
   MOCK_AGENTS,
   MOCK_ACTIVITIES,
@@ -13,12 +12,125 @@ import {
 import { AgentCard } from "./AgentCard";
 import { ActivityFeed } from "./ActivityFeed";
 import { OfficeStats } from "./OfficeStats";
-import { Building2 } from "lucide-react";
+import { Building2, Wifi, WifiOff } from "lucide-react";
+
+// Live agent from Gateway API
+interface LiveAgent {
+  id: string;
+  agentId: string;
+  label: string;
+  status: "active" | "working" | "idle" | "blocked";
+  lastActivity: number | null;
+  currentTask: string | null;
+  progress: number | null;
+  parentId: string | null;
+}
+
+// Map agent IDs to department IDs
+function getDepartmentForAgent(agentId: string): string | null {
+  const mapping: Record<string, string> = {
+    main: "ceo",
+    coder: "dev",
+    work: "business",
+    sport: "personal", // Sport agent → personal department
+    researcher: "research",
+    designer: "design",
+    marketer: "marketing",
+    pmo: "pmo",
+    personal: "personal",
+  };
+  return mapping[agentId] || null;
+}
+
+// Map department IDs to agent IDs (reverse)
+function getAgentForDepartment(departmentId: string): string | null {
+  const mapping: Record<string, string> = {
+    ceo: "main",
+    dev: "coder",
+    business: "work",
+    personal: "sport", // Could also be 'personal' agent
+    research: "researcher",
+    design: "designer",
+    marketing: "marketer",
+    pmo: "pmo",
+  };
+  return mapping[departmentId] || null;
+}
 
 export function OfficeView() {
   const [agents] = React.useState<Agent[]>(MOCK_AGENTS);
   const [activities] = React.useState<Activity[]>(MOCK_ACTIVITIES);
-  const stats = calculateStats(agents);
+  const [liveAgents, setLiveAgents] = React.useState<LiveAgent[]>([]);
+  const [gatewayConnected, setGatewayConnected] = React.useState<boolean | null>(null);
+  const [lastUpdate, setLastUpdate] = React.useState<number | null>(null);
+
+  // Fetch live agents from Gateway
+  React.useEffect(() => {
+    const fetchAgents = async () => {
+      try {
+        const res = await fetch("/api/office/agents");
+        const data = await res.json();
+        setLiveAgents(data.agents || []);
+        setLastUpdate(data.timestamp || Date.now());
+        setGatewayConnected(!data.error);
+      } catch (e) {
+        console.error("Failed to fetch agents:", e);
+        setGatewayConnected(false);
+      }
+    };
+
+    fetchAgents();
+    const interval = setInterval(fetchAgents, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Merge live data with static agents
+  const mergedAgents = React.useMemo(() => {
+    return agents.map((agent) => {
+      const agentId = getAgentForDepartment(agent.department.id);
+      if (!agentId) return agent;
+      
+      // Find all live sessions for this agent
+      const agentSessions = liveAgents.filter((la) => la.agentId === agentId);
+      
+      if (agentSessions.length === 0) return agent;
+      
+      // Use the most recent session's status
+      const mostRecent = agentSessions.reduce((a, b) => 
+        (a.lastActivity || 0) > (b.lastActivity || 0) ? a : b
+      );
+      
+      // Count active sessions
+      const activeSessions = agentSessions.filter(
+        (s) => s.status === 'active' || s.status === 'working'
+      );
+
+      return {
+        ...agent,
+        status: mostRecent.status,
+        currentTask: activeSessions.length > 1 
+          ? `${activeSessions.length} active sessions`
+          : mostRecent.currentTask || agent.currentTask,
+        lastActivity: mostRecent.lastActivity || agent.lastActivity,
+      };
+    });
+  }, [agents, liveAgents]);
+
+  // Get subagents for each department
+  const getSubagentsForDepartment = React.useCallback(
+    (departmentId: string): LiveAgent[] => {
+      const agentId = getAgentForDepartment(departmentId);
+      if (!agentId) return [];
+      
+      // Return all sessions for this agent (they are "subagents" of the department)
+      return liveAgents.filter((la) => {
+        return la.agentId === agentId && (la.status === 'active' || la.status === 'working');
+      });
+    },
+    [liveAgents]
+  );
+
+  const stats = calculateStats(mergedAgents);
 
   // Get current date
   const today = new Date().toLocaleDateString("en-US", {
@@ -43,6 +155,28 @@ export function OfficeView() {
               <p className="text-sm text-muted-foreground">{today}</p>
             </div>
           </div>
+          
+          {/* Gateway connection status */}
+          <div className="flex items-center gap-2 text-xs">
+            {gatewayConnected === null ? (
+              <span className="text-muted-foreground">Connecting...</span>
+            ) : gatewayConnected ? (
+              <>
+                <Wifi className="h-3.5 w-3.5 text-green-500" />
+                <span className="text-green-600 dark:text-green-400">Gateway Live</span>
+                {liveAgents.length > 0 && (
+                  <span className="text-muted-foreground ml-1">
+                    ({liveAgents.length} sessions)
+                  </span>
+                )}
+              </>
+            ) : (
+              <>
+                <WifiOff className="h-3.5 w-3.5 text-muted-foreground" />
+                <span className="text-muted-foreground">Offline Mode</span>
+              </>
+            )}
+          </div>
         </div>
 
         {/* Stats Bar */}
@@ -53,15 +187,19 @@ export function OfficeView() {
           {/* Agent Cards - Takes 2/3 on large screens */}
           <div className="lg:col-span-2">
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-              {agents.map((agent) => (
-                <AgentCard key={agent.id} agent={agent} />
+              {mergedAgents.map((agent) => (
+                <AgentCard 
+                  key={agent.id} 
+                  agent={agent}
+                  subagents={getSubagentsForDepartment(agent.department.id)}
+                />
               ))}
             </div>
           </div>
 
           {/* Activity Feed - Takes 1/3 on large screens */}
           <div className="lg:col-span-1">
-            <ActivityFeed activities={activities} agents={agents} />
+            <ActivityFeed activities={activities} agents={mergedAgents} />
           </div>
         </div>
       </div>

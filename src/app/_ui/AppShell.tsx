@@ -16,11 +16,11 @@ import { cn } from "@/lib/utils";
 
 // Navigation items configuration
 const NAV_ITEMS = [
-  { href: "/", icon: Home, label: "Home", id: "home" },
-  { href: "/chat", icon: MessageCircle, label: "Chat", id: "chat" },
-  { href: "/calendar", icon: Calendar, label: "Calendar", id: "calendar" },
-  { href: "/kanban", icon: LayoutGrid, label: "Tasks", id: "kanban" },
-  { href: "/office", icon: Building2, label: "Office", id: "office" },
+  { href: "/", icon: Home, label: "Home", id: "home", badge: null },
+  { href: "/chat", icon: MessageCircle, label: "Chat", id: "chat", badge: null },
+  { href: "/calendar", icon: Calendar, label: "Calendar", id: "calendar", badge: null },
+  { href: "/kanban", icon: LayoutGrid, label: "Tasks", id: "kanban", badge: 4 }, // Task count badge
+  { href: "/office", icon: Building2, label: "Office", id: "office", badge: null },
 ] as const;
 
 type NavId = (typeof NAV_ITEMS)[number]["id"];
@@ -58,7 +58,7 @@ function DesktopHeader({ active }: { active?: string }) {
                 <Link key={item.id} href={item.href}>
                   <button
                     className={cn(
-                      "inline-flex items-center gap-2 rounded-xl px-3.5 py-2 text-[13px] font-medium transition-all duration-150",
+                      "relative inline-flex items-center gap-2 rounded-xl px-3.5 py-2 text-[13px] font-medium transition-all duration-150",
                       isActive
                         ? "bg-indigo-50 text-indigo-600 shadow-sm shadow-indigo-100 dark:bg-indigo-950/50 dark:text-indigo-400 dark:shadow-none"
                         : "text-zinc-500 hover:bg-zinc-100/80 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800/60 dark:hover:text-zinc-100"
@@ -69,6 +69,11 @@ function DesktopHeader({ active }: { active?: string }) {
                       isActive ? "text-indigo-500 dark:text-indigo-400" : ""
                     )} strokeWidth={isActive ? 2 : 1.75} />
                     {item.label}
+                    {item.badge && (
+                      <span className="ml-1 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[10px] font-semibold rounded-full bg-indigo-500 text-white">
+                        {item.badge}
+                      </span>
+                    )}
                   </button>
                 </Link>
               );
@@ -129,16 +134,23 @@ function MobileTabBar({ active }: { active?: string }) {
                         : "hover:bg-white/5"
                     )}
                   >
-                    {/* Icon */}
-                    <item.icon
-                      className={cn(
-                        "h-5 w-5 transition-all duration-300",
-                        isActive
-                          ? "text-indigo-400 drop-shadow-[0_0_8px_rgba(129,140,248,0.5)]"
-                          : "text-zinc-400 group-hover:text-zinc-200"
+                    {/* Icon with Badge */}
+                    <div className="relative">
+                      <item.icon
+                        className={cn(
+                          "h-5 w-5 transition-all duration-300",
+                          isActive
+                            ? "text-indigo-400 drop-shadow-[0_0_8px_rgba(129,140,248,0.5)]"
+                            : "text-zinc-400 group-hover:text-zinc-200"
+                        )}
+                        strokeWidth={isActive ? 2.5 : 2}
+                      />
+                      {item.badge && (
+                        <span className="absolute -top-1.5 -right-2 inline-flex items-center justify-center min-w-[14px] h-[14px] px-0.5 text-[9px] font-bold rounded-full bg-indigo-500 text-white">
+                          {item.badge}
+                        </span>
                       )}
-                      strokeWidth={isActive ? 2.5 : 2}
-                    />
+                    </div>
                     
                     {/* Label */}
                     <span

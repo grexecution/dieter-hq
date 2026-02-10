@@ -29,11 +29,14 @@ import {
   TaskStatus,
   TaskPriority,
   LifeArea,
+  Department,
   KANBAN_COLUMNS,
   LIFE_AREAS,
   TASK_PRIORITIES,
+  DEPARTMENTS,
   getAreaInfo,
   getPriorityInfo,
+  getDepartmentInfo,
   formatDueDate,
   formatEstimate,
   getCompletionPercentage,
@@ -73,6 +76,7 @@ interface TaskCardProps {
 function TaskCard({ task, onSelect, onComplete, isDragging }: TaskCardProps) {
   const area = getAreaInfo(task.area);
   const priority = getPriorityInfo(task.priority);
+  const department = task.department ? getDepartmentInfo(task.department) : null;
   const completion = getCompletionPercentage(task);
   const isOverdue = task.dueDate && task.dueDate < Date.now() && task.status !== "done";
 
@@ -172,6 +176,19 @@ function TaskCard({ task, onSelect, onComplete, isDragging }: TaskCardProps) {
             <span>{area.emoji}</span>
             <span className="hidden sm:inline">{area.label}</span>
           </span>
+
+          {/* Department badge */}
+          {department && (
+            <span
+              className={cn(
+                "inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium",
+                department.color
+              )}
+            >
+              <span>{department.emoji}</span>
+              <span className="hidden sm:inline">{department.label}</span>
+            </span>
+          )}
 
           {/* Due date */}
           {task.dueDate && (
@@ -327,7 +344,7 @@ function KanbanColumn({
 interface QuickAddProps {
   defaultStatus?: TaskStatus;
   onClose: () => void;
-  onAdd: (task: { title: string; status: TaskStatus; priority: TaskPriority; area: LifeArea }) => void;
+  onAdd: (task: { title: string; status: TaskStatus; priority: TaskPriority; area: LifeArea; department?: Department }) => void;
 }
 
 function QuickAdd({ defaultStatus = "inbox", onClose, onAdd }: QuickAddProps) {
@@ -335,11 +352,18 @@ function QuickAdd({ defaultStatus = "inbox", onClose, onAdd }: QuickAddProps) {
   const [status, setStatus] = React.useState<TaskStatus>(defaultStatus);
   const [priority, setPriority] = React.useState<TaskPriority>("medium");
   const [area, setArea] = React.useState<LifeArea>("personal");
+  const [department, setDepartment] = React.useState<Department | "">("");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim()) return;
-    onAdd({ title: title.trim(), status, priority, area });
+    onAdd({ 
+      title: title.trim(), 
+      status, 
+      priority, 
+      area,
+      department: department || undefined,
+    });
     setTitle("");
     onClose();
   };
@@ -358,7 +382,7 @@ function QuickAdd({ defaultStatus = "inbox", onClose, onAdd }: QuickAddProps) {
         />
       </div>
 
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <div>
           <Label className="text-xs">Status</Label>
           <select
@@ -403,6 +427,22 @@ function QuickAdd({ defaultStatus = "inbox", onClose, onAdd }: QuickAddProps) {
             ))}
           </select>
         </div>
+
+        <div>
+          <Label className="text-xs">Department</Label>
+          <select
+            value={department}
+            onChange={(e) => setDepartment(e.target.value as Department | "")}
+            className="w-full mt-1 px-2 py-1.5 text-sm rounded-md border bg-background"
+          >
+            <option value="">No department</option>
+            {DEPARTMENTS.map((d) => (
+              <option key={d.value} value={d.value}>
+                {d.emoji} {d.label}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
 
       <div className="flex justify-end gap-2">
@@ -443,6 +483,7 @@ function TaskDetail({
 }: TaskDetailProps) {
   const [newSubtask, setNewSubtask] = React.useState("");
   const area = getAreaInfo(task.area);
+  const department = task.department ? getDepartmentInfo(task.department) : null;
 
   const handleAddSubtask = (e: React.FormEvent) => {
     e.preventDefault();
@@ -465,6 +506,16 @@ function TaskDetail({
             >
               {area.emoji} {area.label}
             </span>
+            {department && (
+              <span
+                className={cn(
+                  "inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium",
+                  department.color
+                )}
+              >
+                {department.emoji} {department.label}
+              </span>
+            )}
           </div>
           <div className="flex items-center gap-1">
             <Button
@@ -556,6 +607,26 @@ function TaskDetail({
               </div>
 
               <div>
+                <Label className="text-xs text-muted-foreground">Department</Label>
+                <select
+                  value={task.department ?? ""}
+                  onChange={(e) =>
+                    onUpdate({
+                      department: (e.target.value || undefined) as Department | undefined,
+                    })
+                  }
+                  className="w-full mt-1 px-3 py-2 text-sm rounded-lg border bg-background"
+                >
+                  <option value="">No department</option>
+                  {DEPARTMENTS.map((d) => (
+                    <option key={d.value} value={d.value}>
+                      {d.emoji} {d.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="col-span-2">
                 <Label className="text-xs text-muted-foreground">Estimate</Label>
                 <select
                   value={task.estimatedMinutes ?? ""}
@@ -758,8 +829,24 @@ function FilterBar() {
         ))}
       </select>
 
+      {/* Department filter */}
+      <select
+        value={state.filterDepartment ?? ""}
+        onChange={(e) =>
+          actions.setFilterDepartment((e.target.value || null) as Department | null)
+        }
+        className="h-9 px-3 text-sm rounded-lg border bg-background"
+      >
+        <option value="">All departments</option>
+        {DEPARTMENTS.map((d) => (
+          <option key={d.value} value={d.value}>
+            {d.emoji} {d.label}
+          </option>
+        ))}
+      </select>
+
       {/* Clear filters */}
-      {(state.searchQuery || state.filterArea || state.filterPriority) && (
+      {(state.searchQuery || state.filterArea || state.filterPriority || state.filterDepartment) && (
         <Button
           variant="ghost"
           size="sm"
@@ -767,6 +854,7 @@ function FilterBar() {
             actions.setSearchQuery("");
             actions.setFilterArea(null);
             actions.setFilterPriority(null);
+            actions.setFilterDepartment(null);
           }}
         >
           <X className="h-4 w-4 mr-1" />

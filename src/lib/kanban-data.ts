@@ -20,6 +20,16 @@ export type LifeArea =
   | "relationships" 
   | "home";
 
+export type Department =
+  | "ceo"
+  | "pmo"
+  | "business"
+  | "personal"
+  | "design"
+  | "dev"
+  | "marketing"
+  | "research";
+
 export interface Task {
   id: string;
   title: string;
@@ -27,6 +37,7 @@ export interface Task {
   status: TaskStatus;
   priority: TaskPriority;
   area: LifeArea;
+  department?: Department; // Agent/team assignment
   dueDate?: number; // timestamp
   estimatedMinutes?: number;
   tags: string[];
@@ -71,6 +82,17 @@ export const LIFE_AREAS: { value: LifeArea; label: string; emoji: string; color:
   { value: "learning", label: "Learning", emoji: "📚", color: "bg-indigo-500/20 text-indigo-700 dark:text-indigo-300" },
   { value: "relationships", label: "Relationships", emoji: "❤️", color: "bg-pink-500/20 text-pink-700 dark:text-pink-300" },
   { value: "home", label: "Home", emoji: "🏠", color: "bg-orange-500/20 text-orange-700 dark:text-orange-300" },
+];
+
+export const DEPARTMENTS: { value: Department; label: string; emoji: string; color: string }[] = [
+  { value: "ceo", label: "CEO", emoji: "👔", color: "bg-slate-500/20 text-slate-700 dark:text-slate-300" },
+  { value: "pmo", label: "PMO", emoji: "📋", color: "bg-cyan-500/20 text-cyan-700 dark:text-cyan-300" },
+  { value: "business", label: "Business", emoji: "💼", color: "bg-emerald-500/20 text-emerald-700 dark:text-emerald-300" },
+  { value: "personal", label: "Personal", emoji: "🏠", color: "bg-violet-500/20 text-violet-700 dark:text-violet-300" },
+  { value: "design", label: "Design", emoji: "🎨", color: "bg-pink-500/20 text-pink-700 dark:text-pink-300" },
+  { value: "dev", label: "Dev", emoji: "💻", color: "bg-blue-500/20 text-blue-700 dark:text-blue-300" },
+  { value: "marketing", label: "Marketing", emoji: "📣", color: "bg-orange-500/20 text-orange-700 dark:text-orange-300" },
+  { value: "research", label: "Research", emoji: "🔬", color: "bg-amber-500/20 text-amber-700 dark:text-amber-300" },
 ];
 
 export const KANBAN_COLUMNS: KanbanColumn[] = [
@@ -184,6 +206,7 @@ export const DEMO_TASKS: Task[] = [
     status: "today",
     priority: "high",
     area: "work",
+    department: "business",
     dueDate: now,
     estimatedMinutes: 120,
     tags: ["project", "deadline"],
@@ -216,6 +239,7 @@ export const DEMO_TASKS: Task[] = [
     status: "today",
     priority: "high",
     area: "work",
+    department: "ceo",
     estimatedMinutes: 30,
     tags: ["communication"],
     subtasks: [],
@@ -264,6 +288,7 @@ export const DEMO_TASKS: Task[] = [
     status: "next",
     priority: "high",
     area: "work",
+    department: "design",
     dueDate: now + 2 * day,
     estimatedMinutes: 90,
     tags: ["presentation", "meeting"],
@@ -281,6 +306,7 @@ export const DEMO_TASKS: Task[] = [
     status: "waiting",
     priority: "medium",
     area: "work",
+    department: "marketing",
     tags: ["client", "feedback"],
     subtasks: [],
     createdAt: now - 3 * day,
@@ -351,6 +377,7 @@ export const DEMO_TASKS: Task[] = [
     status: "done",
     priority: "medium",
     area: "work",
+    department: "dev",
     tags: ["career"],
     subtasks: [],
     createdAt: now - 7 * day,
@@ -379,6 +406,10 @@ export const DEMO_TASKS: Task[] = [
 
 export function getAreaInfo(area: LifeArea) {
   return LIFE_AREAS.find((a) => a.value === area) ?? LIFE_AREAS[0];
+}
+
+export function getDepartmentInfo(department: Department) {
+  return DEPARTMENTS.find((d) => d.value === department) ?? DEPARTMENTS[0];
 }
 
 export function getPriorityInfo(priority: TaskPriority) {

@@ -11,6 +11,7 @@ import {
   TaskStatus,
   TaskPriority,
   LifeArea,
+  Department,
   Subtask,
   DEMO_TASKS,
   KANBAN_COLUMNS,
@@ -26,6 +27,7 @@ export interface KanbanState {
   selectedTaskId: string | null;
   filterArea: LifeArea | null;
   filterPriority: TaskPriority | null;
+  filterDepartment: Department | null;
   searchQuery: string;
   isCreating: boolean;
   isDragging: boolean;
@@ -47,6 +49,7 @@ export interface KanbanActions {
   selectTask: (id: string | null) => void;
   setFilterArea: (area: LifeArea | null) => void;
   setFilterPriority: (priority: TaskPriority | null) => void;
+  setFilterDepartment: (department: Department | null) => void;
   setSearchQuery: (query: string) => void;
   setIsCreating: (value: boolean) => void;
   setIsDragging: (value: boolean) => void;
@@ -80,6 +83,7 @@ const initialState: KanbanState = {
   selectedTaskId: null,
   filterArea: null,
   filterPriority: null,
+  filterDepartment: null,
   searchQuery: "",
   isCreating: false,
   isDragging: false,
@@ -118,6 +122,7 @@ export function useKanbanState(): [KanbanState, KanbanActions] {
           status: partial.status ?? "inbox",
           priority: partial.priority ?? "medium",
           area: partial.area ?? "personal",
+          department: partial.department,
           dueDate: partial.dueDate,
           estimatedMinutes: partial.estimatedMinutes,
           tags: partial.tags ?? [],
@@ -258,6 +263,10 @@ export function useKanbanState(): [KanbanState, KanbanActions] {
         setState((prev) => ({ ...prev, filterPriority: priority }));
       },
 
+      setFilterDepartment: (department) => {
+        setState((prev) => ({ ...prev, filterDepartment: department }));
+      },
+
       setSearchQuery: (query) => {
         setState((prev) => ({ ...prev, searchQuery: query }));
       },
@@ -334,6 +343,10 @@ export function useKanbanState(): [KanbanState, KanbanActions] {
           filtered = filtered.filter((t) => t.priority === state.filterPriority);
         }
 
+        if (state.filterDepartment) {
+          filtered = filtered.filter((t) => t.department === state.filterDepartment);
+        }
+
         if (state.searchQuery) {
           const query = state.searchQuery.toLowerCase();
           filtered = filtered.filter(
@@ -378,7 +391,7 @@ export function useKanbanState(): [KanbanState, KanbanActions] {
         };
       },
     };
-  }, [state.tasks, state.filterArea, state.filterPriority, state.searchQuery, state.selectedTaskId]);
+  }, [state.tasks, state.filterArea, state.filterPriority, state.filterDepartment, state.searchQuery, state.selectedTaskId]);
 
   return [state, actions];
 }

@@ -79,6 +79,16 @@ export function MarkdownContent({ content, className }: MarkdownContentProps) {
   // Pre-process content to handle MEDIA: tags and auto-link URLs
   const processedContent = useMemo(() => preprocessContent(content), [content]);
   
+  // Debug logging
+  if (typeof window !== 'undefined' && content.includes('http') || content.includes('**')) {
+    console.log('[MarkdownContent] Rendering:', { 
+      hasUrl: content.includes('http'),
+      hasBold: content.includes('**'),
+      contentLength: content.length,
+      preview: content.slice(0, 100)
+    });
+  }
+  
   return (
     <div className={cn("text-zinc-900 dark:text-zinc-100", className)}>
       <ReactMarkdown
@@ -131,11 +141,12 @@ export function MarkdownContent({ content, className }: MarkdownContentProps) {
           },
           // Style pre blocks with copy button
           pre: ({ children, ...props }) => {
-            const getTextContent = (node: React.ReactNode): string => {
+            const getTextContent = (node: unknown): string => {
               if (typeof node === "string") return node;
               if (Array.isArray(node)) return node.map(getTextContent).join("");
               if (node && typeof node === "object" && "props" in node) {
-                return getTextContent((node as React.ReactElement).props.children);
+                const element = node as { props?: { children?: unknown } };
+                return getTextContent(element.props?.children);
               }
               return "";
             };

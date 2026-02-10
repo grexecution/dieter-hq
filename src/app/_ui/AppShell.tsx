@@ -7,6 +7,7 @@ import {
   MessageCircle,
   Calendar,
   LayoutGrid,
+  Building2,
 } from "lucide-react";
 
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -19,13 +20,14 @@ const NAV_ITEMS = [
   { href: "/chat", icon: MessageCircle, label: "Chat", id: "chat" },
   { href: "/calendar", icon: Calendar, label: "Calendar", id: "calendar" },
   { href: "/kanban", icon: LayoutGrid, label: "Tasks", id: "kanban" },
+  { href: "/office", icon: Building2, label: "Office", id: "office" },
 ] as const;
 
 type NavId = (typeof NAV_ITEMS)[number]["id"];
 
 interface AppShellProps {
   children: React.ReactNode;
-  active?: "chat" | "kanban" | "calendar" | "events" | "home";
+  active?: "chat" | "kanban" | "calendar" | "events" | "home" | "office";
 }
 
 // ============================================

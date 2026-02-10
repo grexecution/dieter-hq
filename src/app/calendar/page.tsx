@@ -100,7 +100,7 @@ export default function CalendarPage() {
           {/* View Switcher Header */}
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h1 className="text-2xl font-bold tracking-tight">Calendar</h1>
+              <h1 className="text-xl font-semibold tracking-tight">Calendar</h1>
               <p className="text-sm text-muted-foreground">
                 {formatDateFull(new Date())}
               </p>

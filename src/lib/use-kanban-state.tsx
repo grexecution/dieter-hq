@@ -13,9 +13,11 @@ import {
   LifeArea,
   Department,
   Subtask,
+  Question,
   DEMO_TASKS,
   KANBAN_COLUMNS,
   createEmptyTask,
+  generateQuestionId,
 } from "./kanban-data";
 
 // ============================================
@@ -44,6 +46,11 @@ export interface KanbanActions {
   addSubtask: (taskId: string, title: string) => void;
   toggleSubtask: (taskId: string, subtaskId: string) => void;
   deleteSubtask: (taskId: string, subtaskId: string) => void;
+  
+  // Questions
+  addQuestion: (taskId: string, question: Omit<Question, "id" | "askedAt">) => void;
+  answerQuestion: (taskId: string, questionId: string, answer: string) => void;
+  deleteQuestion: (taskId: string, questionId: string) => void;
   
   // Selection & UI
   selectTask: (id: string | null) => void;
@@ -127,6 +134,7 @@ export function useKanbanState(): [KanbanState, KanbanActions] {
           estimatedMinutes: partial.estimatedMinutes,
           tags: partial.tags ?? [],
           subtasks: partial.subtasks ?? [],
+          questions: partial.questions ?? [],
           createdAt: timestamp,
           updatedAt: timestamp,
           order: maxOrder + 1,
@@ -243,6 +251,58 @@ export function useKanbanState(): [KanbanState, KanbanActions] {
               ? {
                   ...t,
                   subtasks: t.subtasks.filter((s) => s.id !== subtaskId),
+                  updatedAt: Date.now(),
+                }
+              : t
+          ),
+        }));
+      },
+
+      // Questions
+      addQuestion: (taskId, questionData) => {
+        const newQuestion: Question = {
+          id: generateQuestionId(),
+          ...questionData,
+          askedAt: Date.now(),
+        };
+
+        setState((prev) => ({
+          ...prev,
+          tasks: prev.tasks.map((t) =>
+            t.id === taskId
+              ? { ...t, questions: [...t.questions, newQuestion], updatedAt: Date.now() }
+              : t
+          ),
+        }));
+      },
+
+      answerQuestion: (taskId, questionId, answer) => {
+        setState((prev) => ({
+          ...prev,
+          tasks: prev.tasks.map((t) =>
+            t.id === taskId
+              ? {
+                  ...t,
+                  questions: t.questions.map((q) =>
+                    q.id === questionId
+                      ? { ...q, answer, answeredAt: Date.now() }
+                      : q
+                  ),
+                  updatedAt: Date.now(),
+                }
+              : t
+          ),
+        }));
+      },
+
+      deleteQuestion: (taskId, questionId) => {
+        setState((prev) => ({
+          ...prev,
+          tasks: prev.tasks.map((t) =>
+            t.id === taskId
+              ? {
+                  ...t,
+                  questions: t.questions.filter((q) => q.id !== questionId),
                   updatedAt: Date.now(),
                 }
               : t

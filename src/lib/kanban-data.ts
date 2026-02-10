@@ -42,6 +42,7 @@ export interface Task {
   estimatedMinutes?: number;
   tags: string[];
   subtasks: Subtask[];
+  questions: Question[]; // Blocking questions from agents
   createdAt: number;
   updatedAt: number;
   completedAt?: number;
@@ -52,6 +53,16 @@ export interface Subtask {
   id: string;
   title: string;
   completed: boolean;
+}
+
+export interface Question {
+  id: string;
+  text: string;
+  options?: string[];
+  askedBy: string; // agent id or 'user'
+  askedAt: number; // timestamp
+  answeredAt?: number;
+  answer?: string;
 }
 
 export interface KanbanColumn {
@@ -168,6 +179,7 @@ export const DEMO_TASKS: Task[] = [
     area: "personal",
     tags: ["planning", "weekly"],
     subtasks: [],
+    questions: [],
     createdAt: now - 2 * day,
     updatedAt: now - 2 * day,
     order: 0,
@@ -180,6 +192,7 @@ export const DEMO_TASKS: Task[] = [
     area: "health",
     tags: ["appointment"],
     subtasks: [],
+    questions: [],
     createdAt: now - day,
     updatedAt: now - day,
     order: 1,
@@ -193,6 +206,7 @@ export const DEMO_TASKS: Task[] = [
     area: "home",
     tags: ["purchase", "ergonomics"],
     subtasks: [],
+    questions: [],
     createdAt: now - day,
     updatedAt: now - day,
     order: 2,
@@ -215,6 +229,13 @@ export const DEMO_TASKS: Task[] = [
       { id: generateSubtaskId(), title: "Add budget breakdown", completed: true },
       { id: generateSubtaskId(), title: "Final review", completed: false },
     ],
+    questions: [{
+      id: "q_demo_1",
+      text: "Should we include the Q2 projections as well?",
+      options: ["Yes, include Q2", "No, keep Q1 only", "Add as appendix"],
+      askedBy: "business-agent",
+      askedAt: now - 2 * 60 * 60 * 1000, // 2 hours ago
+    }],
     createdAt: now - 5 * day,
     updatedAt: now - day,
     order: 0,
@@ -229,6 +250,7 @@ export const DEMO_TASKS: Task[] = [
     estimatedMinutes: 45,
     tags: ["exercise", "routine"],
     subtasks: [],
+    questions: [],
     createdAt: now - 3 * day,
     updatedAt: now,
     order: 1,
@@ -243,6 +265,7 @@ export const DEMO_TASKS: Task[] = [
     estimatedMinutes: 30,
     tags: ["communication"],
     subtasks: [],
+    questions: [],
     createdAt: now,
     updatedAt: now,
     order: 2,
@@ -263,6 +286,7 @@ export const DEMO_TASKS: Task[] = [
       { id: generateSubtaskId(), title: "Book accommodation", completed: false },
       { id: generateSubtaskId(), title: "Create packing list", completed: false },
     ],
+    questions: [],
     createdAt: now - 2 * day,
     updatedAt: now - day,
     order: 0,
@@ -278,6 +302,7 @@ export const DEMO_TASKS: Task[] = [
     estimatedMinutes: 45,
     tags: ["budget", "monthly"],
     subtasks: [],
+    questions: [],
     createdAt: now - 4 * day,
     updatedAt: now - 2 * day,
     order: 1,
@@ -293,6 +318,13 @@ export const DEMO_TASKS: Task[] = [
     estimatedMinutes: 90,
     tags: ["presentation", "meeting"],
     subtasks: [],
+    questions: [{
+      id: "q_demo_2",
+      text: "Which color scheme should I use for the slides?",
+      options: ["Corporate Blue", "Modern Green", "Minimal Gray"],
+      askedBy: "design-agent",
+      askedAt: now - 4 * 60 * 60 * 1000, // 4 hours ago
+    }],
     createdAt: now - day,
     updatedAt: now - day,
     order: 2,
@@ -309,6 +341,7 @@ export const DEMO_TASKS: Task[] = [
     department: "marketing",
     tags: ["client", "feedback"],
     subtasks: [],
+    questions: [],
     createdAt: now - 3 * day,
     updatedAt: now - 2 * day,
     order: 0,
@@ -322,6 +355,7 @@ export const DEMO_TASKS: Task[] = [
     area: "home",
     tags: ["delivery"],
     subtasks: [],
+    questions: [],
     createdAt: now - 2 * day,
     updatedAt: now - 2 * day,
     order: 1,
@@ -340,6 +374,7 @@ export const DEMO_TASKS: Task[] = [
       { id: generateSubtaskId(), title: "Download app", completed: false },
       { id: generateSubtaskId(), title: "Complete basics", completed: false },
     ],
+    questions: [],
     createdAt: now - 10 * day,
     updatedAt: now - 5 * day,
     order: 0,
@@ -353,6 +388,7 @@ export const DEMO_TASKS: Task[] = [
     area: "personal",
     tags: ["organization", "photos"],
     subtasks: [],
+    questions: [],
     createdAt: now - 14 * day,
     updatedAt: now - 10 * day,
     order: 1,
@@ -365,6 +401,7 @@ export const DEMO_TASKS: Task[] = [
     area: "personal",
     tags: ["hobby", "cooking"],
     subtasks: [],
+    questions: [],
     createdAt: now - 20 * day,
     updatedAt: now - 15 * day,
     order: 2,
@@ -380,6 +417,7 @@ export const DEMO_TASKS: Task[] = [
     department: "dev",
     tags: ["career"],
     subtasks: [],
+    questions: [],
     createdAt: now - 7 * day,
     updatedAt: now - 2 * day,
     completedAt: now - 2 * day,
@@ -393,6 +431,7 @@ export const DEMO_TASKS: Task[] = [
     area: "health",
     tags: ["appointment", "health"],
     subtasks: [],
+    questions: [],
     createdAt: now - 5 * day,
     updatedAt: now - 3 * day,
     completedAt: now - 3 * day,
@@ -430,6 +469,7 @@ export function createEmptyTask(status: TaskStatus = "inbox"): Task {
     area: "personal",
     tags: [],
     subtasks: [],
+    questions: [],
     createdAt: timestamp,
     updatedAt: timestamp,
     order: 0,
@@ -464,4 +504,16 @@ export function getCompletionPercentage(task: Task): number {
   if (task.subtasks.length === 0) return task.status === "done" ? 100 : 0;
   const completed = task.subtasks.filter((s) => s.completed).length;
   return Math.round((completed / task.subtasks.length) * 100);
+}
+
+export function getPendingQuestions(task: Task): Question[] {
+  return task.questions.filter((q) => !q.answeredAt);
+}
+
+export function hasBlockingQuestions(task: Task): boolean {
+  return getPendingQuestions(task).length > 0;
+}
+
+export function generateQuestionId(): string {
+  return `q_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
 }

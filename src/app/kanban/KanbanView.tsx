@@ -30,6 +30,7 @@ import {
   TaskPriority,
   LifeArea,
   Department,
+  Question,
   KANBAN_COLUMNS,
   LIFE_AREAS,
   TASK_PRIORITIES,
@@ -40,6 +41,8 @@ import {
   formatDueDate,
   formatEstimate,
   getCompletionPercentage,
+  getPendingQuestions,
+  hasBlockingQuestions,
 } from "@/lib/kanban-data";
 import { KanbanProvider, useKanban, useKanbanState } from "@/lib/use-kanban-state";
 import {
@@ -60,6 +63,8 @@ import {
   Sparkles,
   Trash2,
   ArrowRight,
+  HelpCircle,
+  MessageCircle,
 } from "lucide-react";
 
 // ============================================
@@ -79,6 +84,8 @@ function TaskCard({ task, onSelect, onComplete, isDragging }: TaskCardProps) {
   const department = task.department ? getDepartmentInfo(task.department) : null;
   const completion = getCompletionPercentage(task);
   const isOverdue = task.dueDate && task.dueDate < Date.now() && task.status !== "done";
+  const pendingQuestions = getPendingQuestions(task);
+  const hasQuestions = pendingQuestions.length > 0;
 
   return (
     <div
@@ -138,6 +145,14 @@ function TaskCard({ task, onSelect, onComplete, isDragging }: TaskCardProps) {
           >
             {task.title}
           </h4>
+          
+          {/* Question indicator */}
+          {hasQuestions && (
+            <span className="flex-shrink-0 inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-500/20 text-amber-700 dark:text-amber-300">
+              <HelpCircle className="h-3 w-3" />
+              {pendingQuestions.length}
+            </span>
+          )}
           
           <GripVertical className="h-4 w-4 text-muted-foreground/50 opacity-0 group-hover:opacity-100 transition-opacity cursor-grab" />
         </div>
@@ -470,6 +485,7 @@ interface TaskDetailProps {
   onAddSubtask: (title: string) => void;
   onToggleSubtask: (subtaskId: string) => void;
   onDeleteSubtask: (subtaskId: string) => void;
+  onAnswerQuestion: (questionId: string, answer: string) => void;
 }
 
 function TaskDetail({
@@ -480,10 +496,13 @@ function TaskDetail({
   onAddSubtask,
   onToggleSubtask,
   onDeleteSubtask,
+  onAnswerQuestion,
 }: TaskDetailProps) {
   const [newSubtask, setNewSubtask] = React.useState("");
   const area = getAreaInfo(task.area);
   const department = task.department ? getDepartmentInfo(task.department) : null;
+  const pendingQuestions = getPendingQuestions(task);
+  const answeredQuestions = task.questions.filter((q) => q.answeredAt);
 
   const handleAddSubtask = (e: React.FormEvent) => {
     e.preventDefault();
@@ -698,6 +717,88 @@ function TaskDetail({
                 </form>
               </div>
             </div>
+
+            {/* Questions Section */}
+            {(pendingQuestions.length > 0 || answeredQuestions.length > 0) && (
+              <div>
+                <Label className="text-xs text-muted-foreground flex items-center gap-1">
+                  <HelpCircle className="h-3 w-3" />
+                  Questions ({pendingQuestions.length} pending)
+                </Label>
+                <div className="mt-2 space-y-2">
+                  {/* Pending Questions - need answers */}
+                  {pendingQuestions.map((question) => (
+                    <div
+                      key={question.id}
+                      className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/20"
+                    >
+                      <p className="text-sm font-medium text-amber-700 dark:text-amber-300 flex items-start gap-2">
+                        <HelpCircle className="h-4 w-4 flex-shrink-0 mt-0.5" />
+                        {question.text}
+                      </p>
+                      <p className="text-[10px] text-muted-foreground mt-1 ml-6">
+                        Asked by {question.askedBy} • {new Date(question.askedAt).toLocaleString("de-AT")}
+                      </p>
+                      {question.options && question.options.length > 0 ? (
+                        <div className="mt-2 ml-6 flex flex-wrap gap-1.5">
+                          {question.options.map((option) => (
+                            <Button
+                              key={option}
+                              variant="outline"
+                              size="sm"
+                              className="text-xs h-7"
+                              onClick={() => onAnswerQuestion(question.id, option)}
+                            >
+                              {option}
+                            </Button>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="mt-2 ml-6 flex gap-2">
+                          <Input
+                            placeholder="Type your answer..."
+                            className="flex-1 h-8 text-sm"
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter" && e.currentTarget.value.trim()) {
+                                onAnswerQuestion(question.id, e.currentTarget.value.trim());
+                                e.currentTarget.value = "";
+                              }
+                            }}
+                          />
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="h-8"
+                            onClick={(e) => {
+                              const input = e.currentTarget.previousElementSibling as HTMLInputElement;
+                              if (input.value.trim()) {
+                                onAnswerQuestion(question.id, input.value.trim());
+                                input.value = "";
+                              }
+                            }}
+                          >
+                            Answer
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                  
+                  {/* Answered Questions - collapsed */}
+                  {answeredQuestions.length > 0 && (
+                    <div className="text-xs text-muted-foreground">
+                      <p className="font-medium mb-1">{answeredQuestions.length} answered</p>
+                      {answeredQuestions.map((question) => (
+                        <div key={question.id} className="p-2 rounded bg-muted/50 mb-1">
+                          <p className="line-through opacity-60">{question.text}</p>
+                          <p className="text-green-600 dark:text-green-400">→ {question.answer}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
 
             {/* Timestamps */}
             <div className="pt-4 border-t text-xs text-muted-foreground space-y-1">
@@ -965,6 +1066,9 @@ function KanbanBoard() {
             }
             onDeleteSubtask={(subtaskId) =>
               actions.deleteSubtask(selectedTask.id, subtaskId)
+            }
+            onAnswerQuestion={(questionId, answer) =>
+              actions.answerQuestion(selectedTask.id, questionId, answer)
             }
           />
         </>

@@ -82,3 +82,12 @@ export type {
   SessionActivity,
   GlobalActivityState,
 } from './hooks';
+
+// Multi-Chat Hook for DieterHQ
+export {
+  useMultiChat,
+  threadIdToSessionKey,
+  sessionKeyToDisplayName,
+} from './useMultiChat';
+
+export type { ChatMessage } from './useMultiChat';

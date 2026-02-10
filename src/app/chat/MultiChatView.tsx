@@ -18,6 +18,7 @@ import { WorkspaceManager, type WorkspaceProject } from "./_components/Workspace
 import { ChatSuggestions, type ChatSuggestion } from "./_components/ChatSuggestions";
 import { InboxView } from "./inbox";
 import { CHAT_TABS, type ChatTab } from "./chat-config";
+import { ActivityBar } from "./_components/ActivityBar";
 
 const VoiceRecorder = dynamic(
   () => import("./_components/VoiceRecorder").then((m) => m.VoiceRecorder),
@@ -1119,6 +1120,9 @@ export function MultiChatView({
 
         {/* Live Status Bar */}
         <StatusBar />
+
+        {/* WebSocket Activity Bar */}
+        <ActivityBar />
 
         {/* Tab Navigation */}
         <TabNavigation 

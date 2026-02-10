@@ -4,8 +4,7 @@
  * React Hooks for OpenClaw WebSocket Client
  */
 
-// Log immediately when module is loaded
-console.log('[OpenClaw-Hooks] Module loaded');
+// Module loaded - no logging needed
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { 
@@ -36,7 +35,6 @@ interface UseOpenClawConnectionResult {
 }
 
 export function useOpenClawConnection(): UseOpenClawConnectionResult {
-  console.log('[OpenClaw-Hooks] useOpenClawConnection called');
   
   const clientRef = useRef<OpenClawClient | null>(null);
   const [state, setState] = useState<ConnectionState>('disconnected');
@@ -44,7 +42,6 @@ export function useOpenClawConnection(): UseOpenClawConnectionResult {
   const mountedRef = useRef(true);
 
   useEffect(() => {
-    console.log('[OpenClaw-Hooks] useOpenClawConnection useEffect running');
     mountedRef.current = true;
     clientRef.current = getOpenClawClient();
     
@@ -253,9 +250,6 @@ export function useOpenClawChat(sessionKey: string): UseOpenClawChatResult {
     }>('agent', (event) => {
       // Check if event belongs to our session (if sessionKey is provided)
       // Some agent events might not include sessionKey, so we track by runId
-      
-      console.log('[OpenClaw] Agent event:', event.stream, event);
-      
       const now = Date.now();
       
       switch (event.stream) {

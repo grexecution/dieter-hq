@@ -79,16 +79,6 @@ export function MarkdownContent({ content, className }: MarkdownContentProps) {
   // Pre-process content to handle MEDIA: tags and auto-link URLs
   const processedContent = useMemo(() => preprocessContent(content), [content]);
   
-  // Debug logging
-  if (typeof window !== 'undefined' && content.includes('http') || content.includes('**')) {
-    console.log('[MarkdownContent] Rendering:', { 
-      hasUrl: content.includes('http'),
-      hasBold: content.includes('**'),
-      contentLength: content.length,
-      preview: content.slice(0, 100)
-    });
-  }
-  
   return (
     <div className={cn("text-zinc-900 dark:text-zinc-100", className)}>
       <ReactMarkdown

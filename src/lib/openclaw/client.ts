@@ -330,8 +330,11 @@ export class OpenClawClient {
       return;
     }
     
-    // Log all events for debugging
-    console.log('[OpenClaw] Event:', frame.event, frame.payload);
+    // Only log important events (not health/tick/agent stream spam)
+    const quietEvents = ['health', 'tick', 'agent', 'presence'];
+    if (!quietEvents.includes(frame.event)) {
+      console.log('[OpenClaw] Event:', frame.event);
+    }
 
     // Broadcast to event handlers
     const handlers = this.eventHandlers.get(frame.event);

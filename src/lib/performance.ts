@@ -39,14 +39,20 @@ function getRating(name: string, value: number): 'good' | 'needs-improvement' | 
   return 'poor';
 }
 
+// Only log in development
+const isDev = process.env.NODE_ENV === 'development';
+
 /**
  * Report metric to analytics
  */
 function reportMetric(metric: PerformanceMetric) {
-  console.log(`[Performance] ${metric.name}:`, {
-    value: metric.value,
-    rating: metric.rating,
-  });
+  // Only log in development
+  if (isDev) {
+    console.log(`[Performance] ${metric.name}:`, {
+      value: metric.value,
+      rating: metric.rating,
+    });
+  }
 
   // Send to analytics endpoint
   if (typeof window !== 'undefined' && navigator.sendBeacon) {
@@ -281,7 +287,9 @@ function monitorNavigationTiming() {
       total: navigation.loadEventEnd - navigation.fetchStart,
     };
 
-    console.log('[Performance] Navigation timing:', metrics);
+    if (isDev) {
+      console.log('[Performance] Navigation timing:', metrics);
+    }
 
     // Send to analytics
     if (navigator.sendBeacon) {
@@ -309,10 +317,12 @@ function monitorResourceTiming() {
       cached: entry.transferSize === 0,
     }));
 
-    // Log slow resources
-    const slowResources = resources.filter(r => r.duration > 1000);
-    if (slowResources.length > 0) {
-      console.warn('[Performance] Slow resources:', slowResources);
+    // Log slow resources (only in dev)
+    if (isDev) {
+      const slowResources = resources.filter(r => r.duration > 1000);
+      if (slowResources.length > 0) {
+        console.warn('[Performance] Slow resources:', slowResources);
+      }
     }
   });
 
@@ -327,10 +337,12 @@ function monitorLongTasks() {
 
   const observer = new PerformanceObserver((list) => {
     for (const entry of list.getEntries()) {
-      console.warn('[Performance] Long task detected:', {
-        duration: entry.duration,
-        startTime: entry.startTime,
-      });
+      if (isDev) {
+        console.warn('[Performance] Long task detected:', {
+          duration: entry.duration,
+          startTime: entry.startTime,
+        });
+      }
 
       // Send to analytics
       if (navigator.sendBeacon) {
@@ -390,7 +402,9 @@ export function measurePerformance(name: string, startMark: string, endMark: str
     performance.measure(name, startMark, endMark);
     const measure = performance.getEntriesByName(name)[0];
     
-    console.log(`[Performance] ${name}:`, measure.duration, 'ms');
+    if (isDev) {
+      console.log(`[Performance] ${name}:`, measure.duration, 'ms');
+    }
     
     return measure.duration;
   } catch (e) {

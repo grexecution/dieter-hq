@@ -145,13 +145,6 @@ export function useGlobalActivity(): GlobalActivityState & {
       const now = Date.now();
       const activityType = getActivityType(event.stream);
       
-      console.log('[GlobalActivity] Agent event:', {
-        sessionKey,
-        stream: event.stream,
-        type: activityType,
-        toolName: event.data?.toolName || event.data?.name,
-      });
-
       setSessions(prev => {
         const next = new Map(prev);
         

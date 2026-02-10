@@ -8,6 +8,10 @@
     "elite-longterm-memory": {
       "version": "1.2.2",
       "installedAt": 1770658656704
+    },
+    "openclaw-mem": {
+      "version": "2.1.0",
+      "installedAt": 1770673795777
     }
   }
 }

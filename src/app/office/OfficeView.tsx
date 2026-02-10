@@ -184,7 +184,7 @@ export function OfficeView() {
               <Building2 className="h-6 w-6 text-primary" />
             </div>
             <div>
-              <h1 className="text-xl font-semibold tracking-tight">
+              <h1 className="text-lg font-medium tracking-tight">
                 Virtual Office
               </h1>
               <p className="text-sm text-muted-foreground">{today}</p>

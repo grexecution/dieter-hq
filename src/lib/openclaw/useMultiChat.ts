@@ -26,6 +26,7 @@ const WORKSPACE_PREFIX = 'dev:';
  */
 export function threadIdToSessionKey(threadId: string): string {
   const isWorkspaceThread = threadId.startsWith(WORKSPACE_PREFIX);
+  const baseThreadId = isWorkspaceThread ? 'dev' : threadId;
   const agentId = isWorkspaceThread ? 'coder' : (THREAD_TO_AGENT[threadId] || 'main');
   return `agent:${agentId}:dieter-hq:${threadId}`;
 }
@@ -117,8 +118,10 @@ export function useMultiChat(): UseMultiChatResult {
       
       // If we can't connect, use HTTP fallback
       if (state === 'disconnected' && err) {
+        console.log('[useMultiChat] WebSocket failed, using HTTP fallback');
         setIsUsingHttpFallback(true);
       } else if (state === 'connected') {
+        console.log('[useMultiChat] WebSocket connected');
         setIsUsingHttpFallback(false);
       }
     });
@@ -232,6 +235,7 @@ export function useMultiChat(): UseMultiChatResult {
     if (client.state === 'disconnected') {
       client.connect().catch(err => {
         if (mountedRef.current) {
+          console.error('[useMultiChat] Connection failed:', err);
           setError(err instanceof Error ? err : new Error(String(err)));
           setIsUsingHttpFallback(true);
         }
@@ -257,15 +261,18 @@ export function useMultiChat(): UseMultiChatResult {
 
     // If connected via WebSocket, use it
     if (client?.connected && !isUsingHttpFallback) {
+      console.log('[useMultiChat] Sending via WebSocket:', sessionKey);
       try {
         await client.chatSend(sessionKey, content);
         return;
-      } catch {
+      } catch (err) {
+        console.error('[useMultiChat] WebSocket send failed, falling back to HTTP:', err);
         // Fall through to HTTP
       }
     }
 
     // HTTP fallback
+    console.log('[useMultiChat] Sending via HTTP fallback:', threadId);
     const response = await fetch('/api/chat/send', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -292,8 +299,8 @@ export function useMultiChat(): UseMultiChatResult {
     if (client?.connected) {
       try {
         await client.chatAbort(sessionKey);
-      } catch {
-        // Ignore abort errors
+      } catch (err) {
+        console.error('[useMultiChat] Abort failed:', err);
       }
     }
   }, []);

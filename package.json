@@ -71,7 +71,7 @@
     "@types/uuid": "^10.0.0",
     "@types/web-push": "^3.6.4",
     "drizzle-kit": "^0.31.8",
-    "eslint": "^9",
+    "eslint": "^10",
     "eslint-config-next": "16.1.6",
     "playwright": "^1.58.1",
     "tailwindcss": "^4",

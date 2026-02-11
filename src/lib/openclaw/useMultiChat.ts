@@ -118,10 +118,8 @@ export function useMultiChat(): UseMultiChatResult {
       
       // If we can't connect, use HTTP fallback
       if (state === 'disconnected' && err) {
-        console.log('[useMultiChat] WebSocket failed, using HTTP fallback');
         setIsUsingHttpFallback(true);
       } else if (state === 'connected') {
-        console.log('[useMultiChat] WebSocket connected');
         setIsUsingHttpFallback(false);
       }
     });
@@ -261,18 +259,15 @@ export function useMultiChat(): UseMultiChatResult {
 
     // If connected via WebSocket, use it
     if (client?.connected && !isUsingHttpFallback) {
-      console.log('[useMultiChat] Sending via WebSocket:', sessionKey);
       try {
         await client.chatSend(sessionKey, content);
         return;
-      } catch (err) {
-        console.error('[useMultiChat] WebSocket send failed, falling back to HTTP:', err);
+      } catch {
         // Fall through to HTTP
       }
     }
 
     // HTTP fallback
-    console.log('[useMultiChat] Sending via HTTP fallback:', threadId);
     const response = await fetch('/api/chat/send', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
